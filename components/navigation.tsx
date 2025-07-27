@@ -2,11 +2,28 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Scale, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { Scale, Menu, X, User, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { data: authData, mutate } = useSWR('/api/auth/me', fetcher);
+  
+  const isAuthenticated = authData?.authenticated;
+  const user = authData?.user;
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      mutate(); // Refresh auth state
+      window.location.href = '/'; // Redirect to home
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -46,14 +63,36 @@ export function Navigation() {
             </div>
           </div>
 
-          {/* Version and Login */}
+          {/* Version and Auth */}
           <div className="hidden md:flex items-center space-x-3">
-            <span className="text-xs text-gray-400 font-mono">v0.07</span>
-            <Link href="/sign-in">
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white">
-                Login
-              </Button>
-            </Link>
+            <span className="text-xs text-gray-400 font-mono">v0.08</span>
+            {isAuthenticated ? (
+              <>
+                <Link href="/dashboard">
+                  <Button variant="outline" className="flex items-center space-x-2">
+                    <User className="h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Button>
+                </Link>
+                <Button 
+                  onClick={handleLogout}
+                  variant="outline"
+                  className="flex items-center space-x-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </Button>
+                <span className="text-sm text-gray-600">
+                  Welcome, {user?.name || user?.email}
+                </span>
+              </>
+            ) : (
+              <Link href="/sign-in">
+                <Button className="bg-orange-500 hover:bg-orange-600 text-white">
+                  Login
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -98,13 +137,38 @@ export function Navigation() {
               </Link>
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-gray-400 font-mono">v0.07</span>
+                  <span className="text-xs text-gray-400 font-mono">v0.08</span>
                 </div>
-                <Link href="/sign-in" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="bg-orange-500 hover:bg-orange-600 text-white w-full">
-                    Login
-                  </Button>
-                </Link>
+                {isAuthenticated ? (
+                  <div className="space-y-2">
+                    <span className="text-sm text-gray-600 block px-3 py-2">
+                      Welcome, {user?.name || user?.email}
+                    </span>
+                    <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="outline" className="w-full flex items-center justify-center space-x-2">
+                        <User className="h-4 w-4" />
+                        <span>Dashboard</span>
+                      </Button>
+                    </Link>
+                    <Button 
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      variant="outline"
+                      className="w-full flex items-center justify-center space-x-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Logout</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <Link href="/sign-in" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="bg-orange-500 hover:bg-orange-600 text-white w-full">
+                      Login
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
           </div>
