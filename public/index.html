@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alberta Family Contracts - Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #f97316;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .status {
+            background: #10b981;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .timestamp {
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Alberta Family Contracts</h1>
+        <p>This is a basic HTML test page to verify Vercel deployment is working correctly.</p>
+        
+        <div class="status">✅ Vercel Deployment Test - SUCCESS!</div>
+        
+        <div class="timestamp">
+            Test deployed: <span id="timestamp"></span>
+        </div>
+        
+        <script>
+            document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        </script>
+    </div>
+</body>
+</html>
