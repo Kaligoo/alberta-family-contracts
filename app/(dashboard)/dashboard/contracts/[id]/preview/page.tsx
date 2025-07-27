@@ -112,7 +112,7 @@ export default function ContractPreviewPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Edit
           </Link>
-          <div className="flex justify-between items-start">
+          <div className="flex justify-between items-start mb-6">
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold mb-2">Contract Preview</h1>
               <p className="text-gray-600">
@@ -130,11 +130,12 @@ export default function ContractPreviewPage() {
                 <Printer className="mr-2 h-4 w-4" />
                 Print
               </Button>
-              <Button className="bg-orange-500 hover:bg-orange-600">
-                <Download className="mr-2 h-4 w-4" />
-                Download PDF
-              </Button>
             </div>
+          </div>
+          
+          {/* Purchase Button - Moved to top */}
+          <div className="flex justify-center mb-6">
+            <PaymentButton contractId={contractId} />
           </div>
         </div>
 
@@ -273,14 +274,13 @@ export default function ContractPreviewPage() {
         </Card>
 
         {/* Action Buttons */}
-        <div className="flex gap-4 justify-center">
+        <div className="flex justify-center">
           <Link href={`/dashboard/contracts/${contractId}`}>
             <Button variant="outline" size="lg">
               <Edit className="mr-2 h-4 w-4" />
               Make Changes
             </Button>
           </Link>
-          <PaymentButton contractId={contractId} />
         </div>
 
         {contract.notes && (
@@ -303,10 +303,12 @@ function PaymentButton({ contractId }: { contractId: string }) {
   const [error, setError] = useState('');
 
   const handlePayment = async () => {
+    console.log('Payment button clicked for contract:', contractId);
     setIsLoading(true);
     setError('');
 
     try {
+      console.log('Making payment request...');
       const response = await fetch(`/api/contracts/${contractId}/payment`, {
         method: 'POST',
         headers: {
@@ -314,45 +316,52 @@ function PaymentButton({ contractId }: { contractId: string }) {
         },
       });
 
+      console.log('Payment response status:', response.status);
       const data = await response.json();
+      console.log('Payment response data:', data);
 
       if (response.ok && data.url) {
+        console.log('Redirecting to Stripe checkout:', data.url);
         // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else {
+        console.error('Payment error:', data);
         setError(data.error || 'Failed to create payment session');
       }
     } catch (error) {
       console.error('Payment error:', error);
-      setError('Failed to initiate payment');
+      setError('Failed to initiate payment. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div>
+    <div className="text-center">
       <Button 
         onClick={handlePayment}
         disabled={isLoading}
         size="lg" 
-        className="bg-orange-500 hover:bg-orange-600"
+        className="bg-orange-500 hover:bg-orange-600 px-8 py-3"
       >
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Processing...
+            Processing Payment...
           </>
         ) : (
           <>
             <Download className="mr-2 h-4 w-4" />
-            Purchase & Download - $700 CAD
+            Purchase Complete Agreement - $700 CAD
           </>
         )}
       </Button>
       {error && (
-        <p className="text-red-600 text-sm mt-2 text-center">{error}</p>
+        <p className="text-red-600 text-sm mt-2 max-w-md mx-auto">{error}</p>
       )}
+      <p className="text-xs text-gray-500 mt-2">
+        Secure payment processed by Stripe
+      </p>
     </div>
   );
 }
