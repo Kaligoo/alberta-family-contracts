@@ -48,7 +48,7 @@ export function Navigation() {
 
           {/* Version and Login */}
           <div className="hidden md:flex items-center space-x-3">
-            <span className="text-xs text-gray-400 font-mono">v0.02</span>
+            <span className="text-xs text-gray-400 font-mono">v0.03</span>
             <Link href="/sign-in">
               <Button className="bg-orange-500 hover:bg-orange-600 text-white">
                 Login
@@ -98,7 +98,7 @@ export function Navigation() {
               </Link>
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-gray-400 font-mono">v0.02</span>
+                  <span className="text-xs text-gray-400 font-mono">v0.03</span>
                 </div>
                 <Link href="/sign-in" onClick={() => setIsMenuOpen(false)}>
                   <Button className="bg-orange-500 hover:bg-orange-600 text-white w-full">

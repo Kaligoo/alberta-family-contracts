@@ -349,10 +349,17 @@ function PaymentButton({ contractId }: { contractId: string }) {
     }
   };
 
+  // Add a simple test function
+  const testClick = () => {
+    console.log('Button clicked - basic test working');
+    alert('Button click detected! Check console for payment details.');
+    handlePayment();
+  };
+
   return (
     <div className="text-center">
       <Button 
-        onClick={handlePayment}
+        onClick={testClick}
         disabled={isLoading}
         size="lg" 
         className="bg-orange-500 hover:bg-orange-600 px-8 py-3"
