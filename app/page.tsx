@@ -1,9 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Shield, FileText, Users, CheckCircle } from 'lucide-react';
+import { Navigation } from '@/components/navigation';
 
 export default function HomePage() {
   return (
-    <main>
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
+      <main>
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-12 lg:gap-8">
@@ -172,6 +175,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-    </main>
+      </main>
+    </div>
   );
 }

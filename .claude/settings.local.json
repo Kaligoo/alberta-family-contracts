@@ -29,7 +29,11 @@
       "Bash(npm run dev:*)",
       "Bash(git reset:*)",
       "Bash(vercel env pull:*)",
-      "Bash(vercel login:*)"
+      "Bash(vercel login:*)",
+      "Bash(openssl rand:*)",
+      "Bash(npm run:*)",
+      "Bash(vercel:*)",
+      "WebFetch(domain:kahanelaw.com)"
     ],
     "deny": []
   }
