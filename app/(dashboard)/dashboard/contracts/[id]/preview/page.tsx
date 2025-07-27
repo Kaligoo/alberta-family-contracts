@@ -302,7 +302,8 @@ function PaymentButton({ contractId }: { contractId: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handlePayment = async () => {
+  const handlePayment = async (e: React.MouseEvent) => {
+    e.preventDefault();
     console.log('Payment button clicked for contract:', contractId);
     setIsLoading(true);
     setError('');
@@ -317,20 +318,32 @@ function PaymentButton({ contractId }: { contractId: string }) {
       });
 
       console.log('Payment response status:', response.status);
-      const data = await response.json();
+      console.log('Payment response headers:', Object.fromEntries(response.headers.entries()));
+      
+      const text = await response.text();
+      console.log('Payment response text:', text);
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseError) {
+        console.error('Failed to parse response as JSON:', parseError);
+        setError('Invalid response from server');
+        return;
+      }
+      
       console.log('Payment response data:', data);
 
       if (response.ok && data.url) {
         console.log('Redirecting to Stripe checkout:', data.url);
-        // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else {
         console.error('Payment error:', data);
-        setError(data.error || 'Failed to create payment session');
+        setError(data.error || `Failed to create payment session (Status: ${response.status})`);
       }
     } catch (error) {
       console.error('Payment error:', error);
-      setError('Failed to initiate payment. Please check your connection and try again.');
+      setError('Network error: Failed to initiate payment. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
     }
