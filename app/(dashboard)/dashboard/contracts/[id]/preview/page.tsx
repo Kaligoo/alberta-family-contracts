@@ -279,10 +279,12 @@ export default function ContractPreviewPage() {
               Make Changes
             </Button>
           </Link>
-          <Button size="lg" className="bg-orange-500 hover:bg-orange-600">
-            <Download className="mr-2 h-4 w-4" />
-            Download Final Document - $700
-          </Button>
+          <form action={`/api/contracts/${contractId}/payment`} method="POST">
+            <Button type="submit" size="lg" className="bg-orange-500 hover:bg-orange-600">
+              <Download className="mr-2 h-4 w-4" />
+              Purchase & Download - $700 CAD
+            </Button>
+          </form>
         </div>
 
         {contract.notes && (

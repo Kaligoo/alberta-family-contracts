@@ -207,3 +207,59 @@ export async function getStripeProducts() {
         : product.default_price?.id
   }));
 }
+
+// One-time payment for contract downloads
+export async function createContractPaymentSession({
+  contractId,
+  userEmail,
+  userName
+}: {
+  contractId: number;
+  userEmail: string;
+  userName: string;
+}) {
+  const user = await getUser();
+
+  if (!user) {
+    redirect(`/sign-in?redirect=/dashboard/contracts/${contractId}/preview`);
+  }
+
+  if (!stripe) {
+    throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY environment variable.');
+  }
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    line_items: [
+      {
+        price_data: {
+          currency: 'cad',
+          product_data: {
+            name: 'Alberta Cohabitation Agreement',
+            description: `Professional cohabitation agreement for ${userName}`,
+            images: ['https://www.albertafamilycontracts.com/contract-icon.png']
+          },
+          unit_amount: 70000 // $700.00 CAD in cents
+        },
+        quantity: 1
+      }
+    ],
+    mode: 'payment',
+    success_url: `${process.env.BASE_URL || process.env.VERCEL_URL || 'http://localhost:3000'}/dashboard/contracts/${contractId}/download?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.BASE_URL || process.env.VERCEL_URL || 'http://localhost:3000'}/dashboard/contracts/${contractId}/preview`,
+    customer_email: userEmail,
+    client_reference_id: contractId.toString(),
+    metadata: {
+      contractId: contractId.toString(),
+      userId: user.id.toString(),
+      product: 'cohabitation_agreement'
+    },
+    allow_promotion_codes: true,
+    billing_address_collection: 'required',
+    shipping_address_collection: {
+      allowed_countries: ['CA']
+    }
+  });
+
+  redirect(session.url!);
+}
