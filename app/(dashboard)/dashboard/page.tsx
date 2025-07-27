@@ -84,6 +84,73 @@ function PersonalInfoCard({ formData, updateFormData }: {
             />
           </div>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="userEmail">Your Email Address</Label>
+            <Input
+              id="userEmail"
+              type="email"
+              value={formData.userEmail}
+              onChange={(e) => updateFormData('userEmail', e.target.value)}
+              placeholder="Enter your email address"
+            />
+          </div>
+          <div>
+            <Label htmlFor="partnerEmail">Partner's Email Address</Label>
+            <Input
+              id="partnerEmail"
+              type="email"
+              value={formData.partnerEmail}
+              onChange={(e) => updateFormData('partnerEmail', e.target.value)}
+              placeholder="Enter partner's email address"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="userPhone">Your Phone Number</Label>
+            <Input
+              id="userPhone"
+              type="tel"
+              value={formData.userPhone}
+              onChange={(e) => updateFormData('userPhone', e.target.value)}
+              placeholder="Enter your phone number"
+            />
+          </div>
+          <div>
+            <Label htmlFor="partnerPhone">Partner's Phone Number</Label>
+            <Input
+              id="partnerPhone"
+              type="tel"
+              value={formData.partnerPhone}
+              onChange={(e) => updateFormData('partnerPhone', e.target.value)}
+              placeholder="Enter partner's phone number"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="userAddress">Your Address</Label>
+            <Input
+              id="userAddress"
+              value={formData.userAddress}
+              onChange={(e) => updateFormData('userAddress', e.target.value)}
+              placeholder="Enter your address"
+            />
+          </div>
+          <div>
+            <Label htmlFor="partnerAddress">Partner's Address</Label>
+            <Input
+              id="partnerAddress"
+              value={formData.partnerAddress}
+              onChange={(e) => updateFormData('partnerAddress', e.target.value)}
+              placeholder="Enter partner's address"
+            />
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
@@ -325,13 +392,10 @@ function ContractPreviewDocument({ formData, onClose }: {
   });
 
   const handlePayment = async () => {
-    console.log('🎉 Dashboard payment button clicked!');
-    alert('🎉 DASHBOARD PAYMENT BUTTON CLICKED! About to process payment...');
     setIsPaymentLoading(true);
     setPaymentError('');
 
     try {
-      console.log('Making payment request with form data...');
       const response = await fetch('/api/test-payment', {
         method: 'POST',
         headers: {
@@ -339,19 +403,14 @@ function ContractPreviewDocument({ formData, onClose }: {
         },
       });
 
-      console.log('Payment response status:', response.status);
       const data = await response.json();
-      console.log('Payment response data:', data);
 
       if (response.ok && data.checkout_url) {
-        console.log('Redirecting to Stripe checkout:', data.checkout_url);
         window.location.href = data.checkout_url;
       } else {
-        console.error('Payment error:', data);
         setPaymentError(data.error || 'Failed to create payment session');
       }
     } catch (error) {
-      console.error('Payment error:', error);
       setPaymentError('Failed to initiate payment. Please try again.');
     } finally {
       setIsPaymentLoading(false);
@@ -477,12 +536,10 @@ function ContractPreviewDocument({ formData, onClose }: {
           <div className="bg-orange-50 border border-orange-200 rounded p-6 text-center">
             <h3 className="text-lg font-semibold mb-2">Ready to Purchase?</h3>
             <p className="text-gray-600 mb-4">Get your complete, legally formatted agreement for $700</p>
-            <p className="text-xs text-gray-500 mb-2">🔧 Debug: Dashboard Preview Payment Button</p>
             <Button 
               onClick={handlePayment}
               disabled={isPaymentLoading}
               className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-2"
-              style={{ border: '3px solid blue' }} // Make it obvious this is the dashboard button
             >
               {isPaymentLoading ? (
                 <>
@@ -512,6 +569,12 @@ export default function DashboardPage() {
     partnerJobTitle: '',
     userIncome: '',
     partnerIncome: '',
+    userEmail: '',
+    partnerEmail: '',
+    userPhone: '',
+    partnerPhone: '',
+    userAddress: '',
+    partnerAddress: '',
     children: [] as ChildInfo[]
   });
 
@@ -533,6 +596,12 @@ export default function DashboardPage() {
         partnerJobTitle: contract.partnerJobTitle || '',
         userIncome: contract.userIncome || '',
         partnerIncome: contract.partnerIncome || '',
+        userEmail: contract.userEmail || '',
+        partnerEmail: contract.partnerEmail || '',
+        userPhone: contract.userPhone || '',
+        partnerPhone: contract.partnerPhone || '',
+        userAddress: contract.userAddress || '',
+        partnerAddress: contract.partnerAddress || '',
         children: contract.children || []
       });
     }
@@ -546,6 +615,12 @@ export default function DashboardPage() {
     form.append('partnerJobTitle', formData.partnerJobTitle);
     form.append('userIncome', formData.userIncome);
     form.append('partnerIncome', formData.partnerIncome);
+    form.append('userEmail', formData.userEmail);
+    form.append('partnerEmail', formData.partnerEmail);
+    form.append('userPhone', formData.userPhone);
+    form.append('partnerPhone', formData.partnerPhone);
+    form.append('userAddress', formData.userAddress);
+    form.append('partnerAddress', formData.partnerAddress);
     form.append('children', JSON.stringify(formData.children));
     
     startTransition(() => {

@@ -87,6 +87,14 @@ export const familyContracts = pgTable('family_contracts', {
   userIncome: decimal('user_income', { precision: 12, scale: 2 }),
   partnerIncome: decimal('partner_income', { precision: 12, scale: 2 }),
   
+  // Contact Information
+  userEmail: varchar('user_email', { length: 255 }),
+  userPhone: varchar('user_phone', { length: 50 }),
+  userAddress: text('user_address'),
+  partnerEmail: varchar('partner_email', { length: 255 }),
+  partnerPhone: varchar('partner_phone', { length: 50 }),
+  partnerAddress: text('partner_address'),
+  
   // Children Information (stored as JSON array)
   children: json('children').$type<Array<{
     name: string;
