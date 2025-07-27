@@ -351,18 +351,31 @@ function PaymentButton({ contractId }: { contractId: string }) {
 
   // Add a simple test function
   const testClick = (e: React.MouseEvent) => {
-    console.log('Button clicked - basic test working');
-    alert('Button click detected! Check console for payment details.');
+    // Multiple ways to show the button is working
+    alert('🎉 BUTTON CLICKED! The payment button is working. About to process payment...');
+    console.log('🔥 Button clicked - basic test working');
+    console.log('🔥 Contract ID:', contractId);
+    console.log('🔥 About to call handlePayment');
+    
+    // Change button text to show it's working
+    setIsLoading(true);
+    
+    // Call the actual payment function
     handlePayment(e);
   };
 
+  // Debug: Log when component renders
+  console.log('🚀 PaymentButton component rendering for contract:', contractId);
+
   return (
     <div className="text-center">
+      <p className="text-xs text-gray-500 mb-2">Debug: Contract ID = {contractId}</p>
       <Button 
         onClick={testClick}
         disabled={isLoading}
         size="lg" 
         className="bg-orange-500 hover:bg-orange-600 px-8 py-3"
+        style={{ border: '3px solid red' }} // Make it super obvious
       >
         {isLoading ? (
           <>
