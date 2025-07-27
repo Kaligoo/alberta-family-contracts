@@ -61,8 +61,8 @@ export async function POST() {
         }
       ],
       mode: 'payment',
-      success_url: 'https://www.albertafamilycontracts.com/test-success',
-      cancel_url: 'https://www.albertafamilycontracts.com/test-cancel',
+      success_url: 'https://www.albertafamilycontracts.com/purchase/success?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'https://www.albertafamilycontracts.com/dashboard',
       metadata: {
         test: 'true',
         purpose: 'debugging'

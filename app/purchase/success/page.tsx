@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Mail, Phone, Home } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function PurchaseSuccessPage() {
+function PurchaseSuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
 
@@ -98,5 +99,13 @@ export default function PurchaseSuccessPage() {
         </Card>
       </div>
     </section>
+  );
+}
+
+export default function PurchaseSuccessPage() {
+  return (
+    <Suspense fallback={<div className="flex-1 p-4 lg:p-8"><div className="max-w-3xl mx-auto"><div className="text-center py-12">Loading...</div></div></div>}>
+      <PurchaseSuccessContent />
+    </Suspense>
   );
 }

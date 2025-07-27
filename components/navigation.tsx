@@ -65,7 +65,7 @@ export function Navigation() {
 
           {/* Version and Auth */}
           <div className="hidden md:flex items-center space-x-3">
-            <span className="text-xs text-gray-400 font-mono">v0.09</span>
+            <span className="text-xs text-gray-400 font-mono">v0.10</span>
             {isAuthenticated ? (
               <>
                 <Link href="/dashboard">
@@ -137,7 +137,7 @@ export function Navigation() {
               </Link>
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-gray-400 font-mono">v0.09</span>
+                  <span className="text-xs text-gray-400 font-mono">v0.10</span>
                 </div>
                 {isAuthenticated ? (
                   <div className="space-y-2">

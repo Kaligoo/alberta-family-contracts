@@ -67,7 +67,7 @@ export async function POST(
         }
       ],
       mode: 'payment',
-      success_url: `${process.env.BASE_URL || 'https://www.albertafamilycontracts.com'}/dashboard/contracts/${contractId}/download?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.BASE_URL || 'https://www.albertafamilycontracts.com'}/purchase/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.BASE_URL || 'https://www.albertafamilycontracts.com'}/dashboard/contracts/${contractId}/preview`,
       customer_email: user.email,
       client_reference_id: contractId.toString(),

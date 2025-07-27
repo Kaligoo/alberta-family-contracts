@@ -33,7 +33,8 @@
       "Bash(openssl rand:*)",
       "Bash(npm run:*)",
       "Bash(vercel:*)",
-      "WebFetch(domain:kahanelaw.com)"
+      "WebFetch(domain:kahanelaw.com)",
+      "Bash(npx ts-node:*)"
     ],
     "deny": []
   }
