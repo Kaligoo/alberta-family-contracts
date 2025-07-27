@@ -27,7 +27,9 @@
       "Bash(cp:*)",
       "Bash(npm install:*)",
       "Bash(npm run dev:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(vercel env pull:*)",
+      "Bash(vercel login:*)"
     ],
     "deny": []
   }
