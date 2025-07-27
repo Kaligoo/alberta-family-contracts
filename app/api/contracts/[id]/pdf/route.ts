@@ -6,7 +6,7 @@ import { and, eq } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getUser();
@@ -21,7 +21,8 @@ export async function GET(
       return NextResponse.json({ error: 'Team not found' }, { status: 404 });
     }
 
-    const contractId = parseInt(params.id);
+    const resolvedParams = await params;
+    const contractId = parseInt(resolvedParams.id);
     
     if (isNaN(contractId)) {
       return NextResponse.json({ error: 'Invalid contract ID' }, { status: 400 });
