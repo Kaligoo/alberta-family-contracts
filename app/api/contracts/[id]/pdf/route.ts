@@ -84,5 +84,6 @@ Contract ID: ${contract.id}
 
   // Convert text to ArrayBuffer (this is just for demo)
   const encoder = new TextEncoder();
-  return encoder.encode(pdfText).buffer;
+  const uint8Array = encoder.encode(pdfText);
+  return new ArrayBuffer(uint8Array.length);
 }
