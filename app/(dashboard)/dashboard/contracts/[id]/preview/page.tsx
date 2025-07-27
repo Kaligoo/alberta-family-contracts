@@ -350,10 +350,10 @@ function PaymentButton({ contractId }: { contractId: string }) {
   };
 
   // Add a simple test function
-  const testClick = () => {
+  const testClick = (e: React.MouseEvent) => {
     console.log('Button clicked - basic test working');
     alert('Button click detected! Check console for payment details.');
-    handlePayment();
+    handlePayment(e);
   };
 
   return (
