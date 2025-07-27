@@ -316,11 +316,47 @@ function ContractPreviewDocument({ formData, onClose }: {
   formData: any; 
   onClose: () => void; 
 }) {
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
   const currentDate = new Date().toLocaleDateString('en-US', { 
     year: 'numeric', 
     month: 'long', 
     day: 'numeric' 
   });
+
+  const handlePayment = async () => {
+    console.log('🎉 Dashboard payment button clicked!');
+    alert('🎉 DASHBOARD PAYMENT BUTTON CLICKED! About to process payment...');
+    setIsPaymentLoading(true);
+    setPaymentError('');
+
+    try {
+      console.log('Making payment request with form data...');
+      const response = await fetch('/api/test-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('Payment response status:', response.status);
+      const data = await response.json();
+      console.log('Payment response data:', data);
+
+      if (response.ok && data.checkout_url) {
+        console.log('Redirecting to Stripe checkout:', data.checkout_url);
+        window.location.href = data.checkout_url;
+      } else {
+        console.error('Payment error:', data);
+        setPaymentError(data.error || 'Failed to create payment session');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      setPaymentError('Failed to initiate payment. Please try again.');
+    } finally {
+      setIsPaymentLoading(false);
+    }
+  };
 
   return (
     <section className="flex-1 p-4 lg:p-8">
@@ -441,9 +477,26 @@ function ContractPreviewDocument({ formData, onClose }: {
           <div className="bg-orange-50 border border-orange-200 rounded p-6 text-center">
             <h3 className="text-lg font-semibold mb-2">Ready to Purchase?</h3>
             <p className="text-gray-600 mb-4">Get your complete, legally formatted agreement for $700</p>
-            <Button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-2">
-              Purchase Complete Agreement
+            <p className="text-xs text-gray-500 mb-2">🔧 Debug: Dashboard Preview Payment Button</p>
+            <Button 
+              onClick={handlePayment}
+              disabled={isPaymentLoading}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-2"
+              style={{ border: '3px solid blue' }} // Make it obvious this is the dashboard button
+            >
+              {isPaymentLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing Payment...
+                </>
+              ) : (
+                'Purchase Complete Agreement'
+              )}
             </Button>
+            {paymentError && (
+              <p className="text-red-600 text-sm mt-2">{paymentError}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-2">Secure payment via Stripe</p>
           </div>
         </div>
       </div>
