@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -7,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowLeft, Download, Edit, Printer } from 'lucide-react';
+import { ArrowLeft, Download, Edit, Printer, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import useSWR from 'swr';
@@ -279,12 +280,7 @@ export default function ContractPreviewPage() {
               Make Changes
             </Button>
           </Link>
-          <form action={`/api/contracts/${contractId}/payment`} method="POST">
-            <Button type="submit" size="lg" className="bg-orange-500 hover:bg-orange-600">
-              <Download className="mr-2 h-4 w-4" />
-              Purchase & Download - $700 CAD
-            </Button>
-          </form>
+          <PaymentButton contractId={contractId} />
         </div>
 
         {contract.notes && (
@@ -299,5 +295,64 @@ export default function ContractPreviewPage() {
         )}
       </div>
     </section>
+  );
+}
+
+function PaymentButton({ contractId }: { contractId: string }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handlePayment = async () => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`/api/contracts/${contractId}/payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        setError(data.error || 'Failed to create payment session');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      setError('Failed to initiate payment');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <Button 
+        onClick={handlePayment}
+        disabled={isLoading}
+        size="lg" 
+        className="bg-orange-500 hover:bg-orange-600"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          <>
+            <Download className="mr-2 h-4 w-4" />
+            Purchase & Download - $700 CAD
+          </>
+        )}
+      </Button>
+      {error && (
+        <p className="text-red-600 text-sm mt-2 text-center">{error}</p>
+      )}
+    </div>
   );
 }

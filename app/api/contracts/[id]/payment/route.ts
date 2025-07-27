@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser, getUserWithTeam } from '@/lib/db/queries';
-import { createContractPaymentSession } from '@/lib/payments/stripe';
+import { stripe } from '@/lib/payments/stripe';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
@@ -45,12 +45,44 @@ export async function POST(
       return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
     }
 
+    if (!stripe) {
+      return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 });
+    }
+
     // Create Stripe checkout session
-    await createContractPaymentSession({
-      contractId,
-      userEmail: user.email,
-      userName: contract.userFullName || user.name || 'Customer'
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'cad',
+            product_data: {
+              name: 'Alberta Cohabitation Agreement',
+              description: `Professional cohabitation agreement for ${contract.userFullName || user.name || 'Customer'}`,
+            },
+            unit_amount: 70000 // $700.00 CAD in cents
+          },
+          quantity: 1
+        }
+      ],
+      mode: 'payment',
+      success_url: `${process.env.BASE_URL || 'https://www.albertafamilycontracts.com'}/dashboard/contracts/${contractId}/download?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.BASE_URL || 'https://www.albertafamilycontracts.com'}/dashboard/contracts/${contractId}/preview`,
+      customer_email: user.email,
+      client_reference_id: contractId.toString(),
+      metadata: {
+        contractId: contractId.toString(),
+        userId: user.id.toString(),
+        product: 'cohabitation_agreement'
+      },
+      allow_promotion_codes: true,
+      billing_address_collection: 'required',
+      shipping_address_collection: {
+        allowed_countries: ['CA']
+      }
     });
+
+    return NextResponse.json({ url: session.url });
 
   } catch (error) {
     console.error('Error creating payment session:', error);
