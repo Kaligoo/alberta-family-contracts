@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/db/queries';
-import path from 'path';
-import fs from 'fs';
-
-const TEMPLATES_DIR = path.join(process.cwd(), 'lib', 'templates');
+import { db } from '@/lib/db/drizzle';
+import { templates } from '@/lib/db/schema';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,16 +28,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File size must be less than 10MB' }, { status: 400 });
     }
 
-    // Ensure templates directory exists
+    // Read file content
+    let buffer: Buffer;
     try {
-      if (!fs.existsSync(TEMPLATES_DIR)) {
-        fs.mkdirSync(TEMPLATES_DIR, { recursive: true });
-      }
-    } catch (dirError) {
-      console.error('Directory creation error:', dirError);
+      const bytes = await file.arrayBuffer();
+      buffer = Buffer.from(bytes);
+    } catch (readError) {
+      console.error('File read error:', readError);
       return NextResponse.json({ 
-        error: 'Failed to create templates directory',
-        details: dirError instanceof Error ? dirError.message : 'Unknown directory error'
+        error: 'Failed to read template file',
+        details: readError instanceof Error ? readError.message : 'Unknown read error'
       }, { status: 500 });
     }
 
@@ -49,21 +47,6 @@ export async function POST(request: NextRequest) {
       .replace(/[^a-zA-Z0-9-_]/g, '-')
       .toLowerCase();
     const filename = `${sanitizedName}-${timestamp}.docx`;
-    const filePath = path.join(TEMPLATES_DIR, filename);
-
-    // Save file
-    let buffer: Buffer;
-    try {
-      const bytes = await file.arrayBuffer();
-      buffer = Buffer.from(bytes);
-      fs.writeFileSync(filePath, buffer);
-    } catch (writeError) {
-      console.error('File write error:', writeError);
-      return NextResponse.json({ 
-        error: 'Failed to save template file',
-        details: writeError instanceof Error ? writeError.message : 'Unknown write error'
-      }, { status: 500 });
-    }
 
     // Validate that it's a proper docx file by checking if we can read it
     try {
@@ -71,35 +54,48 @@ export async function POST(request: NextRequest) {
       const zip = new PizZip(buffer);
       // Basic validation - check if it has the expected structure
       if (!zip.files['word/document.xml']) {
-        fs.unlinkSync(filePath); // Clean up invalid file
         return NextResponse.json({ error: 'Invalid Word document format' }, { status: 400 });
       }
     } catch (validationError) {
       console.error('Validation error:', validationError);
-      // Clean up invalid file
-      try {
-        fs.unlinkSync(filePath);
-      } catch (cleanupError) {
-        console.error('Cleanup error:', cleanupError);
-      }
       return NextResponse.json({ 
         error: 'Invalid or corrupted Word document',
         details: validationError instanceof Error ? validationError.message : 'Unknown validation error'
       }, { status: 400 });
     }
 
-    return NextResponse.json({ 
-      message: 'Template uploaded successfully',
-      template: {
-        id: sanitizedName + '-' + timestamp,
+    // Store template in database
+    try {
+      const contentBase64 = buffer.toString('base64');
+      
+      const [newTemplate] = await db.insert(templates).values({
         name: name || file.name.replace('.docx', ''),
         filename,
         description: description || 'Custom uploaded template',
-        uploadedAt: new Date().toISOString(),
+        content: contentBase64,
         size: file.size,
-        isActive: false
-      }
-    });
+        isActive: 'false'
+      }).returning();
+
+      return NextResponse.json({ 
+        message: 'Template uploaded successfully',
+        template: {
+          id: newTemplate.id.toString(),
+          name: newTemplate.name,
+          filename: newTemplate.filename,
+          description: newTemplate.description,
+          uploadedAt: newTemplate.createdAt.toISOString(),
+          size: newTemplate.size,
+          isActive: newTemplate.isActive === 'true'
+        }
+      });
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+      return NextResponse.json({ 
+        error: 'Failed to save template to database',
+        details: dbError instanceof Error ? dbError.message : 'Unknown database error'
+      }, { status: 500 });
+    }
 
   } catch (error) {
     console.error('Error uploading template:', error);

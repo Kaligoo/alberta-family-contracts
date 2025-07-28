@@ -137,6 +137,18 @@ export const familyContracts = pgTable('family_contracts', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
+export const templates = pgTable('templates', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  filename: varchar('filename', { length: 255 }).notNull(),
+  description: text('description'),
+  content: text('content').notNull(), // Base64 encoded docx content
+  size: integer('size').notNull(),
+  isActive: varchar('is_active', { length: 10 }).notNull().default('false'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 export const teamsRelations = relations(teams, ({ many }) => ({
   teamMembers: many(teamMembers),
   activityLogs: many(activityLogs),
@@ -206,6 +218,8 @@ export type Invitation = typeof invitations.$inferSelect;
 export type NewInvitation = typeof invitations.$inferInsert;
 export type FamilyContract = typeof familyContracts.$inferSelect;
 export type NewFamilyContract = typeof familyContracts.$inferInsert;
+export type Template = typeof templates.$inferSelect;
+export type NewTemplate = typeof templates.$inferInsert;
 export type TeamDataWithMembers = Team & {
   teamMembers: (TeamMember & {
     user: Pick<User, 'id' | 'name' | 'email'>;

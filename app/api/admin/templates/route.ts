@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/db/queries';
-import path from 'path';
-import fs from 'fs';
-
-// Simple in-memory template registry (in production, use database)
-const TEMPLATES_DIR = path.join(process.cwd(), 'lib', 'templates');
-const ACTIVE_TEMPLATE_FILE = path.join(TEMPLATES_DIR, 'active-template.txt');
+import { db } from '@/lib/db/drizzle';
+import { templates } from '@/lib/db/schema';
+import { desc } from 'drizzle-orm';
 
 interface Template {
   id: string;
@@ -17,49 +14,6 @@ interface Template {
   isActive: boolean;
 }
 
-function getActiveTemplateId(): string | null {
-  try {
-    if (fs.existsSync(ACTIVE_TEMPLATE_FILE)) {
-      return fs.readFileSync(ACTIVE_TEMPLATE_FILE, 'utf-8').trim();
-    }
-  } catch (error) {
-    console.error('Error reading active template file:', error);
-  }
-  return null;
-}
-
-function getTemplates(): Template[] {
-  try {
-    if (!fs.existsSync(TEMPLATES_DIR)) {
-      fs.mkdirSync(TEMPLATES_DIR, { recursive: true });
-      return [];
-    }
-
-    const files = fs.readdirSync(TEMPLATES_DIR);
-    const docxFiles = files.filter(file => file.endsWith('.docx'));
-    const activeTemplateId = getActiveTemplateId();
-
-    return docxFiles.map(filename => {
-      const filePath = path.join(TEMPLATES_DIR, filename);
-      const stats = fs.statSync(filePath);
-      const id = filename.replace('.docx', '');
-      
-      return {
-        id,
-        name: id.replace(/[-_]/g, ' '),
-        filename,
-        description: filename === 'cohabitation-template-proper.docx' ? 'Default cohabitation agreement template' : 'Custom uploaded template',
-        uploadedAt: stats.mtime.toISOString(),
-        size: stats.size,
-        isActive: activeTemplateId === id
-      };
-    }).sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
-  } catch (error) {
-    console.error('Error reading templates directory:', error);
-    return [];
-  }
-}
-
 export async function GET(request: NextRequest) {
   try {
     const user = await getUser();
@@ -68,9 +22,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const templates = getTemplates();
+    const dbTemplates = await db.select().from(templates).orderBy(desc(templates.createdAt));
     
-    return NextResponse.json({ templates });
+    const formattedTemplates: Template[] = dbTemplates.map(template => ({
+      id: template.id.toString(),
+      name: template.name,
+      filename: template.filename,
+      description: template.description || 'No description',
+      uploadedAt: template.createdAt.toISOString(),
+      size: template.size,
+      isActive: template.isActive === 'true'
+    }));
+    
+    return NextResponse.json({ templates: formattedTemplates });
   } catch (error) {
     console.error('Error fetching templates:', error);
     return NextResponse.json(

@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/db/queries';
-import path from 'path';
-import fs from 'fs';
-
-const TEMPLATES_DIR = path.join(process.cwd(), 'lib', 'templates');
-const ACTIVE_TEMPLATE_FILE = path.join(TEMPLATES_DIR, 'active-template.txt');
+import { db } from '@/lib/db/drizzle';
+import { templates } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function POST(
   request: NextRequest,
@@ -18,21 +16,26 @@ export async function POST(
     }
 
     const resolvedParams = await params;
-    const templateId = resolvedParams.id;
+    const templateId = parseInt(resolvedParams.id);
 
-    // Find the template file
-    const files = fs.readdirSync(TEMPLATES_DIR);
-    const templateFile = files.find(file => 
-      file.endsWith('.docx') && 
-      (file.replace('.docx', '') === templateId || file.startsWith(templateId))
-    );
+    if (isNaN(templateId)) {
+      return NextResponse.json({ error: 'Invalid template ID' }, { status: 400 });
+    }
 
-    if (!templateFile) {
+    // Check if template exists
+    const template = await db.select().from(templates).where(eq(templates.id, templateId)).limit(1);
+    
+    if (template.length === 0) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });
     }
 
-    // Set as active template
-    fs.writeFileSync(ACTIVE_TEMPLATE_FILE, templateId);
+    // Deactivate all templates first
+    await db.update(templates).set({ isActive: 'false' });
+
+    // Activate the selected template
+    await db.update(templates)
+      .set({ isActive: 'true' })
+      .where(eq(templates.id, templateId));
 
     return NextResponse.json({ 
       message: 'Template activated successfully',

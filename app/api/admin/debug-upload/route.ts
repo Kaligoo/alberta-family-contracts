@@ -3,7 +3,10 @@ import { getUser } from '@/lib/db/queries';
 import path from 'path';
 import fs from 'fs';
 
-const TEMPLATES_DIR = path.join(process.cwd(), 'lib', 'templates');
+// Use /tmp directory in production (Vercel) for file storage
+const TEMPLATES_DIR = process.env.NODE_ENV === 'production' 
+  ? path.join('/tmp', 'templates')
+  : path.join(process.cwd(), 'lib', 'templates');
 
 export async function GET(request: NextRequest) {
   try {

@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/db/queries';
-import path from 'path';
-import fs from 'fs';
-
-const TEMPLATES_DIR = path.join(process.cwd(), 'lib', 'templates');
-const ACTIVE_TEMPLATE_FILE = path.join(TEMPLATES_DIR, 'active-template.txt');
+import { db } from '@/lib/db/drizzle';
+import { templates } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function DELETE(
   request: NextRequest,
@@ -18,49 +16,38 @@ export async function DELETE(
     }
 
     const resolvedParams = await params;
-    const templateId = resolvedParams.id;
+    const templateId = parseInt(resolvedParams.id);
 
-    // Find the template file
-    const files = fs.readdirSync(TEMPLATES_DIR);
-    const templateFile = files.find(file => 
-      file.endsWith('.docx') && 
-      (file.replace('.docx', '') === templateId || file.startsWith(templateId))
-    );
+    if (isNaN(templateId)) {
+      return NextResponse.json({ error: 'Invalid template ID' }, { status: 400 });
+    }
 
-    if (!templateFile) {
+    // Check if template exists
+    const template = await db.select().from(templates).where(eq(templates.id, templateId)).limit(1);
+    
+    if (template.length === 0) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });
     }
 
-    // Check if this is the default template
-    if (templateFile === 'cohabitation-template-proper.docx') {
-      return NextResponse.json({ error: 'Cannot delete the default template' }, { status: 400 });
-    }
+    const templateData = template[0];
+    const wasActive = templateData.isActive === 'true';
 
-    const filePath = path.join(TEMPLATES_DIR, templateFile);
-    
-    // Check if this is the active template
-    let activeTemplateId = null;
-    try {
-      if (fs.existsSync(ACTIVE_TEMPLATE_FILE)) {
-        activeTemplateId = fs.readFileSync(ACTIVE_TEMPLATE_FILE, 'utf-8').trim();
+    // Delete the template
+    await db.delete(templates).where(eq(templates.id, templateId));
+
+    // If this was the active template, activate the first remaining template
+    if (wasActive) {
+      const remainingTemplates = await db.select().from(templates).limit(1);
+      if (remainingTemplates.length > 0) {
+        await db.update(templates)
+          .set({ isActive: 'true' })
+          .where(eq(templates.id, remainingTemplates[0].id));
       }
-    } catch (error) {
-      console.error('Error reading active template file:', error);
-    }
-
-    if (activeTemplateId === templateId) {
-      // Reset to default template
-      fs.writeFileSync(ACTIVE_TEMPLATE_FILE, 'cohabitation-template-proper');
-    }
-
-    // Delete the file
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
     }
 
     return NextResponse.json({ 
       message: 'Template deleted successfully',
-      wasActive: activeTemplateId === templateId
+      wasActive
     });
 
   } catch (error) {

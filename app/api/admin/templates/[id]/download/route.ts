@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/db/queries';
-import path from 'path';
-import fs from 'fs';
-
-const TEMPLATES_DIR = path.join(process.cwd(), 'lib', 'templates');
+import { db } from '@/lib/db/drizzle';
+import { templates } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
@@ -17,33 +16,29 @@ export async function GET(
     }
 
     const resolvedParams = await params;
-    const templateId = resolvedParams.id;
+    const templateId = parseInt(resolvedParams.id);
 
-    // Find the template file
-    const files = fs.readdirSync(TEMPLATES_DIR);
-    const templateFile = files.find(file => 
-      file.endsWith('.docx') && 
-      (file.replace('.docx', '') === templateId || file.startsWith(templateId))
-    );
+    if (isNaN(templateId)) {
+      return NextResponse.json({ error: 'Invalid template ID' }, { status: 400 });
+    }
 
-    if (!templateFile) {
+    // Get template from database
+    const template = await db.select().from(templates).where(eq(templates.id, templateId)).limit(1);
+    
+    if (template.length === 0) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });
     }
 
-    const filePath = path.join(TEMPLATES_DIR, templateFile);
+    const templateData = template[0];
     
-    if (!fs.existsSync(filePath)) {
-      return NextResponse.json({ error: 'Template file not found' }, { status: 404 });
-    }
-
-    // Read the file
-    const fileBuffer = fs.readFileSync(filePath);
+    // Decode base64 content to buffer
+    const fileBuffer = Buffer.from(templateData.content, 'base64');
     
     return new Response(fileBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'Content-Disposition': `attachment; filename="${templateFile}"`,
+        'Content-Disposition': `attachment; filename="${templateData.filename}"`,
         'Content-Length': fileBuffer.length.toString(),
       },
     });
