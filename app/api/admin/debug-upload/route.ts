@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
 
     // Check templates directory
     const templatesExist = fs.existsSync(TEMPLATES_DIR);
-    let dirContents = [];
-    let dirStats = null;
+    let dirContents: string[] = [];
+    let dirStats: fs.Stats | null = null;
 
     if (templatesExist) {
       try {
