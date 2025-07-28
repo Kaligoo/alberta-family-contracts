@@ -123,7 +123,8 @@ export default function AdminDashboardPage() {
         setSampleDataStatus(`Success: Added ${result.count} sample contracts`);
       } else {
         const error = await response.json();
-        setSampleDataStatus(`Error: ${error.error || 'Failed to initialize sample data'}`);
+        const errorDetails = error.details ? ` - ${error.details}` : '';
+        setSampleDataStatus(`Error: ${error.error || 'Failed to initialize sample data'}${errorDetails}`);
       }
     } catch (error) {
       setSampleDataStatus('Network error occurred while initializing sample data');
@@ -219,43 +220,6 @@ export default function AdminDashboardPage() {
               )}
               {uploadSuccess && (
                 <p className="text-green-600 text-sm">{uploadSuccess}</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Sample Data Management */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Plus className="mr-2 h-5 w-5" />
-              Sample Data Management
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600">
-                Initialize sample contract data for testing and demonstration purposes.
-              </p>
-              
-              <div className="flex gap-4">
-                <Button 
-                  onClick={handleInitializeSampleData}
-                  disabled={isInitializingSampleData}
-                  className="bg-blue-500 hover:bg-blue-600"
-                >
-                  {isInitializingSampleData ? 'Initializing...' : 'Initialize Sample Data'}
-                </Button>
-              </div>
-
-              {sampleDataStatus && (
-                <div className={`p-3 rounded-md text-sm ${
-                  sampleDataStatus.startsWith('Success') 
-                    ? 'bg-green-50 text-green-700 border border-green-200' 
-                    : 'bg-red-50 text-red-700 border border-red-200'
-                }`}>
-                  {sampleDataStatus}
-                </div>
               )}
             </div>
           </CardContent>
@@ -379,6 +343,43 @@ export default function AdminDashboardPage() {
                   <li>Templates should include proper legal language and formatting</li>
                 </ul>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Sample Data Management */}
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Plus className="mr-2 h-5 w-5" />
+              Sample Data Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Initialize sample contract data for testing and demonstration purposes.
+              </p>
+              
+              <div className="flex gap-4">
+                <Button 
+                  onClick={handleInitializeSampleData}
+                  disabled={isInitializingSampleData}
+                  className="bg-blue-500 hover:bg-blue-600"
+                >
+                  {isInitializingSampleData ? 'Initializing...' : 'Initialize Sample Data'}
+                </Button>
+              </div>
+
+              {sampleDataStatus && (
+                <div className={`p-3 rounded-md text-sm ${
+                  sampleDataStatus.startsWith('Success') 
+                    ? 'bg-green-50 text-green-700 border border-green-200' 
+                    : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {sampleDataStatus}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

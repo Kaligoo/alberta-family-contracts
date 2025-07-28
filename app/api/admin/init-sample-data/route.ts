@@ -112,36 +112,40 @@ export async function POST(request: NextRequest) {
     // Insert sample contracts
     const results = [];
     for (const contract of sampleContracts) {
+      console.log('Inserting contract for:', contract.userFullName, contract.partnerFullName);
+      
+      // Prepare the insert data, excluding fields that might not exist in production DB
+      const insertData: any = {
+        userId: adminUser.id,
+        teamId: teamMember.teamId,
+        userFullName: contract.userFullName,
+        partnerFullName: contract.partnerFullName,
+        userJobTitle: contract.userJobTitle,
+        partnerJobTitle: contract.partnerJobTitle,
+        userIncome: contract.userIncome,
+        partnerIncome: contract.partnerIncome,
+        userEmail: contract.userEmail,
+        partnerEmail: contract.partnerEmail,
+        userPhone: contract.userPhone,
+        partnerPhone: contract.partnerPhone,
+        userAddress: contract.userAddress,
+        partnerAddress: contract.partnerAddress,
+        residenceAddress: contract.residenceAddress,
+        residenceOwnership: contract.residenceOwnership,
+        expenseSplitType: contract.expenseSplitType,
+        additionalClauses: contract.additionalClauses,
+        notes: contract.notes,
+        contractType: contract.contractType,
+        status: contract.status
+      };
+
+      // Only add new fields if they exist in the schema (skip for now to ensure compatibility)
+      // These will be added once migrations are run on production:
+      // userFirstName, partnerFirstName, userAge, partnerAge, cohabDate
+
       const [result] = await db
         .insert(familyContracts)
-        .values({
-          userId: adminUser.id,
-          teamId: teamMember.teamId,
-          userFullName: contract.userFullName,
-          partnerFullName: contract.partnerFullName,
-          userFirstName: contract.userFirstName,
-          partnerFirstName: contract.partnerFirstName,
-          userAge: contract.userAge,
-          partnerAge: contract.partnerAge,
-          cohabDate: contract.cohabDate,
-          userJobTitle: contract.userJobTitle,
-          partnerJobTitle: contract.partnerJobTitle,
-          userIncome: contract.userIncome,
-          partnerIncome: contract.partnerIncome,
-          userEmail: contract.userEmail,
-          partnerEmail: contract.partnerEmail,
-          userPhone: contract.userPhone,
-          partnerPhone: contract.partnerPhone,
-          userAddress: contract.userAddress,
-          partnerAddress: contract.partnerAddress,
-          residenceAddress: contract.residenceAddress,
-          residenceOwnership: contract.residenceOwnership,
-          expenseSplitType: contract.expenseSplitType,
-          additionalClauses: contract.additionalClauses,
-          notes: contract.notes,
-          contractType: contract.contractType,
-          status: contract.status
-        })
+        .values(insertData)
         .returning();
       
       results.push(result);
@@ -160,8 +164,17 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error adding sample data:', error);
+    
+    // More detailed error message
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('Detailed error:', errorMessage);
+    
     return NextResponse.json(
-      { error: 'Failed to add sample data' },
+      { 
+        error: 'Failed to add sample data', 
+        details: errorMessage,
+        hint: 'Check if all required database fields exist and user has proper permissions'
+      },
       { status: 500 }
     );
   }
