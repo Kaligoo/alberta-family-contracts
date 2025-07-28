@@ -4,17 +4,11 @@ import { db } from '@/lib/db/drizzle';
 import { familyContracts, templates } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import puppeteer from 'puppeteer';
+import mammoth from 'mammoth';
 
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
-
-// Try to import libreoffice-convert, but handle gracefully if not available
-let libre: any = null;
-try {
-  libre = require('libreoffice-convert');
-} catch (error) {
-  console.warn('libreoffice-convert not available, will fall back to pdf-lib');
-}
 
 export async function GET(
   request: NextRequest,
@@ -57,7 +51,7 @@ export async function GET(
       return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
     }
 
-    // Try to generate PDF from Word document first, fall back to pdf-lib if needed
+    // Generate PDF using Puppeteer HTML-to-PDF conversion
     const pdfBytes = await generateContractPDF(contract, user, userWithTeam.teamId);
     
     return new NextResponse(pdfBytes, {
@@ -77,33 +71,132 @@ export async function GET(
 }
 
 async function generateContractPDF(contract: any, user: any, teamId: number): Promise<Uint8Array> {
-  // First, try to generate PDF from Word document using LibreOffice
-  if (libre) {
-    try {
-      const wordBuffer = await generateWordDocument(contract, user, teamId);
-      
-      // Convert Word document to PDF using LibreOffice
-      const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
-        libre.convert(wordBuffer, '.pdf', undefined, (err: any, done: Buffer) => {
-          if (err) {
-            console.error('LibreOffice conversion error:', err);
-            reject(err);
-          } else {
-            resolve(done);
+  try {
+    // First, try to generate PDF from Word document using Puppeteer
+    const wordBuffer = await generateWordDocument(contract, user, teamId);
+    
+    // Convert Word document to HTML using mammoth
+    const result = await mammoth.convertToHtml({ buffer: wordBuffer });
+    const htmlContent = result.value;
+    
+    // Create professional HTML with proper styling
+    const styledHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          @page {
+            margin: 1in;
+            size: A4;
           }
-        });
-      });
-      
-      console.log('Successfully generated PDF from Word document using LibreOffice');
-      return new Uint8Array(pdfBuffer);
-    } catch (error) {
-      console.warn('Failed to generate PDF from Word document, falling back to pdf-lib:', error);
-    }
+          body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            color: #000;
+            margin: 0;
+            padding: 0;
+          }
+          h1, h2, h3, h4, h5, h6 {
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+          }
+          h1 {
+            font-size: 16pt;
+            text-align: center;
+            text-transform: uppercase;
+          }
+          h2 {
+            font-size: 14pt;
+            text-transform: uppercase;
+          }
+          h3 {
+            font-size: 13pt;
+          }
+          p {
+            margin-bottom: 10px;
+            text-align: justify;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          .signature-section {
+            margin-top: 40px;
+            page-break-inside: avoid;
+          }
+          .signature-line {
+            border-bottom: 1px solid #000;
+            width: 300px;
+            margin: 20px 0 5px 0;
+            display: inline-block;
+          }
+          table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+          }
+          th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+          }
+          th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+          }
+          .page-break {
+            page-break-before: always;
+          }
+        </style>
+      </head>
+      <body>
+        ${htmlContent}
+      </body>
+      </html>
+    `;
+    
+    // Generate PDF using Puppeteer
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu'
+      ]
+    });
+    
+    const page = await browser.newPage();
+    await page.setContent(styledHtml, { waitUntil: 'networkidle0' });
+    
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '1in',
+        right: '1in',
+        bottom: '1in',
+        left: '1in'
+      }
+    });
+    
+    await browser.close();
+    
+    console.log('Successfully generated PDF using Puppeteer');
+    return new Uint8Array(pdfBuffer);
+    
+  } catch (error) {
+    console.warn('Failed to generate PDF using Puppeteer, falling back to pdf-lib:', error);
+    // Fallback to pdf-lib if Puppeteer conversion fails
+    return await generateFallbackPDF(contract, user);
   }
-  
-  // Fallback to pdf-lib if LibreOffice conversion fails
-  console.log('Using pdf-lib fallback for PDF generation');
-  return await generateFallbackPDF(contract, user);
 }
 
 async function generateWordDocument(contract: any, user: any, teamId: number): Promise<Buffer> {
@@ -225,7 +318,7 @@ function prepareTemplateData(contract: any, user: any) {
   };
 }
 
-// Fallback PDF generation using pdf-lib (simplified version of original)
+// Fallback PDF generation using pdf-lib (simplified version)
 async function generateFallbackPDF(contract: any, user: any): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([595.276, 841.890]); // A4 size in points
@@ -254,9 +347,9 @@ async function generateFallbackPDF(contract: any, user: any): Promise<Uint8Array
   addText('ALBERTA COHABITATION AGREEMENT', 20, true);
   yPosition -= 30;
   
-  addText('FALLBACK PDF VERSION', 16, true);
-  addText('This PDF was generated using the fallback method.', 12);
-  addText('For the full formatted version, LibreOffice conversion is required.', 12);
+  addText('SIMPLIFIED PDF VERSION', 16, true);
+  addText('This PDF was generated using the simplified fallback method.', 12);
+  addText('The system was unable to generate the full formatted version.', 12);
   yPosition -= 20;
   
   addText(`Party A: ${contract.userFullName || '[Your Name]'}`, 12);
@@ -268,7 +361,7 @@ async function generateFallbackPDF(contract: any, user: any): Promise<Uint8Array
   addText(`Contract ID: #${contract.id}`, 10);
   yPosition -= 30;
   
-  addText('NOTICE: Please contact support for full PDF formatting.', 10, true);
+  addText('NOTICE: For full formatting, please download the Word version.', 10, true);
   
   const pdfBytes = await pdfDoc.save();
   return pdfBytes;
