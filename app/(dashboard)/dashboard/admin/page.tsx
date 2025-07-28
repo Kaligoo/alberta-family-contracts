@@ -76,7 +76,7 @@ export default function AdminDashboardPage() {
         if (fileInput) fileInput.value = '';
       } else {
         const error = await response.json();
-        setUploadError(error.message || 'Upload failed');
+        setUploadError(error.error || error.message || 'Upload failed');
       }
     } catch (error) {
       setUploadError('Network error occurred');
