@@ -70,20 +70,36 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
 
-    // Update contract
+    // Update contract - only update fields that are provided
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+
+    // Only update fields that are present in the request body
+    if (body.userFullName !== undefined) updateData.userFullName = body.userFullName || null;
+    if (body.partnerFullName !== undefined) updateData.partnerFullName = body.partnerFullName || null;
+    if (body.userJobTitle !== undefined) updateData.userJobTitle = body.userJobTitle || null;
+    if (body.partnerJobTitle !== undefined) updateData.partnerJobTitle = body.partnerJobTitle || null;
+    if (body.userIncome !== undefined) updateData.userIncome = body.userIncome || null;
+    if (body.partnerIncome !== undefined) updateData.partnerIncome = body.partnerIncome || null;
+    if (body.userEmail !== undefined) updateData.userEmail = body.userEmail || null;
+    if (body.partnerEmail !== undefined) updateData.partnerEmail = body.partnerEmail || null;
+    if (body.userPhone !== undefined) updateData.userPhone = body.userPhone || null;
+    if (body.partnerPhone !== undefined) updateData.partnerPhone = body.partnerPhone || null;
+    if (body.userAddress !== undefined) updateData.userAddress = body.userAddress || null;
+    if (body.partnerAddress !== undefined) updateData.partnerAddress = body.partnerAddress || null;
+    if (body.children !== undefined) updateData.children = body.children || [];
+    if (body.residenceAddress !== undefined) updateData.residenceAddress = body.residenceAddress || null;
+    if (body.residenceOwnership !== undefined) updateData.residenceOwnership = body.residenceOwnership || null;
+    if (body.expenseSplitType !== undefined) updateData.expenseSplitType = body.expenseSplitType || null;
+    if (body.customExpenseSplit !== undefined) updateData.customExpenseSplit = body.customExpenseSplit || null;
+    if (body.additionalClauses !== undefined) updateData.additionalClauses = body.additionalClauses || null;
+    if (body.notes !== undefined) updateData.notes = body.notes || null;
+    if (body.status !== undefined) updateData.status = body.status || 'draft';
+
     const [updatedContract] = await db
       .update(familyContracts)
-      .set({
-        userFullName: body.userFullName || null,
-        partnerFullName: body.partnerFullName || null,
-        userJobTitle: body.userJobTitle || null,
-        partnerJobTitle: body.partnerJobTitle || null,
-        userIncome: body.userIncome || null,
-        partnerIncome: body.partnerIncome || null,
-        children: body.children || [],
-        status: body.status || 'draft',
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(
         and(
           eq(familyContracts.id, contractId),

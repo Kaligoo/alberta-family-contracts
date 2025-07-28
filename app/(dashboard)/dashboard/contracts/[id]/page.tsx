@@ -25,6 +25,12 @@ interface Contract {
   partnerJobTitle: string;
   userIncome: string;
   partnerIncome: string;
+  userEmail: string;
+  partnerEmail: string;
+  userPhone: string;
+  partnerPhone: string;
+  userAddress: string;
+  partnerAddress: string;
   children: Array<{
     name: string;
     age?: number;
@@ -68,6 +74,12 @@ export default function ContractDetailPage() {
         partnerJobTitle: contract.partnerJobTitle || '',
         userIncome: contract.userIncome || '',
         partnerIncome: contract.partnerIncome || '',
+        userEmail: contract.userEmail || '',
+        partnerEmail: contract.partnerEmail || '',
+        userPhone: contract.userPhone || '',
+        partnerPhone: contract.partnerPhone || '',
+        userAddress: contract.userAddress || '',
+        partnerAddress: contract.partnerAddress || '',
         residenceAddress: contract.residenceAddress || '',
         residenceOwnership: contract.residenceOwnership || '',
         expenseSplitType: contract.expenseSplitType || '',
@@ -275,6 +287,73 @@ export default function ContractDetailPage() {
                     value={formData.partnerIncome || ''}
                     onChange={(e) => updateFormData('partnerIncome', e.target.value)}
                     placeholder="Enter partner's annual income"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="userEmail">Your Email Address</Label>
+                  <Input
+                    id="userEmail"
+                    type="email"
+                    value={formData.userEmail || ''}
+                    onChange={(e) => updateFormData('userEmail', e.target.value)}
+                    placeholder="Enter your email address"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="partnerEmail">Partner's Email Address</Label>
+                  <Input
+                    id="partnerEmail"
+                    type="email"
+                    value={formData.partnerEmail || ''}
+                    onChange={(e) => updateFormData('partnerEmail', e.target.value)}
+                    placeholder="Enter partner's email address"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="userPhone">Your Phone Number</Label>
+                  <Input
+                    id="userPhone"
+                    type="tel"
+                    value={formData.userPhone || ''}
+                    onChange={(e) => updateFormData('userPhone', e.target.value)}
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="partnerPhone">Partner's Phone Number</Label>
+                  <Input
+                    id="partnerPhone"
+                    type="tel"
+                    value={formData.partnerPhone || ''}
+                    onChange={(e) => updateFormData('partnerPhone', e.target.value)}
+                    placeholder="Enter partner's phone number"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="userAddress">Your Address</Label>
+                  <Input
+                    id="userAddress"
+                    value={formData.userAddress || ''}
+                    onChange={(e) => updateFormData('userAddress', e.target.value)}
+                    placeholder="Enter your address"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="partnerAddress">Partner's Address</Label>
+                  <Input
+                    id="partnerAddress"
+                    value={formData.partnerAddress || ''}
+                    onChange={(e) => updateFormData('partnerAddress', e.target.value)}
+                    placeholder="Enter partner's address"
                   />
                 </div>
               </div>

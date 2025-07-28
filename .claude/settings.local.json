@@ -34,7 +34,8 @@
       "Bash(npm run:*)",
       "Bash(vercel:*)",
       "WebFetch(domain:kahanelaw.com)",
-      "Bash(npx ts-node:*)"
+      "Bash(npx ts-node:*)",
+      "Bash(node:*)"
     ],
     "deny": []
   }
