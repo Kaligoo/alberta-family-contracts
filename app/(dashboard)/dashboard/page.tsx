@@ -14,7 +14,6 @@ import { Loader2, FileText, Users, DollarSign, Home, Save } from 'lucide-react';
 import { User } from '@/lib/db/schema';
 import useSWR from 'swr';
 import { saveFamilyContract } from '@/app/(login)/actions';
-import { useRouter } from 'next/navigation';
 
 type ActionState = {
   error?: string;
@@ -509,44 +508,6 @@ function ChildrenCard({ formData, updateFormData }: {
   );
 }
 
-function PreviewButton({ onGeneratePreview, formData, isLoading }: { 
-  onGeneratePreview: () => void; 
-  formData: any;
-  isLoading: boolean;
-}) {
-  return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="text-center space-y-4">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-lg font-medium">Professional Legal Document</span>
-            <span className="text-2xl font-bold text-orange-600">$700</span>
-          </div>
-          
-          <Button 
-            onClick={onGeneratePreview}
-            className="w-full bg-orange-500 hover:bg-orange-600" 
-            size="lg"
-            disabled={!formData.userFullName || !formData.partnerFullName || isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating Preview...
-              </>
-            ) : (
-              'Generate Your Agreement Preview'
-            )}
-          </Button>
-          
-          <p className="text-sm text-gray-500 text-center">
-            Review your complete agreement before purchasing
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 
 export default function DashboardPage() {
@@ -580,8 +541,6 @@ export default function DashboardPage() {
 
   const [saveState, saveAction, isSaving] = useActionState<ActionState, FormData>(saveFamilyContract, {});
   const [isPending, startTransition] = useTransition();
-  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
-  const router = useRouter();
   
   // Load saved contract data
   const { data: contractData, error: contractError } = useSWR('/api/contract', fetcher);
@@ -653,61 +612,6 @@ export default function DashboardPage() {
     });
   };
 
-  const generatePreview = async () => {
-    setIsGeneratingPreview(true);
-    
-    try {
-      // First save the current form data
-      if (formData.userFullName && formData.partnerFullName) {
-        const form = new FormData();
-        Object.entries(formData).forEach(([key, value]) => {
-          if (key === 'children') {
-            form.append(key, JSON.stringify(value));
-          } else {
-            form.append(key, value as string);
-          }
-        });
-        
-        // Save the data first
-        await new Promise((resolve, reject) => {
-          startTransition(() => {
-            saveAction(form);
-            // Wait a bit for the save to complete
-            setTimeout(resolve, 1000);
-          });
-        });
-      }
-      
-      // Get the latest contract data to get the ID
-      const response = await fetch('/api/contract');
-      const data = await response.json();
-      
-      if (data.contract?.id) {
-        // Navigate to the preview page
-        router.push(`/dashboard/contracts/${data.contract.id}/preview`);
-      } else {
-        // If no contract exists, create one first
-        const createResponse = await fetch('/api/contracts', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
-        
-        if (createResponse.ok) {
-          const createData = await createResponse.json();
-          router.push(`/dashboard/contracts/${createData.contract.id}/preview`);
-        } else {
-          console.error('Failed to create contract');
-        }
-      }
-    } catch (error) {
-      console.error('Error generating preview:', error);
-    } finally {
-      setIsGeneratingPreview(false);
-    }
-  };
 
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -749,9 +653,6 @@ export default function DashboardPage() {
         </div>
         
         <div className="max-w-4xl mx-auto space-y-6">
-          {/* Preview Button - Top */}
-          <PreviewButton onGeneratePreview={generatePreview} formData={formData} isLoading={isGeneratingPreview} />
-          
           <PersonalInfoCard formData={formData} updateFormData={updateFormData} />
           <IncomeCard formData={formData} updateFormData={updateFormData} />
           <ResidenceCard formData={formData} updateFormData={updateFormData} />
@@ -789,9 +690,6 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
-          
-          {/* Preview Button - Bottom */}
-          <PreviewButton onGeneratePreview={generatePreview} formData={formData} isLoading={isGeneratingPreview} />
         </div>
       </div>
     </section>
