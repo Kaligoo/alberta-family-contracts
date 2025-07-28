@@ -54,26 +54,43 @@ export default function HomePage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">Trusted by 10,000+ Couples</h3>
-                      <p className="text-gray-600 text-sm mb-4">Join families across Alberta who have protected their relationships with our professional agreements.</p>
-                      <div className="space-y-3 text-sm">
-                        <div className="flex items-center text-gray-700">
-                          <svg className="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                          Legally compliant documents
+                      <h3 className="text-lg font-medium text-gray-900 mb-4">How Does It Work?</h3>
+                      <div className="space-y-4 text-left">
+                        <div className="flex items-start text-gray-700">
+                          <div className="flex-shrink-0 w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
+                            1
+                          </div>
+                          <div className="text-sm">
+                            <span className="font-medium">Build Your Contract</span>
+                            <p className="text-gray-600 mt-1">Use our platform to create a customized cohabitation agreement tailored to your specific needs and circumstances.</p>
+                          </div>
                         </div>
-                        <div className="flex items-center text-gray-700">
-                          <svg className="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                          Customized to your situation
+                        <div className="flex items-start text-gray-700">
+                          <div className="flex-shrink-0 w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
+                            2
+                          </div>
+                          <div className="text-sm">
+                            <span className="font-medium">Preview Your Agreement</span>
+                            <p className="text-gray-600 mt-1">Review your complete contract to ensure all details are accurate before making any payment.</p>
+                          </div>
                         </div>
-                        <div className="flex items-center text-gray-700">
-                          <svg className="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                          Ready in minutes, not weeks
+                        <div className="flex items-start text-gray-700">
+                          <div className="flex-shrink-0 w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
+                            3
+                          </div>
+                          <div className="text-sm">
+                            <span className="font-medium">Complete Payment</span>
+                            <p className="text-gray-600 mt-1">Pay securely for your professional legal document once you're satisfied with the preview.</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start text-gray-700">
+                          <div className="flex-shrink-0 w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
+                            4
+                          </div>
+                          <div className="text-sm">
+                            <span className="font-medium">Legal Consultation</span>
+                            <p className="text-gray-600 mt-1">Your contract is sent to qualified lawyers who will meet with each partner virtually to provide legal advice and facilitate signing.</p>
+                          </div>
                         </div>
                       </div>
                     </div>
