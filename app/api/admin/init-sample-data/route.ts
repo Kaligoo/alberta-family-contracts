@@ -27,16 +27,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Admin not in team' }, { status: 400 });
     }
 
-    // Sample contracts with realistic Alberta data
+    // Sample contracts with realistic Alberta data (production-compatible version)
     const sampleContracts = [
       {
         userFullName: 'Sarah Johnson',
         partnerFullName: 'Michael Chen',
-        userFirstName: 'Sarah',
-        partnerFirstName: 'Michael',
-        userAge: 28,
-        partnerAge: 31,
-        cohabDate: new Date('2023-09-15'),
         userJobTitle: 'Software Engineer',
         partnerJobTitle: 'Marketing Manager',
         userIncome: '95000',
@@ -51,18 +46,13 @@ export async function POST(request: NextRequest) {
         residenceOwnership: 'joint',
         expenseSplitType: 'proportional',
         additionalClauses: 'Both parties agree to maintain separate bank accounts while contributing to a joint household account for shared expenses. Property acquired during cohabitation will be owned jointly unless otherwise specified in writing.',
-        notes: 'Review annually or upon significant life changes',
+        notes: 'Review annually or upon significant life changes - Sarah (28) & Michael (31), living together since Sept 2023',
         contractType: 'cohabitation',
         status: 'draft'
       },
       {
         userFullName: 'Emma Rodriguez',
         partnerFullName: 'David Kim',
-        userFirstName: 'Emma',
-        partnerFirstName: 'David',
-        userAge: 32,
-        partnerAge: 29,
-        cohabDate: new Date('2022-05-20'),
         userJobTitle: 'Registered Nurse',
         partnerJobTitle: 'Accountant',
         userIncome: '82000',
@@ -77,18 +67,13 @@ export async function POST(request: NextRequest) {
         residenceOwnership: 'user',
         expenseSplitType: 'equal',
         additionalClauses: 'Pet ownership responsibilities: Emma will retain ownership of her cat, Whiskers. David will retain ownership of his dog, Max. Veterinary expenses for each pet will be the responsibility of the respective owner.',
-        notes: 'Both parties are first-time homebuyers',
+        notes: 'Both parties are first-time homebuyers - Emma (32) & David (29), living together since May 2022',
         contractType: 'cohabitation',
         status: 'completed'
       },
       {
         userFullName: 'Jessica Thompson',
         partnerFullName: 'Robert Wilson',
-        userFirstName: 'Jessica',
-        partnerFirstName: 'Robert',
-        userAge: 35,
-        partnerAge: 38,
-        cohabDate: new Date('2021-11-03'),
         userJobTitle: 'Elementary School Teacher',
         partnerJobTitle: 'Electrician',
         userIncome: '67000',
@@ -103,7 +88,7 @@ export async function POST(request: NextRequest) {
         residenceOwnership: 'partner',
         expenseSplitType: 'custom',
         additionalClauses: 'Child support arrangements: Jessica has one child from a previous relationship (Sophie, age 8). Robert agrees to contribute to household expenses but is not financially responsible for child-specific costs such as daycare, extracurricular activities, or medical expenses for Sophie.',
-        notes: 'Blended family considerations included',
+        notes: 'Blended family considerations included - Jessica (35) & Robert (38), living together since Nov 2021',
         contractType: 'cohabitation',
         status: 'draft'
       }
@@ -114,52 +99,57 @@ export async function POST(request: NextRequest) {
     for (const contract of sampleContracts) {
       console.log('Inserting contract for:', contract.userFullName, contract.partnerFullName);
       
-      // Prepare the insert data, excluding fields that might not exist in production DB
-      const insertData: any = {
-        userId: adminUser.id,
-        teamId: teamMember.teamId,
+      // Use raw SQL to avoid Drizzle schema conflicts with production DB
+      const [result] = await db.execute({
+        sql: `
+          INSERT INTO family_contracts (
+            user_id, team_id, user_full_name, partner_full_name,
+            user_job_title, partner_job_title, user_income, partner_income,
+            user_email, partner_email, user_phone, partner_phone,
+            user_address, partner_address, residence_address, residence_ownership,
+            expense_split_type, additional_clauses, notes, contract_type, status
+          ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 
+            $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
+          ) RETURNING id, user_full_name, partner_full_name, status
+        `,
+        args: [
+          adminUser.id,
+          teamMember.teamId,
+          contract.userFullName,
+          contract.partnerFullName,
+          contract.userJobTitle,
+          contract.partnerJobTitle,
+          contract.userIncome,
+          contract.partnerIncome,
+          contract.userEmail,
+          contract.partnerEmail,
+          contract.userPhone,
+          contract.partnerPhone,
+          contract.userAddress,
+          contract.partnerAddress,
+          contract.residenceAddress,
+          contract.residenceOwnership,
+          contract.expenseSplitType,
+          contract.additionalClauses,
+          contract.notes,
+          contract.contractType,
+          contract.status
+        ]
+      });
+      
+      results.push({
+        id: result.rows[0]?.id || 'unknown',
         userFullName: contract.userFullName,
         partnerFullName: contract.partnerFullName,
-        userJobTitle: contract.userJobTitle,
-        partnerJobTitle: contract.partnerJobTitle,
-        userIncome: contract.userIncome,
-        partnerIncome: contract.partnerIncome,
-        userEmail: contract.userEmail,
-        partnerEmail: contract.partnerEmail,
-        userPhone: contract.userPhone,
-        partnerPhone: contract.partnerPhone,
-        userAddress: contract.userAddress,
-        partnerAddress: contract.partnerAddress,
-        residenceAddress: contract.residenceAddress,
-        residenceOwnership: contract.residenceOwnership,
-        expenseSplitType: contract.expenseSplitType,
-        additionalClauses: contract.additionalClauses,
-        notes: contract.notes,
-        contractType: contract.contractType,
         status: contract.status
-      };
-
-      // Only add new fields if they exist in the schema (skip for now to ensure compatibility)
-      // These will be added once migrations are run on production:
-      // userFirstName, partnerFirstName, userAge, partnerAge, cohabDate
-
-      const [result] = await db
-        .insert(familyContracts)
-        .values(insertData)
-        .returning();
-      
-      results.push(result);
+      });
     }
 
     return NextResponse.json({ 
       message: 'Sample data added successfully to admin account',
       count: results.length,
-      contracts: results.map(r => ({
-        id: r.id,
-        userFullName: r.userFullName,
-        partnerFullName: r.partnerFullName,
-        status: r.status
-      }))
+      contracts: results
     });
 
   } catch (error) {
