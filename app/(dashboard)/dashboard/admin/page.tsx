@@ -29,6 +29,8 @@ export default function AdminDashboardPage() {
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [sampleDataStatus, setSampleDataStatus] = useState('');
+  const [isInitializingSampleData, setIsInitializingSampleData] = useState(false);
 
   const { data: templatesData, error, mutate } = useSWR('/api/admin/templates', fetcher);
   const templates: Template[] = templatesData?.templates || [];
@@ -102,6 +104,31 @@ export default function AdminDashboardPage() {
       mutate(); // Refresh templates list
     } catch (error) {
       console.error('Failed to delete template:', error);
+    }
+  };
+
+  const handleInitializeSampleData = async () => {
+    if (!confirm('This will add sample contracts to your account. Continue?')) return;
+
+    setIsInitializingSampleData(true);
+    setSampleDataStatus('');
+
+    try {
+      const response = await fetch('/api/admin/init-sample-data', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setSampleDataStatus(`Success: Added ${result.count} sample contracts`);
+      } else {
+        const error = await response.json();
+        setSampleDataStatus(`Error: ${error.error || 'Failed to initialize sample data'}`);
+      }
+    } catch (error) {
+      setSampleDataStatus('Network error occurred while initializing sample data');
+    } finally {
+      setIsInitializingSampleData(false);
     }
   };
 
@@ -192,6 +219,43 @@ export default function AdminDashboardPage() {
               )}
               {uploadSuccess && (
                 <p className="text-green-600 text-sm">{uploadSuccess}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Sample Data Management */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Plus className="mr-2 h-5 w-5" />
+              Sample Data Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Initialize sample contract data for testing and demonstration purposes.
+              </p>
+              
+              <div className="flex gap-4">
+                <Button 
+                  onClick={handleInitializeSampleData}
+                  disabled={isInitializingSampleData}
+                  className="bg-blue-500 hover:bg-blue-600"
+                >
+                  {isInitializingSampleData ? 'Initializing...' : 'Initialize Sample Data'}
+                </Button>
+              </div>
+
+              {sampleDataStatus && (
+                <div className={`p-3 rounded-md text-sm ${
+                  sampleDataStatus.startsWith('Success') 
+                    ? 'bg-green-50 text-green-700 border border-green-200' 
+                    : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {sampleDataStatus}
+                </div>
               )}
             </div>
           </CardContent>
