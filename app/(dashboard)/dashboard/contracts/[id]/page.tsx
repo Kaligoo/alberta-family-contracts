@@ -23,8 +23,8 @@ interface Contract {
   partnerFullName: string;
   userFirstName: string;
   partnerFirstName: string;
-  userAge: number;
-  partnerAge: number;
+  userAge: number | null;
+  partnerAge: number | null;
   cohabDate: string;
   userJobTitle: string;
   partnerJobTitle: string;
@@ -53,6 +53,37 @@ interface Contract {
   updatedAt: string;
 }
 
+interface ContractFormData {
+  userFullName?: string;
+  partnerFullName?: string;
+  userFirstName?: string;
+  partnerFirstName?: string;
+  userAge?: string;
+  partnerAge?: string;
+  cohabDate?: string;
+  userJobTitle?: string;
+  partnerJobTitle?: string;
+  userIncome?: string;
+  partnerIncome?: string;
+  userEmail?: string;
+  partnerEmail?: string;
+  userPhone?: string;
+  partnerPhone?: string;
+  userAddress?: string;
+  partnerAddress?: string;
+  residenceAddress?: string;
+  residenceOwnership?: string;
+  expenseSplitType?: string;
+  additionalClauses?: string;
+  notes?: string;
+  children?: Array<{
+    name: string;
+    age?: number;
+    relationship: 'biological' | 'step' | 'adopted';
+    parentage: 'user' | 'partner' | 'both';
+  }>;
+}
+
 export default function ContractDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -63,7 +94,7 @@ export default function ContractDetailPage() {
     fetcher
   );
 
-  const [formData, setFormData] = useState<Partial<Contract>>({});
+  const [formData, setFormData] = useState<ContractFormData>({});
   const [isLoading, setIsLoading] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -129,7 +160,7 @@ export default function ContractDetailPage() {
     }
   };
 
-  const updateFormData = (field: string, value: string) => {
+  const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -548,7 +579,7 @@ export default function ContractDetailPage() {
                             value={child.relationship || 'biological'}
                             onChange={(e) => {
                               const updated = [...(contract.children || [])];
-                              updated[index] = { ...updated[index], relationship: e.target.value };
+                              updated[index] = { ...updated[index], relationship: e.target.value as 'biological' | 'step' | 'adopted' };
                               updateFormData('children', updated);
                             }}
                           >
@@ -564,7 +595,7 @@ export default function ContractDetailPage() {
                             value={child.parentage || 'both'}
                             onChange={(e) => {
                               const updated = [...(contract.children || [])];
-                              updated[index] = { ...updated[index], parentage: e.target.value };
+                              updated[index] = { ...updated[index], parentage: e.target.value as 'user' | 'partner' | 'both' };
                               updateFormData('children', updated);
                             }}
                           >
