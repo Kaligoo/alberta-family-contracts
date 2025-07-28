@@ -144,6 +144,8 @@ function prepareTemplateData(contract: any, user: any) {
     // Core party information
     userFullName: contract.userFullName || '[Your Name]',
     partnerFullName: contract.partnerFullName || '[Partner Name]',
+    userFirstName: contract.userFirstName || '[Your First Name]',
+    partnerFirstName: contract.partnerFirstName || '[Partner First Name]',
     
     // Employment and income
     userJobTitle: contract.userJobTitle || '[Your Occupation]',
@@ -166,9 +168,13 @@ function prepareTemplateData(contract: any, user: any) {
     currentDate: currentDate,
     contractDate: currentDate,
     weddingDate: '', // Not applicable for cohabitation
-    cohabDate: currentDate, // Could be made configurable
+    cohabDate: contract.cohabDate ? new Date(contract.cohabDate).toLocaleDateString('en-US', {
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }) : currentDate,
     
-    // Ages (if needed for template)
+    // Ages
     userAge: contract.userAge || '[Your Age]',
     partnerAge: contract.partnerAge || '[Partner Age]', 
     
@@ -186,6 +192,9 @@ function prepareTemplateData(contract: any, user: any) {
     // Conditional sections
     hasChildren: contract.children && contract.children.length > 0,
     childrenCount: contract.children ? contract.children.length : 0,
+    childrenStatus: (contract.children && contract.children.length > 0) ? 
+      'The parties have children as detailed in this agreement.' : 
+      'There are no children of the relationship as of the Effective Date of this Agreement. The parties may or may not have children together in the future, either biological or adopted.',
     waiverSpousalSupport: contract.waiverSpousalSupport || false,
     
     // Additional clauses

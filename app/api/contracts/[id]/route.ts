@@ -78,6 +78,11 @@ export async function PUT(
     // Only update fields that are present in the request body
     if (body.userFullName !== undefined) updateData.userFullName = body.userFullName || null;
     if (body.partnerFullName !== undefined) updateData.partnerFullName = body.partnerFullName || null;
+    if (body.userFirstName !== undefined) updateData.userFirstName = body.userFirstName || null;
+    if (body.partnerFirstName !== undefined) updateData.partnerFirstName = body.partnerFirstName || null;
+    if (body.userAge !== undefined) updateData.userAge = body.userAge ? parseInt(body.userAge) : null;
+    if (body.partnerAge !== undefined) updateData.partnerAge = body.partnerAge ? parseInt(body.partnerAge) : null;
+    if (body.cohabDate !== undefined) updateData.cohabDate = body.cohabDate ? new Date(body.cohabDate) : null;
     if (body.userJobTitle !== undefined) updateData.userJobTitle = body.userJobTitle || null;
     if (body.partnerJobTitle !== undefined) updateData.partnerJobTitle = body.partnerJobTitle || null;
     if (body.userIncome !== undefined) updateData.userIncome = body.userIncome || null;

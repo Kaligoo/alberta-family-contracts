@@ -21,6 +21,11 @@ interface Contract {
   id: number;
   userFullName: string;
   partnerFullName: string;
+  userFirstName: string;
+  partnerFirstName: string;
+  userAge: number;
+  partnerAge: number;
+  cohabDate: string;
   userJobTitle: string;
   partnerJobTitle: string;
   userIncome: string;
@@ -243,6 +248,63 @@ export default function ContractDetailPage() {
                     value={formData.partnerFullName || ''}
                     onChange={(e) => updateFormData('partnerFullName', e.target.value)}
                     placeholder="Enter partner's full name"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="userFirstName">Your First Name</Label>
+                  <Input
+                    id="userFirstName"
+                    value={formData.userFirstName || ''}
+                    onChange={(e) => updateFormData('userFirstName', e.target.value)}
+                    placeholder="Enter your first name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="partnerFirstName">Partner's First Name</Label>
+                  <Input
+                    id="partnerFirstName"
+                    value={formData.partnerFirstName || ''}
+                    onChange={(e) => updateFormData('partnerFirstName', e.target.value)}
+                    placeholder="Enter partner's first name"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="userAge">Your Age</Label>
+                  <Input
+                    id="userAge"
+                    type="number"
+                    min="18"
+                    max="120"
+                    value={formData.userAge || ''}
+                    onChange={(e) => updateFormData('userAge', e.target.value)}
+                    placeholder="Age"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="partnerAge">Partner's Age</Label>
+                  <Input
+                    id="partnerAge"
+                    type="number"
+                    min="18"
+                    max="120"
+                    value={formData.partnerAge || ''}
+                    onChange={(e) => updateFormData('partnerAge', e.target.value)}
+                    placeholder="Age"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="cohabDate">Date Started Living Together</Label>
+                  <Input
+                    id="cohabDate"
+                    type="date"
+                    value={formData.cohabDate ? new Date(formData.cohabDate).toISOString().split('T')[0] : ''}
+                    onChange={(e) => updateFormData('cohabDate', e.target.value)}
                   />
                 </div>
               </div>

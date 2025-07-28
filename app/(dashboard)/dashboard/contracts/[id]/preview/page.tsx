@@ -19,6 +19,11 @@ interface Contract {
   id: number;
   userFullName: string;
   partnerFullName: string;
+  userFirstName: string;
+  partnerFirstName: string;
+  userAge: number;
+  partnerAge: number;
+  cohabDate: string;
   userJobTitle: string;
   partnerJobTitle: string;
   userIncome: string;
