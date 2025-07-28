@@ -37,7 +37,8 @@
       "Bash(npx ts-node:*)",
       "Bash(node:*)",
       "Bash(find:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "WebFetch(domain:www.albertafamilycontracts.com)"
     ],
     "deny": []
   }
