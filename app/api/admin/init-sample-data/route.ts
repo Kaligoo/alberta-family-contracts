@@ -2,29 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
 import { users, teams, teamMembers, familyContracts } from '@/lib/db/schema';
 import { eq, sql } from 'drizzle-orm';
+import { getUser, getUserWithTeam } from '@/lib/db/queries';
 
 export async function POST(request: NextRequest) {
   try {
-    // Find the admin user
-    const [adminUser] = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, 'garrett.horvath@gmail.com'))
-      .limit(1);
-
-    if (!adminUser) {
-      return NextResponse.json({ error: 'Admin user not found' }, { status: 404 });
+    // Get the current logged-in user
+    const currentUser = await getUser();
+    
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Unauthorized - user not logged in' }, { status: 401 });
     }
 
-    // Find or get the admin's team
-    const [teamMember] = await db
-      .select({ teamId: teamMembers.teamId })
-      .from(teamMembers)
-      .where(eq(teamMembers.userId, adminUser.id))
-      .limit(1);
-
-    if (!teamMember) {
-      return NextResponse.json({ error: 'Admin not in team' }, { status: 400 });
+    // Get the user's team information
+    const userWithTeam = await getUserWithTeam(currentUser.id);
+    
+    if (!userWithTeam?.teamId) {
+      return NextResponse.json({ error: 'User is not part of a team' }, { status: 400 });
     }
 
     // Sample contracts with realistic Alberta data (production-compatible version)
@@ -109,7 +102,7 @@ export async function POST(request: NextRequest) {
           expense_split_type, additional_clauses, notes, contract_type, status, children,
           created_at, updated_at
         ) VALUES (
-          ${adminUser.id}, ${teamMember.teamId}, ${contract.userFullName}, ${contract.partnerFullName}, 
+          ${currentUser.id}, ${userWithTeam.teamId}, ${contract.userFullName}, ${contract.partnerFullName}, 
           ${contract.userJobTitle}, ${contract.partnerJobTitle}, ${contract.userIncome}, ${contract.partnerIncome},
           ${contract.userEmail}, ${contract.partnerEmail}, ${contract.userPhone}, ${contract.partnerPhone},
           ${contract.userAddress}, ${contract.partnerAddress}, ${contract.residenceAddress}, ${contract.residenceOwnership},
@@ -127,7 +120,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ 
-      message: 'Sample data added successfully to admin account',
+      message: 'Sample data added successfully to your account',
       count: results.length,
       contracts: results
     });
