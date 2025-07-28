@@ -31,6 +31,7 @@ export default function AdminDashboardPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [sampleDataStatus, setSampleDataStatus] = useState('');
   const [isInitializingSampleData, setIsInitializingSampleData] = useState(false);
+  const [isPopulatingSampleData, setIsPopulatingSampleData] = useState(false);
   const [migrationStatus, setMigrationStatus] = useState('');
   const [isRunningMigration, setIsRunningMigration] = useState(false);
 
@@ -149,7 +150,7 @@ export default function AdminDashboardPage() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          setMigrationStatus(`Success: Migration applied. Added columns: ${result.addedColumns.join(', ')}`);
+          setMigrationStatus(`Success: Migration applied. Applied migrations: ${result.appliedMigrations.join(', ')}`);
         } else {
           setMigrationStatus(`Error: ${result.error}`);
         }
@@ -161,6 +162,32 @@ export default function AdminDashboardPage() {
       setMigrationStatus('Network error occurred while running migration');
     } finally {
       setIsRunningMigration(false);
+    }
+  };
+
+  const handlePopulateSampleData = async () => {
+    if (!confirm('This will populate empty fields in existing contracts with sample data. Continue?')) return;
+
+    setIsPopulatingSampleData(true);
+    setSampleDataStatus('');
+
+    try {
+      const response = await fetch('/api/admin/populate-sample-data', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setSampleDataStatus(`Success: Updated ${result.contractsUpdated} contracts with sample data`);
+      } else {
+        const error = await response.json();
+        const errorDetails = error.details ? ` - ${error.details}` : '';
+        setSampleDataStatus(`Error: ${error.error || 'Failed to populate sample data'}${errorDetails}`);
+      }
+    } catch (error) {
+      setSampleDataStatus('Network error occurred while populating sample data');
+    } finally {
+      setIsPopulatingSampleData(false);
     }
   };
 
@@ -426,7 +453,7 @@ export default function AdminDashboardPage() {
           <CardContent>
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
-                Initialize sample contract data for testing and demonstration purposes.
+                Initialize sample contract data for testing and demonstration purposes, or populate empty fields with sample data.
               </p>
               
               <div className="flex gap-4">
@@ -436,6 +463,14 @@ export default function AdminDashboardPage() {
                   className="bg-blue-500 hover:bg-blue-600"
                 >
                   {isInitializingSampleData ? 'Initializing...' : 'Initialize Sample Data'}
+                </Button>
+                
+                <Button 
+                  onClick={handlePopulateSampleData}
+                  disabled={isPopulatingSampleData}
+                  className="bg-green-500 hover:bg-green-600"
+                >
+                  {isPopulatingSampleData ? 'Populating...' : 'Populate Empty Fields'}
                 </Button>
               </div>
 

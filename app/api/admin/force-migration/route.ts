@@ -45,6 +45,19 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ Templates table migration already applied or failed');
     }
 
+    // Apply migration 0004_tearful_arclight.sql (lawyer fields) if needed
+    try {
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        ADD COLUMN IF NOT EXISTS user_lawyer text,
+        ADD COLUMN IF NOT EXISTS partner_lawyer text;
+      `);
+      appliedMigrations.push('0004_tearful_arclight');
+      console.log('✅ Lawyer fields migration applied');
+    } catch (error) {
+      console.log('⚠️ Lawyer fields migration already applied or failed');
+    }
+
     // Update the migration journal
     for (const migration of appliedMigrations) {
       try {

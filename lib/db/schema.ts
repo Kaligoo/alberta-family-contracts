@@ -98,9 +98,11 @@ export const familyContracts = pgTable('family_contracts', {
   userEmail: varchar('user_email', { length: 255 }),
   userPhone: varchar('user_phone', { length: 50 }),
   userAddress: text('user_address'),
+  userLawyer: text('user_lawyer'),
   partnerEmail: varchar('partner_email', { length: 255 }),
   partnerPhone: varchar('partner_phone', { length: 50 }),
   partnerAddress: text('partner_address'),
+  partnerLawyer: text('partner_lawyer'),
   
   // Children Information (stored as JSON array)
   children: json('children').$type<Array<{

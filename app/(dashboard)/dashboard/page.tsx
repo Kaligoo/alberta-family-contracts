@@ -209,6 +209,27 @@ function PersonalInfoCard({ formData, updateFormData }: {
             />
           </div>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="userLawyer">Your Lawyer</Label>
+            <Input
+              id="userLawyer"
+              value={formData.userLawyer}
+              onChange={(e) => updateFormData('userLawyer', e.target.value)}
+              placeholder="Enter your lawyer's information"
+            />
+          </div>
+          <div>
+            <Label htmlFor="partnerLawyer">Partner's Lawyer</Label>
+            <Input
+              id="partnerLawyer"
+              value={formData.partnerLawyer}
+              onChange={(e) => updateFormData('partnerLawyer', e.target.value)}
+              placeholder="Enter partner's lawyer's information"
+            />
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
@@ -249,6 +270,120 @@ function IncomeCard({ formData, updateFormData }: {
               placeholder="Enter partner's annual income"
             />
           </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ResidenceCard({ formData, updateFormData }: { 
+  formData: any; 
+  updateFormData: (field: string, value: any) => void; 
+}) {
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Home className="h-5 w-5" />
+          Residence Information
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <Label htmlFor="residenceAddress">Residence Address</Label>
+          <Input
+            id="residenceAddress"
+            value={formData.residenceAddress}
+            onChange={(e) => updateFormData('residenceAddress', e.target.value)}
+            placeholder="Enter your residence address"
+          />
+        </div>
+        <div>
+          <Label htmlFor="residenceOwnership">Residence Ownership</Label>
+          <select
+            id="residenceOwnership"
+            value={formData.residenceOwnership}
+            onChange={(e) => updateFormData('residenceOwnership', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+          >
+            <option value="">Select ownership type</option>
+            <option value="joint">Joint ownership</option>
+            <option value="user">Your property</option>
+            <option value="partner">Partner's property</option>
+            <option value="rental">Rental property</option>
+          </select>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function FinancialCard({ formData, updateFormData }: { 
+  formData: any; 
+  updateFormData: (field: string, value: any) => void; 
+}) {
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <DollarSign className="h-5 w-5" />
+          Financial Arrangements
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <Label htmlFor="expenseSplitType">Expense Split Type</Label>
+          <select
+            id="expenseSplitType"
+            value={formData.expenseSplitType}
+            onChange={(e) => updateFormData('expenseSplitType', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+          >
+            <option value="">Select expense split</option>
+            <option value="equal">Equal split (50/50)</option>
+            <option value="proportional">Proportional to income</option>
+            <option value="custom">Custom arrangement</option>
+          </select>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function AdditionalInfoCard({ formData, updateFormData }: { 
+  formData: any; 
+  updateFormData: (field: string, value: any) => void; 
+}) {
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <FileText className="h-5 w-5" />
+          Additional Information
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <Label htmlFor="additionalClauses">Additional Clauses</Label>
+          <textarea
+            id="additionalClauses"
+            value={formData.additionalClauses}
+            onChange={(e) => updateFormData('additionalClauses', e.target.value)}
+            placeholder="Enter any additional clauses or specific terms"
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+        </div>
+        <div>
+          <Label htmlFor="notes">Personal Notes</Label>
+          <textarea
+            id="notes"
+            value={formData.notes}
+            onChange={(e) => updateFormData('notes', e.target.value)}
+            placeholder="Enter any personal notes or reminders"
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
         </div>
       </CardContent>
     </Card>
@@ -374,47 +509,15 @@ function ChildrenCard({ formData, updateFormData }: {
   );
 }
 
-function ContractPreview({ onGeneratePreview, formData, isLoading }: { 
+function PreviewButton({ onGeneratePreview, formData, isLoading }: { 
   onGeneratePreview: () => void; 
   formData: any;
   isLoading: boolean;
 }) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5" />
-          Contract Preview
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="font-medium mb-2">Your Cohabitation Agreement Will Include:</h3>
-          <ul className="space-y-2 text-sm">
-            <li className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              Personal information and financial details
-            </li>
-            <li className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              Property ownership and division terms
-            </li>
-            <li className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              Financial responsibilities and expense sharing
-            </li>
-            <li className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              Children and custody arrangements
-            </li>
-            <li className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              Termination and separation procedures
-            </li>
-          </ul>
-        </div>
-        
-        <div className="pt-4 border-t">
+      <CardContent className="pt-6">
+        <div className="text-center space-y-4">
           <div className="flex justify-between items-center mb-4">
             <span className="text-lg font-medium">Professional Legal Document</span>
             <span className="text-2xl font-bold text-orange-600">$700</span>
@@ -436,7 +539,7 @@ function ContractPreview({ onGeneratePreview, formData, isLoading }: {
             )}
           </Button>
           
-          <p className="text-sm text-gray-500 text-center mt-2">
+          <p className="text-sm text-gray-500 text-center">
             Review your complete agreement before purchasing
           </p>
         </div>
@@ -465,6 +568,13 @@ export default function DashboardPage() {
     partnerPhone: '',
     userAddress: '',
     partnerAddress: '',
+    userLawyer: '',
+    partnerLawyer: '',
+    residenceAddress: '',
+    residenceOwnership: '',
+    expenseSplitType: '',
+    additionalClauses: '',
+    notes: '',
     children: [] as ChildInfo[]
   });
 
@@ -498,6 +608,13 @@ export default function DashboardPage() {
         partnerPhone: contract.partnerPhone || '',
         userAddress: contract.userAddress || '',
         partnerAddress: contract.partnerAddress || '',
+        userLawyer: contract.userLawyer || '',
+        partnerLawyer: contract.partnerLawyer || '',
+        residenceAddress: contract.residenceAddress || '',
+        residenceOwnership: contract.residenceOwnership || '',
+        expenseSplitType: contract.expenseSplitType || '',
+        additionalClauses: contract.additionalClauses || '',
+        notes: contract.notes || '',
         children: contract.children || []
       });
     }
@@ -522,6 +639,13 @@ export default function DashboardPage() {
     form.append('partnerPhone', formData.partnerPhone);
     form.append('userAddress', formData.userAddress);
     form.append('partnerAddress', formData.partnerAddress);
+    form.append('userLawyer', formData.userLawyer);
+    form.append('partnerLawyer', formData.partnerLawyer);
+    form.append('residenceAddress', formData.residenceAddress);
+    form.append('residenceOwnership', formData.residenceOwnership);
+    form.append('expenseSplitType', formData.expenseSplitType);
+    form.append('additionalClauses', formData.additionalClauses);
+    form.append('notes', formData.notes);
     form.append('children', JSON.stringify(formData.children));
     
     startTransition(() => {
@@ -624,47 +748,50 @@ export default function DashboardPage() {
           )}
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <PersonalInfoCard formData={formData} updateFormData={updateFormData} />
-            <IncomeCard formData={formData} updateFormData={updateFormData} />
-            <ChildrenCard formData={formData} updateFormData={updateFormData} />
-            
-            {/* Save Button */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button 
-                    onClick={handleSave}
-                    disabled={isSaving || isPending}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700"
-                  >
-                    {(isSaving || isPending) ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-2 h-4 w-4" />
-                        Save Progress
-                      </>
-                    )}
-                  </Button>
-                </div>
-                {saveState?.success && (
-                  <p className="text-green-600 text-sm mt-2">{saveState.success}</p>
-                )}
-                {saveState?.error && (
-                  <p className="text-red-600 text-sm mt-2">{saveState.error}</p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Preview Button - Top */}
+          <PreviewButton onGeneratePreview={generatePreview} formData={formData} isLoading={isGeneratingPreview} />
           
-          <div className="lg:col-span-1">
-            <ContractPreview onGeneratePreview={generatePreview} formData={formData} isLoading={isGeneratingPreview} />
-          </div>
+          <PersonalInfoCard formData={formData} updateFormData={updateFormData} />
+          <IncomeCard formData={formData} updateFormData={updateFormData} />
+          <ResidenceCard formData={formData} updateFormData={updateFormData} />
+          <FinancialCard formData={formData} updateFormData={updateFormData} />
+          <ChildrenCard formData={formData} updateFormData={updateFormData} />
+          <AdditionalInfoCard formData={formData} updateFormData={updateFormData} />
+          
+          {/* Save Button */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button 
+                  onClick={handleSave}
+                  disabled={isSaving || isPending}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  {(isSaving || isPending) ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Progress
+                    </>
+                  )}
+                </Button>
+              </div>
+              {saveState?.success && (
+                <p className="text-green-600 text-sm mt-2">{saveState.success}</p>
+              )}
+              {saveState?.error && (
+                <p className="text-red-600 text-sm mt-2">{saveState.error}</p>
+              )}
+            </CardContent>
+          </Card>
+          
+          {/* Preview Button - Bottom */}
+          <PreviewButton onGeneratePreview={generatePreview} formData={formData} isLoading={isGeneratingPreview} />
         </div>
       </div>
     </section>
