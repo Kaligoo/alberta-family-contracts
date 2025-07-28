@@ -39,7 +39,8 @@
       "Bash(find:*)",
       "Bash(pkill:*)",
       "WebFetch(domain:www.albertafamilycontracts.com)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": []
   }

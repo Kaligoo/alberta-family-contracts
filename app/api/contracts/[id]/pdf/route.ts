@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser, getUserWithTeam } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
-import { familyContracts } from '@/lib/db/schema';
+import { familyContracts, templates } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+
+const PizZip = require('pizzip');
+const Docxtemplater = require('docxtemplater');
+
+// Try to import libreoffice-convert, but handle gracefully if not available
+let libre: any = null;
+try {
+  libre = require('libreoffice-convert');
+} catch (error) {
+  console.warn('libreoffice-convert not available, will fall back to pdf-lib');
+}
 
 export async function GET(
   request: NextRequest,
@@ -46,8 +57,8 @@ export async function GET(
       return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
     }
 
-    // Generate PDF using pdf-lib
-    const pdfBytes = await generateContractPDF(contract, user);
+    // Try to generate PDF from Word document first, fall back to pdf-lib if needed
+    const pdfBytes = await generateContractPDF(contract, user, userWithTeam.teamId);
     
     return new NextResponse(pdfBytes, {
       headers: {
@@ -65,7 +76,157 @@ export async function GET(
   }
 }
 
-async function generateContractPDF(contract: any, user: any): Promise<Uint8Array> {
+async function generateContractPDF(contract: any, user: any, teamId: number): Promise<Uint8Array> {
+  // First, try to generate PDF from Word document using LibreOffice
+  if (libre) {
+    try {
+      const wordBuffer = await generateWordDocument(contract, user, teamId);
+      
+      // Convert Word document to PDF using LibreOffice
+      const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
+        libre.convert(wordBuffer, '.pdf', undefined, (err: any, done: Buffer) => {
+          if (err) {
+            console.error('LibreOffice conversion error:', err);
+            reject(err);
+          } else {
+            resolve(done);
+          }
+        });
+      });
+      
+      console.log('Successfully generated PDF from Word document using LibreOffice');
+      return new Uint8Array(pdfBuffer);
+    } catch (error) {
+      console.warn('Failed to generate PDF from Word document, falling back to pdf-lib:', error);
+    }
+  }
+  
+  // Fallback to pdf-lib if LibreOffice conversion fails
+  console.log('Using pdf-lib fallback for PDF generation');
+  return await generateFallbackPDF(contract, user);
+}
+
+async function generateWordDocument(contract: any, user: any, teamId: number): Promise<Buffer> {
+  // Get active template from database (same logic as generate-professional route)
+  const activeTemplate = await db
+    .select()
+    .from(templates)
+    .where(eq(templates.isActive, 'true'))
+    .limit(1);
+
+  if (activeTemplate.length === 0) {
+    throw new Error('No active template found');
+  }
+
+  const template = activeTemplate[0];
+
+  // Prepare template data (same as generate-professional route)
+  const templateData = prepareTemplateData(contract, user);
+  
+  // Generate document from database-stored template
+  const templateBuffer = Buffer.from(template.content, 'base64');
+  const zip = new PizZip(templateBuffer);
+  
+  const doc = new Docxtemplater(zip, {
+    paragraphLoop: true,
+    linebreaks: true,
+    delimiters: {
+      start: '{',
+      end: '}'
+    }
+  });
+
+  doc.render(templateData);
+  
+  const buffer = doc.getZip().generate({ type: 'nodebuffer' });
+  return buffer;
+}
+
+function prepareTemplateData(contract: any, user: any) {
+  const currentDate = new Date().toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+
+  // Extract first names from full names if not provided separately
+  const getUserFirstName = () => {
+    if (contract.userFirstName) return contract.userFirstName;
+    if (contract.userFullName) return contract.userFullName.split(' ')[0];
+    return '[Your First Name]';
+  };
+
+  const getPartnerFirstName = () => {
+    if (contract.partnerFirstName) return contract.partnerFirstName;
+    if (contract.partnerFullName) return contract.partnerFullName.split(' ')[0];
+    return '[Partner First Name]';
+  };
+
+  return {
+    // Core party information
+    userFullName: contract.userFullName || '[Your Name]',
+    partnerFullName: contract.partnerFullName || '[Partner Name]',
+    userFirstName: getUserFirstName(),
+    partnerFirstName: getPartnerFirstName(),
+    
+    // Employment and income
+    userJobTitle: contract.userJobTitle || '[Your Occupation]',
+    partnerJobTitle: contract.partnerJobTitle || '[Partner Occupation]',
+    userIncome: contract.userIncome ? `$${parseInt(contract.userIncome).toLocaleString()} CAD` : '[Your Income]',
+    partnerIncome: contract.partnerIncome ? `$${parseInt(contract.partnerIncome).toLocaleString()} CAD` : '[Partner Income]',
+    
+    // Contact information
+    userEmail: contract.userEmail || user.email || '[Your Email]',
+    partnerEmail: contract.partnerEmail || '[Partner Email]',
+    userPhone: contract.userPhone || '[Your Phone]',
+    partnerPhone: contract.partnerPhone || '[Partner Phone]',
+    userAddress: contract.userAddress || '[Your Address]',
+    partnerAddress: contract.partnerAddress || '[Partner Address]',
+    
+    // Residence
+    residenceAddress: contract.residenceAddress || '[Residence Address]',
+    
+    // Dates
+    currentDate: currentDate,
+    contractDate: currentDate,
+    weddingDate: '', // Not applicable for cohabitation
+    cohabDate: contract.cohabDate ? new Date(contract.cohabDate).toLocaleDateString('en-US', {
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }) : currentDate,
+    
+    // Ages
+    userAge: contract.userAge || '[Your Age]',
+    partnerAge: contract.partnerAge || '[Partner Age]', 
+    
+    // Legal counsel (placeholder - could be made configurable)
+    userLawyer: contract.userLawyer || '[Your Legal Counsel]',
+    partnerLawyer: contract.partnerLawyer || '[Partner Legal Counsel]',
+    
+    // Property/financial values
+    value: contract.propertyValue || '[Property Value]',
+    
+    // Location
+    province: 'Alberta',
+    country: 'Canada',
+    
+    // Conditional sections
+    hasChildren: contract.children && contract.children.length > 0,
+    childrenCount: contract.children ? contract.children.length : 0,
+    childrenStatus: (contract.children && contract.children.length > 0) ? 
+      'The parties have children as detailed in this agreement.' : 
+      'There are no children of the relationship as of the Effective Date of this Agreement. The parties may or may not have children together in the future, either biological or adopted.',
+    waiverSpousalSupport: contract.waiverSpousalSupport || false,
+    
+    // Additional clauses
+    additionalClauses: contract.additionalClauses || '',
+    notes: contract.notes || ''
+  };
+}
+
+// Fallback PDF generation using pdf-lib (simplified version of original)
+async function generateFallbackPDF(contract: any, user: any): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([595.276, 841.890]); // A4 size in points
   
@@ -77,249 +238,37 @@ async function generateContractPDF(contract: any, user: any): Promise<Uint8Array
   let yPosition = height - margin;
   
   // Helper function to add text
-  const addText = (text: string, fontSize: number = 12, font = helveticaFont, isBold = false) => {
-    const actualFont = isBold ? helveticaBoldFont : font;
+  const addText = (text: string, fontSize: number = 12, isBold = false) => {
+    const font = isBold ? helveticaBoldFont : helveticaFont;
     page.drawText(text, {
       x: margin,
       y: yPosition,
       size: fontSize,
-      font: actualFont,
+      font: font,
       color: rgb(0, 0, 0),
     });
-    yPosition -= fontSize + 8; // Add some spacing
+    yPosition -= fontSize + 8;
   };
   
-  // Helper function to add section spacing
-  const addSpacing = (space: number = 20) => {
-    yPosition -= space;
-  };
-
-  // Document Title
-  addText('ALBERTA COHABITATION AGREEMENT', 20, helveticaBoldFont, true);
-  addSpacing(30);
+  // Simplified PDF content
+  addText('ALBERTA COHABITATION AGREEMENT', 20, true);
+  yPosition -= 30;
   
-  // Party Information
-  addText('PARTIES TO THIS AGREEMENT', 16, helveticaBoldFont, true);
-  addSpacing(15);
+  addText('FALLBACK PDF VERSION', 16, true);
+  addText('This PDF was generated using the fallback method.', 12);
+  addText('For the full formatted version, LibreOffice conversion is required.', 12);
+  yPosition -= 20;
   
   addText(`Party A: ${contract.userFullName || '[Your Name]'}`, 12);
-  if (contract.userAddress) {
-    addText(`Address: ${contract.userAddress}`, 11);
-  }
-  if (contract.userEmail) {
-    addText(`Email: ${contract.userEmail}`, 11);
-  }
-  if (contract.userPhone) {
-    addText(`Phone: ${contract.userPhone}`, 11);
-  }
-  addSpacing();
-  
   addText(`Party B: ${contract.partnerFullName || '[Partner Name]'}`, 12);
-  if (contract.partnerAddress) {
-    addText(`Address: ${contract.partnerAddress}`, 11);
-  }
-  if (contract.partnerEmail) {
-    addText(`Email: ${contract.partnerEmail}`, 11);
-  }
-  if (contract.partnerPhone) {
-    addText(`Phone: ${contract.partnerPhone}`, 11);
-  }
-  addSpacing(30);
+  yPosition -= 20;
   
-  // Agreement Details
-  addText('AGREEMENT DETAILS', 16, helveticaBoldFont, true);
-  addSpacing(15);
-  
-  const currentDate = new Date().toLocaleDateString('en-CA', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
-  
-  addText(`Date of Agreement: ${currentDate}`, 12);
-  
-  if (contract.cohabDate) {
-    const cohabDate = new Date(contract.cohabDate).toLocaleDateString('en-CA', {
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-    addText(`Date Cohabitation Began: ${cohabDate}`, 12);
-  }
-  
-  if (contract.residenceAddress) {
-    addText(`Residence Address: ${contract.residenceAddress}`, 12);
-  }
-  
-  if (contract.residenceOwnership) {
-    let ownershipText = 'Residence Ownership: ';
-    switch(contract.residenceOwnership) {
-      case 'joint': ownershipText += 'Joint ownership'; break;
-      case 'user': ownershipText += 'Owned by Party A'; break;
-      case 'partner': ownershipText += 'Owned by Party B'; break;
-      case 'rental': ownershipText += 'Rental property'; break;
-      default: ownershipText += contract.residenceOwnership;
-    }
-    addText(ownershipText, 12);
-  }
-  
-  addSpacing(30);
-  
-  // Financial Information
-  addText('FINANCIAL INFORMATION', 16, helveticaBoldFont, true);
-  addSpacing(15);
-  
-  if (contract.userIncome) {
-    addText(`Party A Annual Income: $${parseInt(contract.userIncome).toLocaleString()} CAD`, 12);
-  }
-  if (contract.partnerIncome) {
-    addText(`Party B Annual Income: $${parseInt(contract.partnerIncome).toLocaleString()} CAD`, 12);
-  }
-  
-  if (contract.expenseSplitType) {
-    let expenseText = 'Expense Arrangement: ';
-    switch(contract.expenseSplitType) {
-      case 'equal': expenseText += 'Equal split (50/50)'; break;
-      case 'proportional': expenseText += 'Proportional to income'; break;
-      case 'custom': expenseText += 'Custom arrangement'; break;
-      default: expenseText += contract.expenseSplitType;
-    }
-    addText(expenseText, 12);
-  }
-  
-  addSpacing(30);
-  
-  // Employment Information
-  if (contract.userJobTitle || contract.partnerJobTitle) {
-    addText('EMPLOYMENT INFORMATION', 16, helveticaBoldFont, true);
-    addSpacing(15);
-    
-    if (contract.userJobTitle) {
-      addText(`Party A Occupation: ${contract.userJobTitle}`, 12);
-    }
-    if (contract.partnerJobTitle) {
-      addText(`Party B Occupation: ${contract.partnerJobTitle}`, 12);
-    }
-    addSpacing(30);
-  }
-  
-  // Children Information
-  if (contract.children && contract.children.length > 0) {
-    addText('CHILDREN', 16, helveticaBoldFont, true);
-    addSpacing(15);
-    
-    contract.children.forEach((child: any, index: number) => {
-      let childText = `Child ${index + 1}: ${child.name}`;
-      if (child.age) childText += ` (Age ${child.age})`;
-      addText(childText, 12);
-      
-      if (child.relationship && child.parentage) {
-        let relationshipText = `Relationship: ${child.relationship}`;
-        if (child.parentage === 'both') {
-          relationshipText += ', child of both parties';
-        } else if (child.parentage === 'user') {
-          relationshipText += ', child of Party A';
-        } else if (child.parentage === 'partner') {
-          relationshipText += ', child of Party B';
-        }
-        addText(relationshipText, 11);
-      }
-      addSpacing(10);
-    });
-    addSpacing(20);
-  }
-  
-  // Legal Counsel
-  if (contract.userLawyer || contract.partnerLawyer) {
-    addText('LEGAL REPRESENTATION', 16, helveticaBoldFont, true);
-    addSpacing(15);
-    
-    if (contract.userLawyer) {
-      addText(`Party A Legal Counsel: ${contract.userLawyer}`, 12);
-    }
-    if (contract.partnerLawyer) {
-      addText(`Party B Legal Counsel: ${contract.partnerLawyer}`, 12);
-    }
-    addSpacing(30);
-  }
-  
-  // Additional Clauses
-  if (contract.additionalClauses) {
-    addText('ADDITIONAL CLAUSES', 16, helveticaBoldFont, true);
-    addSpacing(15);
-    
-    // Split long text into lines that fit the page width
-    const maxLineLength = Math.floor((width - 2 * margin) / 6); // Approximate character width
-    const lines = contract.additionalClauses.split('\n');
-    lines.forEach((line: string) => {
-      if (line.length > maxLineLength) {
-        const words = line.split(' ');
-        let currentLine = '';
-        words.forEach((word: string) => {
-          if ((currentLine + word).length > maxLineLength) {
-            if (currentLine) {
-              addText(currentLine.trim(), 11);
-              currentLine = word + ' ';
-            } else {
-              addText(word, 11); // Single long word
-            }
-          } else {
-            currentLine += word + ' ';
-          }
-        });
-        if (currentLine) {
-          addText(currentLine.trim(), 11);
-        }
-      } else {
-        addText(line, 11);
-      }
-    });
-    addSpacing(30);
-  }
-  
-  // Notes
-  if (contract.notes) {
-    addText('NOTES', 16, helveticaBoldFont, true);
-    addSpacing(15);
-    
-    const maxLineLength = Math.floor((width - 2 * margin) / 6);
-    const lines = contract.notes.split('\n');
-    lines.forEach((line: string) => {
-      if (line.length > maxLineLength) {
-        const words = line.split(' ');
-        let currentLine = '';
-        words.forEach((word: string) => {
-          if ((currentLine + word).length > maxLineLength) {
-            if (currentLine) {
-              addText(currentLine.trim(), 11);
-              currentLine = word + ' ';
-            } else {
-              addText(word, 11);
-            }
-          } else {
-            currentLine += word + ' ';
-          }
-        });
-        if (currentLine) {
-          addText(currentLine.trim(), 11);
-        }
-      } else {
-        addText(line, 11);
-      }
-    });
-    addSpacing(30);
-  }
-  
-  // Footer
-  yPosition = 100; // Position near bottom
-  addText('IMPORTANT NOTICE', 14, helveticaBoldFont, true);
-  addSpacing(10);
-  addText('This document is a draft cohabitation agreement generated for informational', 10);
-  addText('purposes only. It should be reviewed by qualified legal counsel before signing.', 10);
-  addText('Alberta Family Contracts does not provide legal advice.', 10);
-  addSpacing(20);
+  const currentDate = new Date().toLocaleDateString('en-CA');
   addText(`Generated on: ${currentDate}`, 10);
   addText(`Contract ID: #${contract.id}`, 10);
+  yPosition -= 30;
+  
+  addText('NOTICE: Please contact support for full PDF formatting.', 10, true);
   
   const pdfBytes = await pdfDoc.save();
   return pdfBytes;
