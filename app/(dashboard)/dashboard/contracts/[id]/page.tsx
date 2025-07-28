@@ -75,6 +75,11 @@ export default function ContractDetailPage() {
       setFormData({
         userFullName: contract.userFullName || '',
         partnerFullName: contract.partnerFullName || '',
+        userFirstName: contract.userFirstName || '',
+        partnerFirstName: contract.partnerFirstName || '',
+        userAge: contract.userAge?.toString() || '',
+        partnerAge: contract.partnerAge?.toString() || '',
+        cohabDate: contract.cohabDate || '',
         userJobTitle: contract.userJobTitle || '',
         partnerJobTitle: contract.partnerJobTitle || '',
         userIncome: contract.userIncome || '',
