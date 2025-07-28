@@ -102,14 +102,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 bg-white w-full">
+      <section className="py-12 bg-white w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-3 lg:gap-8">
+          <div className="lg:grid lg:grid-cols-3 lg:gap-6">
             <div>
               <div className="flex items-center justify-center h-12 w-12 rounded-md bg-orange-500 text-white">
                 <Shield className="h-6 w-6" />
               </div>
-              <div className="mt-5">
+              <div className="mt-4">
                 <h2 className="text-lg font-medium text-gray-900">
                   Legal Protection
                 </h2>
@@ -120,11 +120,11 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="mt-10 lg:mt-0">
+            <div className="mt-6 lg:mt-0">
               <div className="flex items-center justify-center h-12 w-12 rounded-md bg-orange-500 text-white">
                 <FileText className="h-6 w-6" />
               </div>
-              <div className="mt-5">
+              <div className="mt-4">
                 <h2 className="text-lg font-medium text-gray-900">
                   Professional Documents
                 </h2>
@@ -135,11 +135,11 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="mt-10 lg:mt-0">
+            <div className="mt-6 lg:mt-0">
               <div className="flex items-center justify-center h-12 w-12 rounded-md bg-orange-500 text-white">
                 <Users className="h-6 w-6" />
               </div>
-              <div className="mt-5">
+              <div className="mt-4">
                 <h2 className="text-lg font-medium text-gray-900">
                   Easy Setup
                 </h2>
