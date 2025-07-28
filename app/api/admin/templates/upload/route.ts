@@ -31,8 +31,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Ensure templates directory exists
-    if (!fs.existsSync(TEMPLATES_DIR)) {
-      fs.mkdirSync(TEMPLATES_DIR, { recursive: true });
+    try {
+      if (!fs.existsSync(TEMPLATES_DIR)) {
+        fs.mkdirSync(TEMPLATES_DIR, { recursive: true });
+      }
+    } catch (dirError) {
+      console.error('Directory creation error:', dirError);
+      return NextResponse.json({ 
+        error: 'Failed to create templates directory',
+        details: dirError instanceof Error ? dirError.message : 'Unknown directory error'
+      }, { status: 500 });
     }
 
     // Generate safe filename
@@ -44,10 +52,18 @@ export async function POST(request: NextRequest) {
     const filePath = path.join(TEMPLATES_DIR, filename);
 
     // Save file
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    
-    fs.writeFileSync(filePath, buffer);
+    let buffer: Buffer;
+    try {
+      const bytes = await file.arrayBuffer();
+      buffer = Buffer.from(bytes);
+      fs.writeFileSync(filePath, buffer);
+    } catch (writeError) {
+      console.error('File write error:', writeError);
+      return NextResponse.json({ 
+        error: 'Failed to save template file',
+        details: writeError instanceof Error ? writeError.message : 'Unknown write error'
+      }, { status: 500 });
+    }
 
     // Validate that it's a proper docx file by checking if we can read it
     try {
@@ -59,8 +75,17 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid Word document format' }, { status: 400 });
       }
     } catch (validationError) {
-      fs.unlinkSync(filePath); // Clean up invalid file
-      return NextResponse.json({ error: 'Invalid or corrupted Word document' }, { status: 400 });
+      console.error('Validation error:', validationError);
+      // Clean up invalid file
+      try {
+        fs.unlinkSync(filePath);
+      } catch (cleanupError) {
+        console.error('Cleanup error:', cleanupError);
+      }
+      return NextResponse.json({ 
+        error: 'Invalid or corrupted Word document',
+        details: validationError instanceof Error ? validationError.message : 'Unknown validation error'
+      }, { status: 400 });
     }
 
     return NextResponse.json({ 
@@ -79,7 +104,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error uploading template:', error);
     return NextResponse.json(
-      { error: 'Failed to upload template' },
+      { 
+        error: 'Failed to upload template',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
