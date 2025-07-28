@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser, getUserWithTeam } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
-import { familyContracts } from '@/lib/db/schema';
+import { familyContracts, templates } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
-import path from 'path';
-import fs from 'fs';
 
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
@@ -45,45 +43,27 @@ export async function POST(
       return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
     }
 
-    // Generate professional document using active template
-    const templatesDir = path.join(process.cwd(), 'lib', 'templates');
-    const activeTemplateFile = path.join(templatesDir, 'active-template.txt');
-    
-    let templatePath = path.join(templatesDir, 'cohabitation-template-proper.docx'); // default
-    
-    // Check for active template
-    try {
-      if (fs.existsSync(activeTemplateFile)) {
-        const activeTemplateId = fs.readFileSync(activeTemplateFile, 'utf-8').trim();
-        
-        // Find the template file
-        const files = fs.readdirSync(templatesDir);
-        const templateFile = files.find(file => 
-          file.endsWith('.docx') && 
-          (file.replace('.docx', '') === activeTemplateId || file.startsWith(activeTemplateId))
-        );
-        
-        if (templateFile) {
-          templatePath = path.join(templatesDir, templateFile);
-        }
-      }
-    } catch (error) {
-      console.error('Error reading active template:', error);
-      // Continue with default template
-    }
-    
-    if (!fs.existsSync(templatePath)) {
+    // Get active template from database
+    const activeTemplate = await db
+      .select()
+      .from(templates)
+      .where(eq(templates.isActive, 'true'))
+      .limit(1);
+
+    if (activeTemplate.length === 0) {
       return NextResponse.json({ 
-        error: 'Professional template not found. Please upload a template first.' 
+        error: 'No active template found. Please upload and activate a template first.' 
       }, { status: 500 });
     }
+
+    const template = activeTemplate[0];
 
     // Prepare template data
     const templateData = prepareTemplateData(contract, user);
     
-    // Generate document
-    const content = fs.readFileSync(templatePath, 'binary');
-    const zip = new PizZip(content);
+    // Generate document from database-stored template
+    const templateBuffer = Buffer.from(template.content, 'base64');
+    const zip = new PizZip(templateBuffer);
     
     const doc = new Docxtemplater(zip, {
       paragraphLoop: true,
