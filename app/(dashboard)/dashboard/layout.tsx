@@ -23,9 +23,23 @@ export default function DashboardLayout({
   const user = authData?.user;
   const isAdmin = user?.role === 'admin';
   
-  // Get current contract data
+  // Detect if we're on a specific contract page
+  const contractIdMatch = pathname.match(/^\/dashboard\/contracts\/(\d+)/);
+  const specificContractId = contractIdMatch ? contractIdMatch[1] : null;
+  
+  // Get current contract data (main dashboard contract)
   const { data: contractData } = useSWR('/api/contract', fetcher);
-  const contract = contractData?.contract;
+  const mainContract = contractData?.contract;
+  
+  // Get specific contract data if viewing a specific contract
+  const { data: specificContractData } = useSWR(
+    specificContractId ? `/api/contracts/${specificContractId}` : null,
+    fetcher
+  );
+  const specificContract = specificContractData?.contract;
+  
+  // Use specific contract if available, otherwise use main contract
+  const contract = specificContract || mainContract;
 
   // Contract action handlers
   const handlePreviewContract = async () => {
@@ -119,8 +133,9 @@ export default function DashboardLayout({
     { href: '/dashboard/security', icon: Shield, label: 'Security' }
   ];
 
-  // Contract action buttons (only show on dashboard page)
-  const contractActions = pathname === '/dashboard' && contract ? [
+  // Contract action buttons (show on dashboard page and specific contract pages)
+  const shouldShowContractActions = (pathname === '/dashboard' || specificContractId) && contract;
+  const contractActions = shouldShowContractActions ? [
     {
       id: 'preview',
       label: 'Preview Contract',
