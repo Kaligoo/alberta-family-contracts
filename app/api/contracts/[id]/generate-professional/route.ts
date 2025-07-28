@@ -120,12 +120,25 @@ function prepareTemplateData(contract: any, user: any) {
     day: 'numeric' 
   });
 
+  // Extract first names from full names if not provided separately
+  const getUserFirstName = () => {
+    if (contract.userFirstName) return contract.userFirstName;
+    if (contract.userFullName) return contract.userFullName.split(' ')[0];
+    return '[Your First Name]';
+  };
+
+  const getPartnerFirstName = () => {
+    if (contract.partnerFirstName) return contract.partnerFirstName;
+    if (contract.partnerFullName) return contract.partnerFullName.split(' ')[0];
+    return '[Partner First Name]';
+  };
+
   return {
     // Core party information
     userFullName: contract.userFullName || '[Your Name]',
     partnerFullName: contract.partnerFullName || '[Partner Name]',
-    userFirstName: contract.userFirstName || '[Your First Name]',
-    partnerFirstName: contract.partnerFirstName || '[Partner First Name]',
+    userFirstName: getUserFirstName(),
+    partnerFirstName: getPartnerFirstName(),
     
     // Employment and income
     userJobTitle: contract.userJobTitle || '[Your Occupation]',
