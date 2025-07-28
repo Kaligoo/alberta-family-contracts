@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
 import { users, teams, teamMembers, familyContracts } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 export async function POST(request: NextRequest) {
   try {
@@ -99,9 +99,9 @@ export async function POST(request: NextRequest) {
     for (const contract of sampleContracts) {
       console.log('Inserting contract for:', contract.userFullName, contract.partnerFullName);
       
-      // Use raw SQL that only includes existing production columns
-      const result = await db.execute(
-        `INSERT INTO family_contracts (
+      // Use raw SQL with sql template literal for parameterized queries
+      const result = await db.execute(sql`
+        INSERT INTO family_contracts (
           user_id, team_id, user_full_name, partner_full_name, 
           user_job_title, partner_job_title, user_income, partner_income,
           user_email, partner_email, user_phone, partner_phone,
@@ -109,34 +109,14 @@ export async function POST(request: NextRequest) {
           expense_split_type, additional_clauses, notes, contract_type, status, children,
           created_at, updated_at
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, 
-          $17, $18, $19, $20, $21, $22, NOW(), NOW()
-        ) RETURNING id, user_full_name, partner_full_name, status`,
-        [
-          adminUser.id,
-          teamMember.teamId,
-          contract.userFullName,
-          contract.partnerFullName,
-          contract.userJobTitle,
-          contract.partnerJobTitle,
-          contract.userIncome,
-          contract.partnerIncome,
-          contract.userEmail,
-          contract.partnerEmail,
-          contract.userPhone,
-          contract.partnerPhone,
-          contract.userAddress,
-          contract.partnerAddress,
-          contract.residenceAddress,
-          contract.residenceOwnership,
-          contract.expenseSplitType,
-          contract.additionalClauses,
-          contract.notes,
-          contract.contractType,
-          contract.status,
-          JSON.stringify([]) // Empty children array
-        ]
-      );
+          ${adminUser.id}, ${teamMember.teamId}, ${contract.userFullName}, ${contract.partnerFullName}, 
+          ${contract.userJobTitle}, ${contract.partnerJobTitle}, ${contract.userIncome}, ${contract.partnerIncome},
+          ${contract.userEmail}, ${contract.partnerEmail}, ${contract.userPhone}, ${contract.partnerPhone},
+          ${contract.userAddress}, ${contract.partnerAddress}, ${contract.residenceAddress}, ${contract.residenceOwnership},
+          ${contract.expenseSplitType}, ${contract.additionalClauses}, ${contract.notes}, ${contract.contractType}, 
+          ${contract.status}, ${JSON.stringify([])}, NOW(), NOW()
+        ) RETURNING id, user_full_name, partner_full_name, status
+      `);
       
       results.push({
         id: result.rows[0]?.id,
