@@ -14,6 +14,7 @@ import { Loader2, FileText, Users, DollarSign, Home, Save } from 'lucide-react';
 import { User } from '@/lib/db/schema';
 import useSWR from 'swr';
 import { saveFamilyContract } from '@/app/(login)/actions';
+import { useRouter } from 'next/navigation';
 
 type ActionState = {
   error?: string;
@@ -373,9 +374,10 @@ function ChildrenCard({ formData, updateFormData }: {
   );
 }
 
-function ContractPreview({ onGeneratePreview, formData }: { 
+function ContractPreview({ onGeneratePreview, formData, isLoading }: { 
   onGeneratePreview: () => void; 
-  formData: any; 
+  formData: any;
+  isLoading: boolean;
 }) {
   return (
     <Card>
@@ -422,9 +424,16 @@ function ContractPreview({ onGeneratePreview, formData }: {
             onClick={onGeneratePreview}
             className="w-full bg-orange-500 hover:bg-orange-600" 
             size="lg"
-            disabled={!formData.userFullName || !formData.partnerFullName}
+            disabled={!formData.userFullName || !formData.partnerFullName || isLoading}
           >
-            Generate Your Agreement Preview
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating Preview...
+              </>
+            ) : (
+              'Generate Your Agreement Preview'
+            )}
           </Button>
           
           <p className="text-sm text-gray-500 text-center mt-2">
@@ -436,187 +445,6 @@ function ContractPreview({ onGeneratePreview, formData }: {
   );
 }
 
-function ContractPreviewDocument({ formData, onClose }: { 
-  formData: any; 
-  onClose: () => void; 
-}) {
-  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
-  const [paymentError, setPaymentError] = useState('');
-  const currentDate = new Date().toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
-
-  const handlePayment = async () => {
-    setIsPaymentLoading(true);
-    setPaymentError('');
-
-    try {
-      const response = await fetch('/api/test-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.checkout_url) {
-        window.location.href = data.checkout_url;
-      } else {
-        setPaymentError(data.error || 'Failed to create payment session');
-      }
-    } catch (error) {
-      setPaymentError('Failed to initiate payment. Please try again.');
-    } finally {
-      setIsPaymentLoading(false);
-    }
-  };
-
-  return (
-    <section className="flex-1 p-4 lg:p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Agreement Preview</h1>
-          <Button onClick={onClose} variant="outline">
-            ← Back to Edit
-          </Button>
-        </div>
-        
-        <div className="bg-white border rounded-lg shadow-lg p-8 space-y-6">
-          {/* Header */}
-          <div className="text-center border-b pb-6">
-            <h1 className="text-3xl font-bold mb-2">COHABITATION AGREEMENT</h1>
-            <p className="text-gray-600">Province of Alberta, Canada</p>
-            <p className="text-sm text-gray-500 mt-2">Date: {currentDate}</p>
-          </div>
-
-          {/* Parties */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold border-b pb-2">PARTIES TO THIS AGREEMENT</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <h3 className="font-medium text-lg">Party 1:</h3>
-                <p><strong>Name:</strong> {formData.userFullName || '[Your Name]'}</p>
-                {formData.userJobTitle && <p><strong>Occupation:</strong> {formData.userJobTitle}</p>}
-                {formData.userIncome && <p><strong>Annual Income:</strong> ${parseInt(formData.userIncome).toLocaleString()}</p>}
-              </div>
-              
-              <div className="space-y-2">
-                <h3 className="font-medium text-lg">Party 2:</h3>
-                <p><strong>Name:</strong> {formData.partnerFullName || '[Partner Name]'}</p>
-                {formData.partnerJobTitle && <p><strong>Occupation:</strong> {formData.partnerJobTitle}</p>}
-                {formData.partnerIncome && <p><strong>Annual Income:</strong> ${parseInt(formData.partnerIncome).toLocaleString()}</p>}
-              </div>
-            </div>
-          </div>
-
-          {/* Children Section */}
-          {formData.children && formData.children.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold border-b pb-2">CHILDREN</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {formData.children.map((child: ChildInfo, index: number) => (
-                  <div key={index} className="bg-gray-50 p-4 rounded">
-                    <p><strong>Name:</strong> {child.name}</p>
-                    {child.age && <p><strong>Age:</strong> {child.age}</p>}
-                    <p><strong>Relationship:</strong> {child.relationship}</p>
-                    <p><strong>Child of:</strong> {
-                      child.parentage === 'both' ? 'Both parties' :
-                      child.parentage === 'user' ? formData.userFullName :
-                      formData.partnerFullName
-                    }</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Agreement Terms Preview */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold border-b pb-2">AGREEMENT TERMS</h2>
-            <div className="space-y-3 text-sm leading-relaxed">
-              <p><strong>1. Property Rights:</strong> Each party shall retain ownership of property acquired before cohabitation and property acquired individually during cohabitation.</p>
-              
-              <p><strong>2. Joint Property:</strong> Property purchased jointly during cohabitation shall be owned equally by both parties unless otherwise specified.</p>
-              
-              <p><strong>3. Financial Responsibilities:</strong> Living expenses shall be shared proportionally based on income levels as disclosed in this agreement.</p>
-              
-              <p><strong>4. Support Obligations:</strong> Neither party shall be obligated to provide spousal support to the other upon termination of cohabitation.</p>
-              
-              {formData.children && formData.children.length > 0 && (
-                <p><strong>5. Child Support:</strong> Child support obligations shall be determined according to the Alberta Child Support Guidelines.</p>
-              )}
-              
-              <p><strong>6. Termination:</strong> This agreement may be terminated by either party with 30 days written notice.</p>
-            </div>
-          </div>
-
-          {/* Signature Section */}
-          <div className="space-y-6 border-t pt-6">
-            <h2 className="text-xl font-semibold">SIGNATURES</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <div className="border-b border-gray-400 pb-1">
-                  <p className="text-sm text-gray-600 mb-8">Signature</p>
-                </div>
-                <p className="font-medium">{formData.userFullName}</p>
-                <div className="border-b border-gray-400 pb-1">
-                  <p className="text-sm text-gray-600 mb-8">Date</p>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="border-b border-gray-400 pb-1">
-                  <p className="text-sm text-gray-600 mb-8">Signature</p>
-                </div>
-                <p className="font-medium">{formData.partnerFullName}</p>
-                <div className="border-b border-gray-400 pb-1">
-                  <p className="text-sm text-gray-600 mb-8">Date</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Legal Notice */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded p-4 text-sm">
-            <p className="font-medium text-yellow-800 mb-2">Legal Notice:</p>
-            <p className="text-yellow-700">
-              This is a preview of your cohabitation agreement. The final document will include additional 
-              legal clauses and should be reviewed by independent legal counsel before signing.
-            </p>
-          </div>
-
-          {/* Purchase Section */}
-          <div className="bg-orange-50 border border-orange-200 rounded p-6 text-center">
-            <h3 className="text-lg font-semibold mb-2">Ready to Purchase?</h3>
-            <p className="text-gray-600 mb-4">Get your complete, legally formatted agreement for $700</p>
-            <Button 
-              onClick={handlePayment}
-              disabled={isPaymentLoading}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-2"
-            >
-              {isPaymentLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing Payment...
-                </>
-              ) : (
-                'Purchase Complete Agreement'
-              )}
-            </Button>
-            {paymentError && (
-              <p className="text-red-600 text-sm mt-2">{paymentError}</p>
-            )}
-            <p className="text-xs text-gray-500 mt-2">Secure payment via Stripe</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 export default function DashboardPage() {
   const [formData, setFormData] = useState({
@@ -640,9 +468,10 @@ export default function DashboardPage() {
     children: [] as ChildInfo[]
   });
 
-  const [showPreview, setShowPreview] = useState(false);
   const [saveState, saveAction, isSaving] = useActionState<ActionState, FormData>(saveFamilyContract, {});
   const [isPending, startTransition] = useTransition();
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+  const router = useRouter();
   
   // Load saved contract data
   const { data: contractData, error: contractError } = useSWR('/api/contract', fetcher);
@@ -700,17 +529,66 @@ export default function DashboardPage() {
     });
   };
 
-  const generatePreview = () => {
-    setShowPreview(true);
+  const generatePreview = async () => {
+    setIsGeneratingPreview(true);
+    
+    try {
+      // First save the current form data
+      if (formData.userFullName && formData.partnerFullName) {
+        const form = new FormData();
+        Object.entries(formData).forEach(([key, value]) => {
+          if (key === 'children') {
+            form.append(key, JSON.stringify(value));
+          } else {
+            form.append(key, value as string);
+          }
+        });
+        
+        // Save the data first
+        await new Promise((resolve, reject) => {
+          startTransition(() => {
+            saveAction(form);
+            // Wait a bit for the save to complete
+            setTimeout(resolve, 1000);
+          });
+        });
+      }
+      
+      // Get the latest contract data to get the ID
+      const response = await fetch('/api/contract');
+      const data = await response.json();
+      
+      if (data.contract?.id) {
+        // Navigate to the preview page
+        router.push(`/dashboard/contracts/${data.contract.id}/preview`);
+      } else {
+        // If no contract exists, create one first
+        const createResponse = await fetch('/api/contracts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+        
+        if (createResponse.ok) {
+          const createData = await createResponse.json();
+          router.push(`/dashboard/contracts/${createData.contract.id}/preview`);
+        } else {
+          console.error('Failed to create contract');
+        }
+      }
+    } catch (error) {
+      console.error('Error generating preview:', error);
+    } finally {
+      setIsGeneratingPreview(false);
+    }
   };
 
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  if (showPreview) {
-    return <ContractPreviewDocument formData={formData} onClose={() => setShowPreview(false)} />;
-  }
 
   // Show loading state while fetching contract data
   if (!contractData && !contractError) {
@@ -785,7 +663,7 @@ export default function DashboardPage() {
           </div>
           
           <div className="lg:col-span-1">
-            <ContractPreview onGeneratePreview={generatePreview} formData={formData} />
+            <ContractPreview onGeneratePreview={generatePreview} formData={formData} isLoading={isGeneratingPreview} />
           </div>
         </div>
       </div>

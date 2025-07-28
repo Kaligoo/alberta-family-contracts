@@ -483,6 +483,121 @@ export default function ContractDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Children Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Children Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {(!contract.children || contract.children.length === 0) ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No children added yet</p>
+                  <p className="text-sm">Click the button below to add children to your agreement</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {contract.children.map((child: any, index: number) => (
+                    <div key={index} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-medium">Child {index + 1}</h4>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const newChildren = contract.children.filter((_: any, i: number) => i !== index);
+                            updateFormData('children', newChildren);
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <Label>Name</Label>
+                          <Input
+                            value={child.name || ''}
+                            onChange={(e) => {
+                              const updated = [...(contract.children || [])];
+                              updated[index] = { ...updated[index], name: e.target.value };
+                              updateFormData('children', updated);
+                            }}
+                            placeholder="Child's name"
+                          />
+                        </div>
+                        <div>
+                          <Label>Age (optional)</Label>
+                          <Input
+                            type="number"
+                            value={child.age || ''}
+                            onChange={(e) => {
+                              const updated = [...(contract.children || [])];
+                              updated[index] = { ...updated[index], age: e.target.value ? parseInt(e.target.value) : undefined };
+                              updateFormData('children', updated);
+                            }}
+                            placeholder="Age"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <Label>Relationship</Label>
+                          <select
+                            className="w-full p-2 border rounded-md"
+                            value={child.relationship || 'biological'}
+                            onChange={(e) => {
+                              const updated = [...(contract.children || [])];
+                              updated[index] = { ...updated[index], relationship: e.target.value };
+                              updateFormData('children', updated);
+                            }}
+                          >
+                            <option value="biological">Biological</option>
+                            <option value="step">Step-child</option>
+                            <option value="adopted">Adopted</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label>Parentage</Label>
+                          <select
+                            className="w-full p-2 border rounded-md"
+                            value={child.parentage || 'both'}
+                            onChange={(e) => {
+                              const updated = [...(contract.children || [])];
+                              updated[index] = { ...updated[index], parentage: e.target.value };
+                              updateFormData('children', updated);
+                            }}
+                          >
+                            <option value="both">Both partners</option>
+                            <option value="user">Your child</option>
+                            <option value="partner">Partner's child</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <Button
+                onClick={() => {
+                  const newChild = {
+                    name: '',
+                    age: undefined,
+                    relationship: 'biological',
+                    parentage: 'both'
+                  };
+                  const newChildren = [...(contract.children || []), newChild];
+                  updateFormData('children', newChildren);
+                }}
+                variant="outline"
+                className="w-full"
+              >
+                Add Child
+              </Button>
+            </CardContent>
+          </Card>
+
           {/* Additional Information */}
           <Card>
             <CardHeader>
