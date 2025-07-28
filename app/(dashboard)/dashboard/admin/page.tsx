@@ -31,6 +31,8 @@ export default function AdminDashboardPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [sampleDataStatus, setSampleDataStatus] = useState('');
   const [isInitializingSampleData, setIsInitializingSampleData] = useState(false);
+  const [migrationStatus, setMigrationStatus] = useState('');
+  const [isRunningMigration, setIsRunningMigration] = useState(false);
 
   const { data: templatesData, error, mutate } = useSWR('/api/admin/templates', fetcher);
   const templates: Template[] = templatesData?.templates || [];
@@ -130,6 +132,35 @@ export default function AdminDashboardPage() {
       setSampleDataStatus('Network error occurred while initializing sample data');
     } finally {
       setIsInitializingSampleData(false);
+    }
+  };
+
+  const handleRunMigration = async () => {
+    if (!confirm('This will apply missing database schema changes. This is a one-time operation. Continue?')) return;
+
+    setIsRunningMigration(true);
+    setMigrationStatus('');
+
+    try {
+      const response = await fetch('/api/admin/force-migration', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setMigrationStatus(`Success: Migration applied. Added columns: ${result.addedColumns.join(', ')}`);
+        } else {
+          setMigrationStatus(`Error: ${result.error}`);
+        }
+      } else {
+        const error = await response.json();
+        setMigrationStatus(`Error: ${error.error || 'Failed to run migration'}`);
+      }
+    } catch (error) {
+      setMigrationStatus('Network error occurred while running migration');
+    } finally {
+      setIsRunningMigration(false);
     }
   };
 
@@ -343,6 +374,43 @@ export default function AdminDashboardPage() {
                   <li>Templates should include proper legal language and formatting</li>
                 </ul>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Database Migration */}
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Settings className="mr-2 h-5 w-5" />
+              Database Migration
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Apply missing database schema changes. Run this if sample data isn't working.
+              </p>
+              
+              <div className="flex gap-4">
+                <Button 
+                  onClick={handleRunMigration}
+                  disabled={isRunningMigration}
+                  className="bg-orange-500 hover:bg-orange-600"
+                >
+                  {isRunningMigration ? 'Running Migration...' : 'Apply Schema Changes'}
+                </Button>
+              </div>
+
+              {migrationStatus && (
+                <div className={`p-3 rounded-md text-sm ${
+                  migrationStatus.startsWith('Success') 
+                    ? 'bg-green-50 text-green-700 border border-green-200' 
+                    : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {migrationStatus}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
