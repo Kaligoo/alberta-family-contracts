@@ -45,8 +45,32 @@ export async function POST(
       return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
     }
 
-    // Generate professional document
-    const templatePath = path.join(process.cwd(), 'lib', 'templates', 'cohabitation-template-proper.docx');
+    // Generate professional document using active template
+    const templatesDir = path.join(process.cwd(), 'lib', 'templates');
+    const activeTemplateFile = path.join(templatesDir, 'active-template.txt');
+    
+    let templatePath = path.join(templatesDir, 'cohabitation-template-proper.docx'); // default
+    
+    // Check for active template
+    try {
+      if (fs.existsSync(activeTemplateFile)) {
+        const activeTemplateId = fs.readFileSync(activeTemplateFile, 'utf-8').trim();
+        
+        // Find the template file
+        const files = fs.readdirSync(templatesDir);
+        const templateFile = files.find(file => 
+          file.endsWith('.docx') && 
+          (file.replace('.docx', '') === activeTemplateId || file.startsWith(activeTemplateId))
+        );
+        
+        if (templateFile) {
+          templatePath = path.join(templatesDir, templateFile);
+        }
+      }
+    } catch (error) {
+      console.error('Error reading active template:', error);
+      // Continue with default template
+    }
     
     if (!fs.existsSync(templatePath)) {
       return NextResponse.json({ 

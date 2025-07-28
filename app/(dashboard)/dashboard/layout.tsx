@@ -4,7 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { FileText, List, Settings, Shield, Activity, Menu } from 'lucide-react';
+import { FileText, List, Settings, Shield, Activity, Menu, CogIcon } from 'lucide-react';
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function DashboardLayout({
   children
@@ -13,6 +16,10 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  const { data: authData } = useSWR('/api/auth/me', fetcher);
+  const user = authData?.user;
+  const isAdmin = user?.role === 'admin';
 
   const navItems = [
     { href: '/dashboard', icon: FileText, label: 'Current Contract' },
@@ -21,6 +28,11 @@ export default function DashboardLayout({
     { href: '/dashboard/activity', icon: Activity, label: 'Activity' },
     { href: '/dashboard/security', icon: Shield, label: 'Security' }
   ];
+
+  // Add admin nav item if user is admin
+  if (isAdmin) {
+    navItems.push({ href: '/dashboard/admin', icon: CogIcon, label: 'Admin' });
+  }
 
   return (
     <div className="flex flex-col min-h-[calc(100dvh-68px)] max-w-7xl mx-auto w-full">
