@@ -11,9 +11,11 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: authData, mutate } = useSWR('/api/auth/me', fetcher);
+  const { data: versionData } = useSWR('/api/version', fetcher);
   
   const isAuthenticated = authData?.authenticated;
   const user = authData?.user;
+  const version = versionData?.version || '0.20';
 
   const handleLogout = async () => {
     try {
@@ -65,7 +67,7 @@ export function Navigation() {
 
           {/* Version and Auth */}
           <div className="hidden md:flex items-center space-x-3">
-            <span className="text-xs text-gray-400 font-mono">v0.15</span>
+            <span className="text-xs text-gray-400 font-mono">v{version}</span>
             {isAuthenticated ? (
               <>
                 <Link href="/dashboard">
@@ -137,7 +139,7 @@ export function Navigation() {
               </Link>
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-gray-400 font-mono">v0.15</span>
+                  <span className="text-xs text-gray-400 font-mono">v{version}</span>
                 </div>
                 {isAuthenticated ? (
                   <div className="space-y-2">
