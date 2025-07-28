@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowLeft, Download, Edit, Printer, Loader2 } from 'lucide-react';
+import { ArrowLeft, Download, Edit, Printer, Loader2, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import useSWR from 'swr';
@@ -133,9 +133,14 @@ export default function ContractPreviewPage() {
             </div>
           </div>
           
-          {/* Purchase Button - Moved to top */}
-          <div className="flex justify-center mb-6">
-            <PaymentButton contractId={contractId} />
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+            <div className="flex-1 max-w-xs">
+              <ProfessionalDocumentButton contractId={contractId} />
+            </div>
+            <div className="flex-1 max-w-xs">
+              <PaymentButton contractId={contractId} />
+            </div>
           </div>
         </div>
 
@@ -295,6 +300,74 @@ export default function ContractPreviewPage() {
         )}
       </div>
     </section>
+  );
+}
+
+function ProfessionalDocumentButton({ contractId }: { contractId: string }) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleGenerateDocument = async () => {
+    setIsGenerating(true);
+    setError('');
+
+    try {
+      const response = await fetch(`/api/contracts/${contractId}/generate-professional`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        // Handle file download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        
+        // Get filename from response headers
+        const contentDisposition = response.headers.get('Content-Disposition');
+        const filename = contentDisposition?.match(/filename="([^"]+)"/)?.[1] || 'professional-contract.docx';
+        
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to generate professional document');
+      }
+    } catch (error) {
+      console.error('Error generating document:', error);
+      setError('Failed to generate document. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Button 
+        onClick={handleGenerateDocument}
+        disabled={isGenerating}
+        variant="outline"
+        className="w-full"
+      >
+        {isGenerating ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Generating Professional Document...
+          </>
+        ) : (
+          <>
+            <FileText className="mr-2 h-4 w-4" />
+            Download Professional Document
+          </>
+        )}
+      </Button>
+      {error && (
+        <p className="text-red-600 text-sm text-center">{error}</p>
+      )}
+    </div>
   );
 }
 
