@@ -21,6 +21,7 @@ interface Contract {
   status: string;
   contractType: string;
   isCurrentContract?: string;
+  isPaid?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -71,12 +72,10 @@ export default function ContractsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'paid':
         return 'bg-green-100 text-green-800';
       case 'preview':
         return 'bg-blue-100 text-blue-800';
-      case 'paid':
-        return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -178,15 +177,17 @@ export default function ContractsPage() {
                     </div>
                     
                     <div className="flex space-x-2 pt-4">
-                      {/* For now, just show Set as Current for all contracts */}
+                      {/* Disable editing if contract is paid */}
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleSetCurrentContract(contract.id)}
+                        disabled={contract.isPaid === 'true'}
                         className="flex-1"
+                        title={contract.isPaid === 'true' ? 'Contract is locked after payment' : 'Edit this contract'}
                       >
                         <ArrowRight className="mr-2 h-3 w-3" />
-                        Edit
+                        {contract.isPaid === 'true' ? 'Locked' : 'Edit'}
                       </Button>
                       <Link href={`/dashboard/contracts/${contract.id}/preview`} className="flex-1">
                         <Button variant="outline" size="sm" className="w-full">

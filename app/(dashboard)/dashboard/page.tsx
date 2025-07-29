@@ -28,9 +28,10 @@ interface ChildInfo {
   parentage: 'user' | 'partner' | 'both';
 }
 
-function PersonalInfoCard({ formData, updateFormData }: { 
+function PersonalInfoCard({ formData, updateFormData, isReadOnly }: { 
   formData: any; 
-  updateFormData: (field: string, value: any) => void; 
+  updateFormData: (field: string, value: any) => void;
+  isReadOnly?: boolean; 
 }) {
 
   return (
@@ -50,6 +51,8 @@ function PersonalInfoCard({ formData, updateFormData }: {
               value={formData.userFullName}
               onChange={(e) => updateFormData('userFullName', e.target.value)}
               placeholder="Enter your full name"
+              readOnly={isReadOnly}
+              className={isReadOnly ? 'bg-gray-100' : ''}
             />
           </div>
           <div>
@@ -534,6 +537,9 @@ export default function DashboardPage() {
   
   // Load saved contract data
   const { data: contractData, error: contractError } = useSWR('/api/contract', fetcher);
+  
+  // Check if current contract is paid and thus locked
+  const isContractPaid = contractData?.contract?.isPaid === 'true';
 
   // Load saved data into form when component mounts or data changes
   useEffect(() => {
@@ -570,6 +576,12 @@ export default function DashboardPage() {
   }, [contractData]);
 
   const handleSave = async () => {
+    // Prevent saving if contract is paid
+    if (isContractPaid) {
+      setSaveState({ error: 'Cannot edit contract after payment. Contract is locked.' });
+      return;
+    }
+
     setIsSaving(true);
     setSaveState({});
 
@@ -658,7 +670,7 @@ export default function DashboardPage() {
           <p className="text-gray-600">
             Let's gather some basic information to create your personalized family contract.
           </p>
-          {contractData?.contract && (
+          {contractData?.contract && !isContractPaid && (
             <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-700 flex items-center">
                 <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -668,10 +680,20 @@ export default function DashboardPage() {
               </p>
             </div>
           )}
+          {isContractPaid && (
+            <div className="mt-3 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <p className="text-sm text-orange-800 flex items-center font-medium">
+                <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                </svg>
+                🔒 This contract is locked because payment has been completed. No changes can be made.
+              </p>
+            </div>
+          )}
         </div>
         
         <div className="max-w-4xl mx-auto space-y-6">
-          <PersonalInfoCard formData={formData} updateFormData={updateFormData} />
+          <PersonalInfoCard formData={formData} updateFormData={updateFormData} isReadOnly={isContractPaid} />
           
           {/* Relationship Information */}
           <Card className="mb-6">
@@ -703,13 +725,19 @@ export default function DashboardPage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   onClick={handleSave}
-                  disabled={isSaving}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  disabled={isSaving || isContractPaid}
+                  className={`flex-1 ${isContractPaid ? 'bg-gray-400 hover:bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                  title={isContractPaid ? 'Contract is locked after payment' : ''}
                 >
                   {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Saving...
+                    </>
+                  ) : isContractPaid ? (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Contract Locked (Paid)
                     </>
                   ) : (
                     <>

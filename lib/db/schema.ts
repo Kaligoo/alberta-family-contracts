@@ -114,7 +114,7 @@ export const familyContracts = pgTable('family_contracts', {
   
   // Contract Details
   contractType: varchar('contract_type', { length: 50 }).notNull().default('cohabitation'),
-  status: varchar('status', { length: 20 }).notNull().default('draft'), // draft, preview, completed, paid
+  status: varchar('status', { length: 20 }).notNull().default('draft'), // draft, preview, paid
   
   // Address Information
   residenceAddress: text('residence_address'),
@@ -137,6 +137,9 @@ export const familyContracts = pgTable('family_contracts', {
   
   // Current Contract Flag
   isCurrentContract: varchar('is_current_contract', { length: 10 }).default('false'),
+  
+  // Payment Status
+  isPaid: varchar('is_paid', { length: 10 }).default('false'),
   
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),

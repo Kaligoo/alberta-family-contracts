@@ -70,6 +70,18 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ Current contract field migration already applied or failed');
     }
 
+    // Apply migration 0006_payment_status.sql (payment status field) if needed
+    try {
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        ADD COLUMN IF NOT EXISTS is_paid varchar(10) DEFAULT 'false';
+      `);
+      appliedMigrations.push('0006_payment_status');
+      console.log('✅ Payment status field migration applied');
+    } catch (error) {
+      console.log('⚠️ Payment status field migration already applied or failed');
+    }
+
     // Update the migration journal
     for (const migration of appliedMigrations) {
       try {
