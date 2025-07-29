@@ -15,15 +15,16 @@ export default function AboutPage() {
                   About Alberta Family Contracts
                 </h1>
                 <p className="mt-4 text-xl text-gray-600">
-                  Professional family law services delivered through innovative technology, 
-                  making legal protection accessible and affordable for Alberta families.
+                  Bridging the access to justice gap with lawyer-drafted family agreements at 
+                  budget-friendly prices. Real legal protection, not the inadequate documents 
+                  offered by non-lawyer services.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Garrett's Bio Section */}
+        {/* Access to Justice Section */}
         <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="lg:grid lg:grid-cols-12 lg:gap-8">
@@ -35,52 +36,61 @@ export default function AboutPage() {
                     </div>
                     <h3 className="text-xl font-bold text-gray-900">Garrett Horvath</h3>
                     <p className="text-orange-600 font-medium">Family Law Lawyer</p>
-                    <p className="text-gray-600 text-sm mt-1">Associate at Kahane Law Office</p>
+                    <p className="text-gray-600 text-sm mt-1">Over 10 Years Experience</p>
                   </div>
                 </div>
               </div>
               
               <div className="lg:col-span-8 mt-8 lg:mt-0">
                 <div className="bg-white rounded-lg shadow-lg p-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Professional Background</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Bridging the Access to Justice Gap</h2>
                   
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                        <GraduationCap className="h-5 w-5 text-orange-500 mr-2" />
-                        Education & Qualifications
+                      <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                        <Scale className="h-5 w-5 text-orange-500 mr-2" />
+                        The Problem with Access to Justice
                       </h3>
-                      <ul className="text-gray-600 space-y-2">
-                        <li>• Graduated from Thompson Rivers University Faculty of Law</li>
-                        <li>• Placed on Dean's List during law school</li>
-                        <li>• Bachelor's Degree in Management Information Systems, University of Lethbridge (2005)</li>
-                      </ul>
+                      <p className="text-gray-600 leading-relaxed">
+                        Access to justice remains one of Canada's most pressing legal challenges. Many Albertans cannot afford 
+                        traditional legal services, with lawyer fees often ranging from $300-$600 per hour. This leaves families 
+                        vulnerable, forced to navigate complex legal matters without proper protection or representation.
+                      </p>
                     </div>
 
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                        <Award className="h-5 w-5 text-orange-500 mr-2" />
-                        Professional Experience
-                      </h3>
-                      <ul className="text-gray-600 space-y-2">
-                        <li>• Associate at Kahane Law Office since September 2015</li>
-                        <li>• Specializes in family and civil litigation</li>
-                        <li>• Previous experience at civil litigation and criminal law firms</li>
-                        <li>• Former technology sales professional at a global technology company</li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
                         <Users className="h-5 w-5 text-orange-500 mr-2" />
-                        Leadership & Achievements
+                        Why Budget-Friendly Legal Options Matter
                       </h3>
-                      <ul className="text-gray-600 space-y-2">
-                        <li>• Co-founder of the Society of Law Students at Thompson Rivers University</li>
-                        <li>• Developed the society's website and edited its constitution</li>
-                        <li>• Served as Clubs and Events Coordinator</li>
-                        <li>• Represented Thompson Rivers University on BC Law Moot Team</li>
-                      </ul>
+                      <p className="text-gray-600 leading-relaxed">
+                        Legal protection shouldn't be a luxury. Everyone deserves access to properly drafted legal documents 
+                        that protect their family's interests. By leveraging technology and streamlined processes, we can 
+                        deliver lawyer-quality documents at a fraction of traditional cost, making legal protection accessible 
+                        to working families across Alberta.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                        <Award className="h-5 w-5 text-orange-500 mr-2" />
+                        The Lawyer Advantage
+                      </h3>
+                      <p className="text-gray-600 leading-relaxed">
+                        With over 10 years of family law experience, I've seen firsthand how inadequate legal documents 
+                        can devastate families. Other online options are not provided by lawyers and frankly, they suck. 
+                        They often fail to meet the legal requirements for binding agreements under Alberta law, leaving 
+                        you with worthless documents when you need protection most.
+                      </p>
+                    </div>
+
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <h4 className="text-red-800 font-semibold mb-2">Warning About Non-Lawyer Services</h4>
+                      <p className="text-red-700 text-sm">
+                        Many online document services are created by non-lawyers and fail to satisfy the legal requirements 
+                        for enforceable agreements. When disputes arise, these inadequate documents often cannot be enforced 
+                        by courts, leaving you without the protection you thought you had purchased.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -94,11 +104,12 @@ export default function AboutPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-                Our Mission
+                Our Mission: Democratizing Legal Protection
               </h2>
               <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
-                To make professional family law services accessible to all Alberta families through 
-                innovative technology, combining legal expertise with user-friendly tools.
+                To bridge the access to justice gap by providing lawyer-drafted, legally binding family 
+                agreements at affordable prices, ensuring every Alberta family can protect their future 
+                without breaking their budget.
               </p>
             </div>
 
@@ -107,10 +118,10 @@ export default function AboutPage() {
                 <div className="mx-auto h-12 w-12 rounded-md bg-orange-500 flex items-center justify-center">
                   <Scale className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900">Legal Excellence</h3>
+                <h3 className="mt-4 text-lg font-medium text-gray-900">Lawyer-Drafted Quality</h3>
                 <p className="mt-2 text-gray-600">
-                  Every document is crafted with the same attention to detail and legal rigor 
-                  you'd expect from a traditional law firm.
+                  Unlike non-lawyer services that produce inadequate documents, every agreement 
+                  is crafted by an experienced family lawyer to ensure legal enforceability.
                 </p>
               </div>
 
@@ -118,10 +129,10 @@ export default function AboutPage() {
                 <div className="mx-auto h-12 w-12 rounded-md bg-orange-500 flex items-center justify-center">
                   <Users className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900">Accessibility</h3>
+                <h3 className="mt-4 text-lg font-medium text-gray-900">Affordable Access</h3>
                 <p className="mt-2 text-gray-600">
-                  Professional legal services shouldn't be limited by geography or cost. 
-                  We bring expert legal assistance directly to you.
+                  Breaking down cost barriers to legal protection. Professional-quality family 
+                  agreements at a fraction of traditional legal fees.
                 </p>
               </div>
 
@@ -129,10 +140,10 @@ export default function AboutPage() {
                 <div className="mx-auto h-12 w-12 rounded-md bg-orange-500 flex items-center justify-center">
                   <MapPin className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900">Alberta-Focused</h3>
+                <h3 className="mt-4 text-lg font-medium text-gray-900">Alberta Law Compliant</h3>
                 <p className="mt-2 text-gray-600">
-                  Our services are specifically tailored to Alberta law and regulations, 
-                  ensuring your documents comply with local requirements.
+                  Specifically designed for Alberta's Family Property Act and current legislation, 
+                  ensuring your documents meet all legal requirements for enforceability.
                 </p>
               </div>
             </div>
