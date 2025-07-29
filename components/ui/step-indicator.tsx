@@ -14,7 +14,7 @@ export function StepIndicator({ steps, currentStep, completedSteps }: StepIndica
   return (
     <div className="mb-8 py-6 px-4 bg-gray-50 border border-gray-200 rounded-lg">
       <nav aria-label="Progress">
-        <ol className="flex items-center justify-center space-x-2 md:space-x-6">
+        <ol className="flex items-center justify-center">
           {steps.map((step, stepIdx) => {
             const isCompleted = completedSteps.includes(step.id);
             const isCurrent = step.id === currentStep;
@@ -53,7 +53,9 @@ export function StepIndicator({ steps, currentStep, completedSteps }: StepIndica
                 </div>
                 {stepIdx < steps.length - 1 && (
                   <div
-                    className={`mx-2 md:mx-4 h-0.5 w-8 md:w-16 ${
+                    className={`${
+                      stepIdx === 0 ? 'mx-3 md:mx-6' : 'mx-2 md:mx-3'
+                    } h-0.5 w-8 md:w-16 ${
                       isCompleted || completedSteps.includes(steps[stepIdx + 1].id)
                         ? 'bg-orange-500'
                         : 'bg-gray-300'
