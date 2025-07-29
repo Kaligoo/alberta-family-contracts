@@ -58,6 +58,18 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ Lawyer fields migration already applied or failed');
     }
 
+    // Apply migration 0005_current_contract.sql (current contract field) if needed
+    try {
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        ADD COLUMN IF NOT EXISTS is_current_contract varchar(10) DEFAULT 'false';
+      `);
+      appliedMigrations.push('0005_current_contract');
+      console.log('✅ Current contract field migration applied');
+    } catch (error) {
+      console.log('⚠️ Current contract field migration already applied or failed');
+    }
+
     // Update the migration journal
     for (const migration of appliedMigrations) {
       try {
