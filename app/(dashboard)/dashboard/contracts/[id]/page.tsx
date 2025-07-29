@@ -590,7 +590,8 @@ export default function ContractDetailPage() {
                               updated[index] = { ...updated[index], birthdate: e.target.value || undefined };
                               updateFormData('children', updated);
                             }}
-                            placeholder="Birthdate"
+                            placeholder="Select birthdate"
+                            className="w-full"
                           />
                         </div>
                       </div>
@@ -639,8 +640,8 @@ export default function ContractDetailPage() {
                   const newChild = {
                     name: '',
                     birthdate: undefined,
-                    relationship: 'biological',
-                    parentage: 'both'
+                    relationship: 'biological' as const,
+                    parentage: 'both' as const
                   };
                   const newChildren = [...(contract.children || []), newChild];
                   updateFormData('children', newChildren);
