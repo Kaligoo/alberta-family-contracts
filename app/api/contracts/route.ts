@@ -34,7 +34,10 @@ export async function GET() {
 
     console.log('Found contracts:', contracts.length);
     
-    return NextResponse.json({ contracts });
+    // Transform children data for backward compatibility (age -> birthdate)
+    const transformedContracts = contracts.map(transformChildrenData);
+    
+    return NextResponse.json({ contracts: transformedContracts });
   } catch (error) {
     console.error('Error fetching contracts:', error);
     return NextResponse.json(
@@ -111,7 +114,10 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    return NextResponse.json({ contract: newContract });
+    // Transform children data for backward compatibility (age -> birthdate)
+    const transformedContract = transformChildrenData(newContract);
+    
+    return NextResponse.json({ contract: transformedContract });
   } catch (error) {
     console.error('Error creating contract:', error);
     return NextResponse.json(
@@ -119,4 +125,51 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// Helper function to transform children data from old age format to new birthdate format
+function transformChildrenData(contract: any) {
+  if (!contract.children || !Array.isArray(contract.children)) {
+    return contract;
+  }
+
+  const transformedChildren = contract.children.map((child: any) => {
+    // If child has age but no birthdate, convert age to approximate birthdate
+    if (child.age && !child.birthdate) {
+      const currentYear = new Date().getFullYear();
+      const birthYear = currentYear - parseInt(child.age);
+      // Create a birthdate on January 1st of the calculated year
+      const approximateBirthdate = `${birthYear}-01-01`;
+      
+      return {
+        name: child.name,
+        birthdate: approximateBirthdate,
+        relationship: child.relationship || 'biological',
+        parentage: child.parentage || 'both'
+      };
+    }
+    
+    // If child already has birthdate, return as-is
+    if (child.birthdate) {
+      return {
+        name: child.name,
+        birthdate: child.birthdate,
+        relationship: child.relationship || 'biological',
+        parentage: child.parentage || 'both'
+      };
+    }
+    
+    // If child has neither age nor birthdate, return with empty birthdate
+    return {
+      name: child.name,
+      birthdate: undefined,
+      relationship: child.relationship || 'biological',
+      parentage: child.parentage || 'both'
+    };
+  });
+
+  return {
+    ...contract,
+    children: transformedChildren
+  };
 }
