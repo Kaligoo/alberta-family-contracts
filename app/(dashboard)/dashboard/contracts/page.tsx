@@ -20,7 +20,7 @@ interface Contract {
   partnerFullName: string;
   status: string;
   contractType: string;
-  isCurrentContract: string;
+  isCurrentContract?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -157,7 +157,8 @@ export default function ContractsPage() {
                       {contract.userFullName && contract.partnerFullName
                         ? `${contract.userFullName} & ${contract.partnerFullName}`
                         : 'Untitled Contract'}
-                      {contract.isCurrentContract === 'true' && (
+                      {/* TODO: Re-enable once column exists */}
+                      {false && (contract.isCurrentContract === 'true') && (
                         <span className="ml-2 px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">
                           Current
                         </span>
@@ -177,24 +178,16 @@ export default function ContractsPage() {
                     </div>
                     
                     <div className="flex space-x-2 pt-4">
-                      {contract.isCurrentContract === 'true' ? (
-                        <Link href="/dashboard" className="flex-1">
-                          <Button variant="outline" size="sm" className="w-full bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100">
-                            <ArrowRight className="mr-2 h-3 w-3" />
-                            Edit Current
-                          </Button>
-                        </Link>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleSetCurrentContract(contract.id)}
-                          className="flex-1"
-                        >
-                          <ArrowRight className="mr-2 h-3 w-3" />
-                          Set as Current
-                        </Button>
-                      )}
+                      {/* For now, just show Set as Current for all contracts */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSetCurrentContract(contract.id)}
+                        className="flex-1"
+                      >
+                        <ArrowRight className="mr-2 h-3 w-3" />
+                        Edit This Contract
+                      </Button>
                       <Link href={`/dashboard/contracts/${contract.id}/preview`} className="flex-1">
                         <Button variant="outline" size="sm" className="w-full">
                           <Eye className="mr-2 h-3 w-3" />

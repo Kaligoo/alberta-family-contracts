@@ -19,6 +19,8 @@ export async function GET() {
     }
 
     // Get all contracts for this user
+    console.log('Fetching contracts for user:', user.id, 'team:', userWithTeam.teamId);
+    
     const contracts = await db
       .select()
       .from(familyContracts)
@@ -30,6 +32,8 @@ export async function GET() {
       )
       .orderBy(desc(familyContracts.updatedAt));
 
+    console.log('Found contracts:', contracts.length);
+    
     return NextResponse.json({ contracts });
   } catch (error) {
     console.error('Error fetching contracts:', error);
