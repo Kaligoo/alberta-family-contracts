@@ -23,7 +23,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 interface ChildInfo {
   name: string;
-  age?: number;
+  birthdate?: string;
   relationship: 'biological' | 'step' | 'adopted';
   parentage: 'user' | 'partner' | 'both';
 }
@@ -449,7 +449,7 @@ function ChildrenCard({ formData, updateFormData }: {
   const addChild = () => {
     const newChildren = [...children, {
       name: '',
-      age: undefined,
+      birthdate: undefined,
       relationship: 'biological',
       parentage: 'both'
     }];
@@ -506,12 +506,13 @@ function ChildrenCard({ formData, updateFormData }: {
                     />
                   </div>
                   <div>
-                    <Label>Age (optional)</Label>
+                    <Label>Birthdate (optional)</Label>
                     <Input
-                      type="number"
-                      value={child.age || ''}
-                      onChange={(e) => updateChild(index, 'age', e.target.value ? parseInt(e.target.value) : undefined)}
-                      placeholder="Age"
+                      type="date"
+                      value={child.birthdate || ''}
+                      onChange={(e) => updateChild(index, 'birthdate', e.target.value || undefined)}
+                      placeholder="Select birthdate"
+                      className="w-full"
                     />
                   </div>
                 </div>
