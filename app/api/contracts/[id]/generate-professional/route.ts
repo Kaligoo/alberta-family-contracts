@@ -188,11 +188,12 @@ function prepareTemplateData(contract: any, user: any) {
     childrenStatus: (contract.children && contract.children.length > 0) ? 
       `The parties have ${contract.children.length} child${contract.children.length > 1 ? 'ren' : ''} of the relationship: ${contract.children.map((child: any) => {
         const childInfo = child.name;
-        if (child.age) {
-          // Calculate approximate birth year from age
-          const currentYear = new Date().getFullYear();
-          const birthYear = currentYear - parseInt(child.age);
-          return `${childInfo} (born approximately ${birthYear})`;
+        if (child.birthdate) {
+          const birthDate = new Date(child.birthdate);
+          const birthYear = birthDate.getFullYear();
+          const birthMonth = birthDate.toLocaleDateString('en-US', { month: 'long' });
+          const birthDay = birthDate.getDate();
+          return `${childInfo} (born ${birthMonth} ${birthDay}, ${birthYear})`;
         }
         return childInfo;
       }).join(', ')}.` : 

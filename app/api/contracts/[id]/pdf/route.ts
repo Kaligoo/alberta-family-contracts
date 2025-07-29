@@ -225,9 +225,18 @@ async function generateBasicPDF(contract: any, user: any): Promise<Uint8Array> {
       ${(contract.children && contract.children.length > 0) ? `
       <div class="section">
         <h2>CHILDREN</h2>
-        ${contract.children.map((child: any, index: number) => 
-          `<p>Child ${index + 1}: ${child.name}${child.age ? ` (Age ${child.age})` : ''}</p>`
-        ).join('')}
+        ${contract.children.map((child: any, index: number) => {
+          let childInfo = `<p>Child ${index + 1}: ${child.name}`;
+          if (child.birthdate) {
+            const birthDate = new Date(child.birthdate);
+            const birthYear = birthDate.getFullYear();
+            const birthMonth = birthDate.toLocaleDateString('en-US', { month: 'long' });
+            const birthDay = birthDate.getDate();
+            childInfo += ` (born ${birthMonth} ${birthDay}, ${birthYear})`;
+          }
+          childInfo += `</p>`;
+          return childInfo;
+        }).join('')}
       </div>
       ` : ''}
       
@@ -370,11 +379,12 @@ function prepareTemplateData(contract: any, user: any) {
     childrenStatus: (contract.children && contract.children.length > 0) ? 
       `The parties have ${contract.children.length} child${contract.children.length > 1 ? 'ren' : ''} of the relationship: ${contract.children.map((child: any) => {
         const childInfo = child.name;
-        if (child.age) {
-          // Calculate approximate birth year from age
-          const currentYear = new Date().getFullYear();
-          const birthYear = currentYear - parseInt(child.age);
-          return `${childInfo} (born approximately ${birthYear})`;
+        if (child.birthdate) {
+          const birthDate = new Date(child.birthdate);
+          const birthYear = birthDate.getFullYear();
+          const birthMonth = birthDate.toLocaleDateString('en-US', { month: 'long' });
+          const birthDay = birthDate.getDate();
+          return `${childInfo} (born ${birthMonth} ${birthDay}, ${birthYear})`;
         }
         return childInfo;
       }).join(', ')}.` : 

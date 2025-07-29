@@ -110,7 +110,7 @@ export const familyContracts = pgTable('family_contracts', {
   // Children Information (stored as JSON array)
   children: json('children').$type<Array<{
     name: string;
-    age?: number;
+    birthdate?: string;
     relationship: 'biological' | 'step' | 'adopted';
     parentage: 'user' | 'partner' | 'both';
   }>>(),

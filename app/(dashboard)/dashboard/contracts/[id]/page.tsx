@@ -41,7 +41,7 @@ interface Contract {
   partnerLawyer: string;
   children: Array<{
     name: string;
-    age?: number;
+    birthdate?: string;
     relationship: 'biological' | 'step' | 'adopted';
     parentage: 'user' | 'partner' | 'both';
   }>;
@@ -83,7 +83,7 @@ interface ContractFormData {
   notes?: string;
   children?: Array<{
     name: string;
-    age?: number;
+    birthdate?: string;
     relationship: 'biological' | 'step' | 'adopted';
     parentage: 'user' | 'partner' | 'both';
   }>;
@@ -581,16 +581,16 @@ export default function ContractDetailPage() {
                           />
                         </div>
                         <div>
-                          <Label>Age (optional)</Label>
+                          <Label>Birthdate (optional)</Label>
                           <Input
-                            type="number"
-                            value={child.age || ''}
+                            type="date"
+                            value={child.birthdate || ''}
                             onChange={(e) => {
                               const updated = [...(contract.children || [])];
-                              updated[index] = { ...updated[index], age: e.target.value ? parseInt(e.target.value) : undefined };
+                              updated[index] = { ...updated[index], birthdate: e.target.value || undefined };
                               updateFormData('children', updated);
                             }}
-                            placeholder="Age"
+                            placeholder="Birthdate"
                           />
                         </div>
                       </div>
@@ -638,7 +638,7 @@ export default function ContractDetailPage() {
                 onClick={() => {
                   const newChild = {
                     name: '',
-                    age: undefined,
+                    birthdate: undefined,
                     relationship: 'biological',
                     parentage: 'both'
                   };

@@ -37,7 +37,7 @@ interface Contract {
   partnerAddress: string;
   children: Array<{
     name: string;
-    age?: number;
+    birthdate?: string;
     relationship: 'biological' | 'step' | 'adopted';
     parentage: 'user' | 'partner' | 'both';
   }>;
@@ -243,7 +243,14 @@ export default function ContractPreviewPage() {
                 
                 <p>
                   {contract.children && contract.children.length > 0 
-                    ? `The parties have ${contract.children.length} child${contract.children.length > 1 ? 'ren' : ''} as detailed in this agreement: ${contract.children.map((child: any) => child.name).join(', ')}.`
+                    ? `The parties have ${contract.children.length} child${contract.children.length > 1 ? 'ren' : ''} as detailed in this agreement: ${contract.children.map((child: any) => {
+                        const childInfo = child.name;
+                        if (child.birthdate) {
+                          const birthYear = new Date(child.birthdate).getFullYear();
+                          return `${childInfo} (born ${birthYear})`;
+                        }
+                        return childInfo;
+                      }).join(', ')}.`
                     : 'There are no children of the relationship as of the Effective Date of this Agreement. The parties may or may not have children together in the future, either biological or adopted.'
                   }
                 </p>
