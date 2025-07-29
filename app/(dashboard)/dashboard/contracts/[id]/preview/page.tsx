@@ -165,11 +165,11 @@ export default function ContractPreviewPage() {
             {/* Page Header - Exactly as in Word template */}
             <div className="text-center mb-8">
               <p className="text-lg leading-relaxed mb-4">
-                {contract.userFullName || '[Your Name]'} (hereinafter referred to as "{contract.userFirstName || '[Your First Name]'}")
+                {contract.userFullName || '[Your Name]'} (hereinafter referred to as "{contract.userFirstName || contract.userFullName?.split(' ')[0] || '[Your First Name]'}")
               </p>
               <p className="text-lg leading-relaxed mb-4">- and -</p>
               <p className="text-lg leading-relaxed mb-8">
-                {contract.partnerFullName || '[Partner Name]'} (hereinafter referred to as "{contract.partnerFirstName || '[Partner First Name]'}")
+                {contract.partnerFullName || '[Partner Name]'} (hereinafter referred to as "{contract.partnerFirstName || contract.partnerFullName?.split(' ')[0] || '[Partner First Name]'}")
               </p>
               
               <div className="border-b-2 border-black w-96 mx-auto mb-2"></div>
@@ -203,13 +203,13 @@ export default function ContractPreviewPage() {
               <p className="text-base font-bold mb-4">BETWEEN:</p>
               
               <p className="text-base leading-relaxed mb-4">
-                {contract.userFullName || '[Your Name]'} (hereinafter referred to as "{contract.userFirstName || '[Your First Name]'}")
+                {contract.userFullName || '[Your Name]'} (hereinafter referred to as "{contract.userFirstName || contract.userFullName?.split(' ')[0] || '[Your First Name]'}")
               </p>
               
               <p className="text-base leading-relaxed mb-4">- and -</p>
               
               <p className="text-base leading-relaxed mb-8">
-                {contract.partnerFullName || '[Partner Name]'} (hereinafter referred to as "{contract.partnerFirstName || '[Partner First Name]'}")
+                {contract.partnerFullName || '[Partner Name]'} (hereinafter referred to as "{contract.partnerFirstName || contract.partnerFullName?.split(' ')[0] || '[Partner First Name]'}")
               </p>
             </div>
 
@@ -226,30 +226,30 @@ export default function ContractPreviewPage() {
               
               <div className="space-y-4 text-base leading-relaxed">
                 <p>
-                  {contract.userFirstName || '[Your First Name]'} and {contract.partnerFirstName || '[Partner First Name]'} currently live together. They are engaged to be married and intend to be married {formatDate(contract.createdAt)}.
+                  {contract.userFirstName || contract.userFullName?.split(' ')[0] || '[Your First Name]'} and {contract.partnerFirstName || contract.partnerFullName?.split(' ')[0] || '[Partner First Name]'} currently live together. They are engaged to be married and intend to be married [Marriage Date].
                 </p>
                 
                 <p>
-                  {contract.userFirstName || '[Your First Name]'} and {contract.partnerFirstName || '[Partner First Name]'} have resided together since {contract.cohabDate ? formatDate(contract.cohabDate) : formatDate(contract.createdAt)}.
+                  {contract.userFirstName || contract.userFullName?.split(' ')[0] || '[Your First Name]'} and {contract.partnerFirstName || contract.partnerFullName?.split(' ')[0] || '[Partner First Name]'} have resided together since {contract.cohabDate ? formatDate(contract.cohabDate) : '[Cohabitation Start Date]'}.
                 </p>
                 
                 <p>
-                  {contract.userFirstName || '[Your First Name]'}, presently age {contract.userAge || '[Your Age]'}, owns assets and is responsible for debts as set out in the attached Schedule A. {contract.userJobTitle ? `She is presently ${contract.userJobTitle}.` : 'She is presently [Your Occupation].'} {contract.userIncome ? `Her current income is approximately ${formatCurrency(contract.userIncome)} annually.` : 'Her current income is approximately [Your Income] annually.'}
+                  {contract.userFirstName || contract.userFullName?.split(' ')[0] || '[Your First Name]'}, presently age {contract.userAge || '[Your Age]'}, owns assets and is responsible for debts as set out in the attached Schedule A. {contract.userJobTitle ? `She is presently ${contract.userJobTitle}.` : 'She is presently [Your Occupation].'} {contract.userIncome ? `Her current income is approximately ${formatCurrency(contract.userIncome)} annually.` : 'Her current income is approximately [Your Annual Income] annually.'}
                 </p>
                 
                 <p>
-                  {contract.partnerFirstName || '[Partner First Name]'}, presently age {contract.partnerAge || '[Partner Age]'}, owns assets and is responsible for debts as set out in the attached Schedule B. {contract.partnerJobTitle ? `He is presently ${contract.partnerJobTitle}.` : 'He is presently [Partner Occupation].'} {contract.partnerIncome ? `His current income is approximately ${formatCurrency(contract.partnerIncome)} annually.` : 'His current income is approximately [Partner Income] annually.'}
+                  {contract.partnerFirstName || contract.partnerFullName?.split(' ')[0] || '[Partner First Name]'}, presently age {contract.partnerAge || '[Partner Age]'}, owns assets and is responsible for debts as set out in the attached Schedule B. {contract.partnerJobTitle ? `He is presently ${contract.partnerJobTitle}.` : 'He is presently [Partner Occupation].'} {contract.partnerIncome ? `His current income is approximately ${formatCurrency(contract.partnerIncome)} annually.` : 'His current income is approximately [Partner Annual Income] annually.'}
                 </p>
                 
                 <p>
                   {contract.children && contract.children.length > 0 
-                    ? `The parties have children as detailed in this agreement.`
+                    ? `The parties have ${contract.children.length} child${contract.children.length > 1 ? 'ren' : ''} as detailed in this agreement: ${contract.children.map((child: any) => child.name).join(', ')}.`
                     : 'There are no children of the relationship as of the Effective Date of this Agreement. The parties may or may not have children together in the future, either biological or adopted.'
                   }
                 </p>
                 
                 <p>
-                  {contract.userFirstName || '[Your First Name]'} and {contract.partnerFirstName || '[Partner First Name]'} acknowledge that she/he:
+                  {contract.userFirstName || contract.userFullName?.split(' ')[0] || '[Your First Name]'} and {contract.partnerFirstName || contract.partnerFullName?.split(' ')[0] || '[Partner First Name]'} acknowledge that she/he:
                 </p>
                 
                 <ul className="list-disc list-inside ml-4 space-y-2">
@@ -259,7 +259,7 @@ export default function ContractPreviewPage() {
                 </ul>
                 
                 <p>
-                  {contract.userFirstName || '[Your First Name]'} and {contract.partnerFirstName || '[Partner First Name]'} have been advised and informed of the assets and liabilities of the other as of the Effective Date of this Agreement through the completion of and exchange of their respective Schedules, attached to this Agreement.
+                  {contract.userFirstName || contract.userFullName?.split(' ')[0] || '[Your First Name]'} and {contract.partnerFirstName || contract.partnerFullName?.split(' ')[0] || '[Partner First Name]'} have been advised and informed of the assets and liabilities of the other as of the Effective Date of this Agreement through the completion of and exchange of their respective Schedules, attached to this Agreement.
                 </p>
               </div>
             </div>
@@ -316,8 +316,8 @@ export default function ContractPreviewPage() {
                   <div>
                     <div className="mb-4">
                       <div className="border-b-2 border-black h-12 mb-2"></div>
-                      <p className="font-bold">{contract.userFullName || '[Your Name]'}</p>
-                      <p className="text-sm">({contract.userFirstName || '[Your First Name]'})</p>
+                      <p className="font-bold">{contract.userFullName || '[Your Full Name]'}</p>
+                      <p className="text-sm">({contract.userFirstName || contract.userFullName?.split(' ')[0] || '[Your First Name]'})</p>
                     </div>
                     
                     <div className="mt-8">
@@ -329,8 +329,8 @@ export default function ContractPreviewPage() {
                   <div>
                     <div className="mb-4">
                       <div className="border-b-2 border-black h-12 mb-2"></div>
-                      <p className="font-bold">{contract.partnerFullName || '[Partner Name]'}</p>
-                      <p className="text-sm">({contract.partnerFirstName || '[Partner First Name]'})</p>
+                      <p className="font-bold">{contract.partnerFullName || '[Partner Full Name]'}</p>
+                      <p className="text-sm">({contract.partnerFirstName || contract.partnerFullName?.split(' ')[0] || '[Partner First Name]'})</p>
                     </div>
                     
                     <div className="mt-8">
@@ -342,10 +342,37 @@ export default function ContractPreviewPage() {
               </div>
             </div>
 
+            {/* Contact Information Section - if available */}
+            {(contract.userEmail || contract.partnerEmail || contract.userPhone || contract.partnerPhone || contract.userAddress || contract.partnerAddress) && (
+              <div className="mb-8">
+                <h3 className="text-lg font-bold mb-4">CONTACT INFORMATION</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-base leading-relaxed">
+                  <div>
+                    <p className="font-bold mb-2">{contract.userFirstName || contract.userFullName?.split(' ')[0] || '[Your First Name]'}:</p>
+                    {contract.userEmail && <p>Email: {contract.userEmail}</p>}
+                    {contract.userPhone && <p>Phone: {contract.userPhone}</p>}
+                    {contract.userAddress && <p>Address: {contract.userAddress}</p>}
+                  </div>
+                  
+                  <div>
+                    <p className="font-bold mb-2">{contract.partnerFirstName || contract.partnerFullName?.split(' ')[0] || '[Partner First Name]'}:</p>
+                    {contract.partnerEmail && <p>Email: {contract.partnerEmail}</p>}
+                    {contract.partnerPhone && <p>Phone: {contract.partnerPhone}</p>}
+                    {contract.partnerAddress && <p>Address: {contract.partnerAddress}</p>}
+                  </div>
+                </div>
+              </div>
+            )}
+
+
             {/* Footer */}
             <div className="mt-12 pt-8 border-t border-gray-300 text-xs text-gray-600">
               <p className="text-center">
                 This document is a preview generated by Alberta Family Contracts on {formatDate(contract.createdAt)}
+              </p>
+              <p className="text-center mt-2">
+                Contract ID: #{contract.id} | Status: {contract.status || 'Draft'}
               </p>
             </div>
           </div>
