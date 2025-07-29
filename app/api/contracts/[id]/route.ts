@@ -87,9 +87,12 @@ export async function PUT(
     if (body.partnerFullName !== undefined) updateData.partnerFullName = body.partnerFullName === '' ? null : body.partnerFullName;
     if (body.userFirstName !== undefined) updateData.userFirstName = body.userFirstName === '' ? null : body.userFirstName;
     if (body.partnerFirstName !== undefined) updateData.partnerFirstName = body.partnerFirstName === '' ? null : body.partnerFirstName;
+    if (body.userPronouns !== undefined) updateData.userPronouns = body.userPronouns === '' ? null : body.userPronouns;
+    if (body.partnerPronouns !== undefined) updateData.partnerPronouns = body.partnerPronouns === '' ? null : body.partnerPronouns;
     if (body.userAge !== undefined) updateData.userAge = body.userAge === '' ? null : parseInt(body.userAge);
     if (body.partnerAge !== undefined) updateData.partnerAge = body.partnerAge === '' ? null : parseInt(body.partnerAge);
     if (body.cohabDate !== undefined) updateData.cohabDate = body.cohabDate === '' ? null : new Date(body.cohabDate);
+    if (body.proposedMarriageDate !== undefined) updateData.proposedMarriageDate = body.proposedMarriageDate === '' ? null : new Date(body.proposedMarriageDate);
     if (body.userJobTitle !== undefined) updateData.userJobTitle = body.userJobTitle === '' ? null : body.userJobTitle;
     if (body.partnerJobTitle !== undefined) updateData.partnerJobTitle = body.partnerJobTitle === '' ? null : body.partnerJobTitle;
     if (body.userIncome !== undefined) updateData.userIncome = body.userIncome === '' ? null : body.userIncome;

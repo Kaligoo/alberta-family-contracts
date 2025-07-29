@@ -82,6 +82,20 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ Payment status field migration already applied or failed');
     }
 
+    // Apply migration 0007_pronouns_and_marriage.sql (pronouns and proposed marriage date) if needed
+    try {
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        ADD COLUMN IF NOT EXISTS user_pronouns varchar(50),
+        ADD COLUMN IF NOT EXISTS partner_pronouns varchar(50),
+        ADD COLUMN IF NOT EXISTS proposed_marriage_date timestamp;
+      `);
+      appliedMigrations.push('0007_pronouns_and_marriage');
+      console.log('✅ Pronouns and marriage date fields migration applied');
+    } catch (error) {
+      console.log('⚠️ Pronouns and marriage date fields migration already applied or failed');
+    }
+
     // Update the migration journal
     for (const migration of appliedMigrations) {
       try {

@@ -89,6 +89,37 @@ function PersonalInfoCard({ formData, updateFormData, isReadOnly }: {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
+            <Label htmlFor="userPronouns">Your Pronouns</Label>
+            <select
+              id="userPronouns"
+              value={formData.userPronouns}
+              onChange={(e) => updateFormData('userPronouns', e.target.value)}
+              className="w-full p-2 border rounded-md"
+            >
+              <option value="">Select pronouns</option>
+              <option value="he/him/his">he/him/his</option>
+              <option value="she/her/hers">she/her/hers</option>
+              <option value="they/them/theirs">they/them/theirs</option>
+            </select>
+          </div>
+          <div>
+            <Label htmlFor="partnerPronouns">Partner's Pronouns</Label>
+            <select
+              id="partnerPronouns"
+              value={formData.partnerPronouns}
+              onChange={(e) => updateFormData('partnerPronouns', e.target.value)}
+              className="w-full p-2 border rounded-md"
+            >
+              <option value="">Select pronouns</option>
+              <option value="he/him/his">he/him/his</option>
+              <option value="she/her/hers">she/her/hers</option>
+              <option value="they/them/theirs">they/them/theirs</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
             <Label htmlFor="userAge">Your Age</Label>
             <Input
               id="userAge"
@@ -509,9 +540,12 @@ export default function DashboardPage() {
     partnerFullName: '',
     userFirstName: '',
     partnerFirstName: '',
+    userPronouns: '',
+    partnerPronouns: '',
     userAge: '',
     partnerAge: '',
     cohabDate: '',
+    proposedMarriageDate: '',
     userJobTitle: '',
     partnerJobTitle: '',
     userIncome: '',
@@ -550,9 +584,12 @@ export default function DashboardPage() {
         partnerFullName: contract.partnerFullName || '',
         userFirstName: contract.userFirstName || '',
         partnerFirstName: contract.partnerFirstName || '',
+        userPronouns: contract.userPronouns || '',
+        partnerPronouns: contract.partnerPronouns || '',
         userAge: contract.userAge?.toString() || '',
         partnerAge: contract.partnerAge?.toString() || '',
         cohabDate: contract.cohabDate || '',
+        proposedMarriageDate: contract.proposedMarriageDate || '',
         userJobTitle: contract.userJobTitle || '',
         partnerJobTitle: contract.partnerJobTitle || '',
         userIncome: contract.userIncome || '',
@@ -708,6 +745,16 @@ export default function DashboardPage() {
                   type="date"
                   value={formData.cohabDate}
                   onChange={(e) => updateFormData('cohabDate', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="proposedMarriageDate">Proposed Marriage Date (Optional)</Label>
+                <Input
+                  id="proposedMarriageDate"
+                  type="date"
+                  value={formData.proposedMarriageDate}
+                  onChange={(e) => updateFormData('proposedMarriageDate', e.target.value)}
+                  placeholder="Select your proposed marriage date"
                 />
               </div>
             </CardContent>

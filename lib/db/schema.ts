@@ -84,6 +84,8 @@ export const familyContracts = pgTable('family_contracts', {
   partnerFullName: varchar('partner_full_name', { length: 255 }),
   userFirstName: varchar('user_first_name', { length: 100 }),
   partnerFirstName: varchar('partner_first_name', { length: 100 }),
+  userPronouns: varchar('user_pronouns', { length: 50 }), // he/him/his, she/her/hers, they/them/theirs
+  partnerPronouns: varchar('partner_pronouns', { length: 50 }), // he/him/his, she/her/hers, they/them/theirs
   userAge: integer('user_age'),
   partnerAge: integer('partner_age'),
   userJobTitle: varchar('user_job_title', { length: 255 }),
@@ -93,6 +95,7 @@ export const familyContracts = pgTable('family_contracts', {
   
   // Relationship Information  
   cohabDate: timestamp('cohab_date'),
+  proposedMarriageDate: timestamp('proposed_marriage_date'),
   
   // Contact Information
   userEmail: varchar('user_email', { length: 255 }),
