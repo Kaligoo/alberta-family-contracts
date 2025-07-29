@@ -3,7 +3,7 @@ import { getUser, getUserWithTeam } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts, templates } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
-import ConvertAPI from 'convertapi';
+const convertapi = require('convertapi');
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
 
@@ -101,10 +101,27 @@ async function generateContractPDFFromTemplate(contract: any, user: any): Promis
     doc.render(templateData);
     const filledDocxBuffer = doc.getZip().generate({ type: 'nodebuffer' });
     
-    // For now, without ConvertAPI setup, fall back to basic PDF generation
-    // User can manually export to PDF from Word to get identical formatting
-    console.log('ConvertAPI not configured, falling back to basic PDF generation...');
-    return await generateBasicPDF(contract, user);
+    // Use ConvertAPI to convert Word document directly to PDF (preserves all formatting)
+    console.log('Converting Word document to PDF using ConvertAPI...');
+    
+    // Initialize ConvertAPI (you'll need to set CONVERTAPI_SECRET environment variable)
+    if (!process.env.CONVERTAPI_SECRET) {
+      console.log('CONVERTAPI_SECRET not configured, falling back to basic PDF generation...');
+      return await generateBasicPDF(contract, user);
+    }
+    
+    const convertApiClient = convertapi(process.env.CONVERTAPI_SECRET);
+    
+    // Convert DOCX buffer to PDF using ConvertAPI
+    const result = await convertApiClient.convert('pdf', {
+      File: filledDocxBuffer
+    }, 'docx');
+    
+    // Get the PDF buffer from the first result file
+    const pdfBuffer = await result.file.save();
+    
+    console.log('Successfully generated PDF using direct Word to PDF conversion');
+    return new Uint8Array(pdfBuffer);
     
   } catch (error) {
     console.error('Failed to generate PDF using ConvertAPI:', error);
