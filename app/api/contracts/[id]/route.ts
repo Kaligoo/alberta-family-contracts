@@ -91,8 +91,24 @@ export async function PUT(
     if (body.partnerPronouns !== undefined) updateData.partnerPronouns = body.partnerPronouns === '' ? null : body.partnerPronouns;
     if (body.userAge !== undefined) updateData.userAge = body.userAge === '' ? null : parseInt(body.userAge);
     if (body.partnerAge !== undefined) updateData.partnerAge = body.partnerAge === '' ? null : parseInt(body.partnerAge);
-    if (body.cohabDate !== undefined) updateData.cohabDate = body.cohabDate === '' ? null : new Date(body.cohabDate);
-    if (body.proposedMarriageDate !== undefined) updateData.proposedMarriageDate = body.proposedMarriageDate === '' ? null : new Date(body.proposedMarriageDate);
+    if (body.cohabDate !== undefined) {
+      if (body.cohabDate === '') {
+        updateData.cohabDate = null;
+      } else {
+        const cohabDate = new Date(body.cohabDate);
+        updateData.cohabDate = isNaN(cohabDate.getTime()) ? null : cohabDate;
+        console.log('Saving cohabDate:', body.cohabDate, '->', updateData.cohabDate);
+      }
+    }
+    if (body.proposedMarriageDate !== undefined) {
+      if (body.proposedMarriageDate === '') {
+        updateData.proposedMarriageDate = null;
+      } else {
+        const proposedDate = new Date(body.proposedMarriageDate);
+        updateData.proposedMarriageDate = isNaN(proposedDate.getTime()) ? null : proposedDate;
+        console.log('Saving proposedMarriageDate:', body.proposedMarriageDate, '->', updateData.proposedMarriageDate);
+      }
+    }
     if (body.userJobTitle !== undefined) updateData.userJobTitle = body.userJobTitle === '' ? null : body.userJobTitle;
     if (body.partnerJobTitle !== undefined) updateData.partnerJobTitle = body.partnerJobTitle === '' ? null : body.partnerJobTitle;
     if (body.userIncome !== undefined) updateData.userIncome = body.userIncome === '' ? null : body.userIncome;

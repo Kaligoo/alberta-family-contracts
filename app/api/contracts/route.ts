@@ -74,8 +74,14 @@ export async function POST(request: NextRequest) {
         partnerPronouns: body.partnerPronouns || null,
         userAge: body.userAge ? parseInt(body.userAge) : null,
         partnerAge: body.partnerAge ? parseInt(body.partnerAge) : null,
-        cohabDate: body.cohabDate ? new Date(body.cohabDate) : null,
-        proposedMarriageDate: body.proposedMarriageDate ? new Date(body.proposedMarriageDate) : null,
+        cohabDate: body.cohabDate && body.cohabDate !== '' ? (() => {
+          const date = new Date(body.cohabDate);
+          return isNaN(date.getTime()) ? null : date;
+        })() : null,
+        proposedMarriageDate: body.proposedMarriageDate && body.proposedMarriageDate !== '' ? (() => {
+          const date = new Date(body.proposedMarriageDate);
+          return isNaN(date.getTime()) ? null : date;
+        })() : null,
         userJobTitle: body.userJobTitle || null,
         partnerJobTitle: body.partnerJobTitle || null,
         userIncome: body.userIncome || null,

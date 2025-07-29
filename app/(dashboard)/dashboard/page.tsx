@@ -602,6 +602,18 @@ export default function DashboardPage() {
   // Check if current contract is paid and thus locked
   const isContractPaid = contractData?.contract?.isPaid === 'true';
 
+  // Helper function to format date for HTML date input (YYYY-MM-DD)
+  const formatDateForInput = (dateString: string | null | undefined) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toISOString().split('T')[0];
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return '';
+    }
+  };
+
   // Load saved data into form when component mounts or data changes
   useEffect(() => {
     if (contractData?.contract) {
@@ -615,8 +627,8 @@ export default function DashboardPage() {
         partnerPronouns: contract.partnerPronouns || '',
         userAge: contract.userAge?.toString() || '',
         partnerAge: contract.partnerAge?.toString() || '',
-        cohabDate: contract.cohabDate || '',
-        proposedMarriageDate: contract.proposedMarriageDate || '',
+        cohabDate: formatDateForInput(contract.cohabDate),
+        proposedMarriageDate: formatDateForInput(contract.proposedMarriageDate),
         userJobTitle: contract.userJobTitle || '',
         partnerJobTitle: contract.partnerJobTitle || '',
         userIncome: contract.userIncome || '',
