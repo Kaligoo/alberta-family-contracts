@@ -120,10 +120,36 @@ export default function FAQPage() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">
                     Do we need lawyers to create a cohabitation agreement?
                   </h3>
+                  <p className="text-gray-600 leading-relaxed mb-3">
+                    Under Section 38 of Alberta's Family Property Act, if you want your cohabitation agreement to have 
+                    the strongest legal protection, each party must obtain independent legal advice from separate lawyers. 
+                    The Act specifically states that "the acknowledgements shall be made before a different lawyer for each party."
+                  </p>
                   <p className="text-gray-600 leading-relaxed">
-                    While not legally required, it's highly recommended that each party obtain independent legal advice 
-                    before signing a cohabitation agreement. This helps ensure the agreement is fair, properly drafted, 
-                    and enforceable. Many courts will look more favorably on agreements where both parties had legal representation.
+                    This requirement ensures that both parties fully understand the agreement and that it meets all legal 
+                    requirements for enforceability. Courts will look much more favorably on agreements where both parties 
+                    had independent legal representation from different lawyers.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    Why do we need separate lawyers under Alberta law?
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed mb-3">
+                    Section 38 of the Family Property Act requires each party to have their own independent lawyer to 
+                    ensure maximum legal protection. This means:
+                  </p>
+                  <ul className="list-disc list-inside text-gray-600 mb-3 space-y-1">
+                    <li>Each person must consult with their own lawyer (not the same lawyer)</li>
+                    <li>Each lawyer provides independent advice to their client only</li>
+                    <li>This prevents conflicts of interest and ensures fair representation</li>
+                    <li>Both lawyers confirm their clients understand the agreement's implications</li>
+                    <li>The separate legal advice makes the agreement much stronger in court</li>
+                  </ul>
+                  <p className="text-gray-600 leading-relaxed">
+                    While agreements without separate lawyers may still be valid, following Section 38 provides the 
+                    strongest legal protection and enforceability.
                   </p>
                 </div>
 
@@ -269,17 +295,40 @@ export default function FAQPage() {
 
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                    Should I use a template or hire a lawyer?
+                    Should I use a template or hire lawyers?
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
-                    For simple situations with minimal assets, a well-drafted template may be sufficient. However, 
-                    if you have significant assets, complex financial situations, children, or business interests, 
-                    it's advisable to work with qualified family law lawyers to ensure your agreement properly 
-                    protects your interests.
+                    While well-drafted templates can provide a starting point, Section 38 of the Family Property Act 
+                    strongly encourages each party to obtain independent legal advice from separate lawyers for maximum 
+                    legal protection. This is especially important if you have significant assets, complex financial 
+                    situations, children, or business interests. Even with simpler situations, having both parties 
+                    consult with different qualified Alberta family lawyers ensures your agreement meets all legal 
+                    requirements and will be enforceable when needed.
                   </p>
                 </div>
               </div>
             </section>
+
+            {/* Important Legal Requirement */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-blue-800">
+                    Family Property Act Section 38 Requirement
+                  </h3>
+                  <p className="mt-1 text-sm text-blue-700">
+                    <strong>Each party must obtain independent legal advice from a different lawyer</strong> for the strongest 
+                    legal protection. The Family Property Act specifically requires separate legal counsel to ensure both 
+                    parties fully understand their rights and obligations under the agreement.
+                  </p>
+                </div>
+              </div>
+            </div>
 
             {/* Disclaimer */}
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
