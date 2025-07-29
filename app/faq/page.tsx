@@ -55,6 +55,32 @@ export default function FAQPage() {
                     or want to clarify financial responsibilities and expectations in your relationship.
                   </p>
                 </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    Is this agreement also a prenuptial agreement?
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed mb-3">
+                    <strong>Yes!</strong> Our cohabitation agreement is specifically drafted to function as both a cohabitation 
+                    agreement and a prenuptial agreement. This means that if you decide to get married later, your existing 
+                    agreement automatically continues to protect both parties as a marriage contract—you won't need to purchase 
+                    another contract.
+                  </p>
+                  <p className="text-gray-600 leading-relaxed mb-3">
+                    This dual functionality provides exceptional value because:
+                  </p>
+                  <ul className="list-disc list-inside text-gray-600 mb-3 space-y-1">
+                    <li>You're protected whether you remain common-law partners or get married</li>
+                    <li>There's no need to create a separate prenuptial agreement if you decide to marry</li>
+                    <li>Your financial arrangements and property agreements remain consistent through relationship changes</li>
+                    <li>You save money by not having to purchase additional legal documents</li>
+                  </ul>
+                  <p className="text-gray-600 leading-relaxed">
+                    The agreement includes specific provisions that address both cohabitation and marriage scenarios, 
+                    ensuring comprehensive protection regardless of your relationship status. This makes it an excellent 
+                    investment for couples who are living together and may consider marriage in the future.
+                  </p>
+                </div>
               </div>
             </section>
 
@@ -240,9 +266,11 @@ export default function FAQPage() {
                     What happens if we get married later?
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
-                    A cohabitation agreement can specify what happens if you marry. You may choose to have it continue 
-                    as a marriage contract (prenuptial agreement), terminate it upon marriage, or create a new agreement. 
-                    It's important to address this possibility in your original cohabitation agreement.
+                    Our cohabitation agreement is designed to automatically continue as a marriage contract (prenuptial agreement) 
+                    if you decide to get married—no additional purchase required! The agreement includes specific provisions 
+                    that address both cohabitation and marriage scenarios, ensuring your protection and financial arrangements 
+                    remain consistent whether you're common-law partners or married. See the "Is this agreement also a prenuptial 
+                    agreement?" section above for more details about this dual functionality.
                   </p>
                 </div>
 
