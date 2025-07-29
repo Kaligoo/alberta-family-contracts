@@ -66,7 +66,13 @@ export async function PUT(
     const contractId = parseInt(id);
     const body = await request.json();
     
-    if (!userWithTeam?.teamId || !contractId) {
+    if (!userWithTeam?.teamId || !contractId || isNaN(contractId)) {
+      console.error('Invalid request parameters:', { 
+        teamId: userWithTeam?.teamId, 
+        contractId, 
+        rawId: id,
+        isNaN: isNaN(contractId)
+      });
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
 
@@ -76,33 +82,41 @@ export async function PUT(
     };
 
     // Only update fields that are present in the request body
-    if (body.userFullName !== undefined) updateData.userFullName = body.userFullName || null;
-    if (body.partnerFullName !== undefined) updateData.partnerFullName = body.partnerFullName || null;
-    if (body.userFirstName !== undefined) updateData.userFirstName = body.userFirstName || null;
-    if (body.partnerFirstName !== undefined) updateData.partnerFirstName = body.partnerFirstName || null;
-    if (body.userAge !== undefined) updateData.userAge = body.userAge ? parseInt(body.userAge) : null;
-    if (body.partnerAge !== undefined) updateData.partnerAge = body.partnerAge ? parseInt(body.partnerAge) : null;
-    if (body.cohabDate !== undefined) updateData.cohabDate = body.cohabDate ? new Date(body.cohabDate) : null;
-    if (body.userJobTitle !== undefined) updateData.userJobTitle = body.userJobTitle || null;
-    if (body.partnerJobTitle !== undefined) updateData.partnerJobTitle = body.partnerJobTitle || null;
-    if (body.userIncome !== undefined) updateData.userIncome = body.userIncome || null;
-    if (body.partnerIncome !== undefined) updateData.partnerIncome = body.partnerIncome || null;
-    if (body.userEmail !== undefined) updateData.userEmail = body.userEmail || null;
-    if (body.partnerEmail !== undefined) updateData.partnerEmail = body.partnerEmail || null;
-    if (body.userPhone !== undefined) updateData.userPhone = body.userPhone || null;
-    if (body.partnerPhone !== undefined) updateData.partnerPhone = body.partnerPhone || null;
-    if (body.userAddress !== undefined) updateData.userAddress = body.userAddress || null;
-    if (body.partnerAddress !== undefined) updateData.partnerAddress = body.partnerAddress || null;
-    if (body.userLawyer !== undefined) updateData.userLawyer = body.userLawyer || null;
-    if (body.partnerLawyer !== undefined) updateData.partnerLawyer = body.partnerLawyer || null;
+    // Use empty string as null for string fields to allow clearing
+    if (body.userFullName !== undefined) updateData.userFullName = body.userFullName === '' ? null : body.userFullName;
+    if (body.partnerFullName !== undefined) updateData.partnerFullName = body.partnerFullName === '' ? null : body.partnerFullName;
+    if (body.userFirstName !== undefined) updateData.userFirstName = body.userFirstName === '' ? null : body.userFirstName;
+    if (body.partnerFirstName !== undefined) updateData.partnerFirstName = body.partnerFirstName === '' ? null : body.partnerFirstName;
+    if (body.userAge !== undefined) updateData.userAge = body.userAge === '' ? null : parseInt(body.userAge);
+    if (body.partnerAge !== undefined) updateData.partnerAge = body.partnerAge === '' ? null : parseInt(body.partnerAge);
+    if (body.cohabDate !== undefined) updateData.cohabDate = body.cohabDate === '' ? null : new Date(body.cohabDate);
+    if (body.userJobTitle !== undefined) updateData.userJobTitle = body.userJobTitle === '' ? null : body.userJobTitle;
+    if (body.partnerJobTitle !== undefined) updateData.partnerJobTitle = body.partnerJobTitle === '' ? null : body.partnerJobTitle;
+    if (body.userIncome !== undefined) updateData.userIncome = body.userIncome === '' ? null : body.userIncome;
+    if (body.partnerIncome !== undefined) updateData.partnerIncome = body.partnerIncome === '' ? null : body.partnerIncome;
+    if (body.userEmail !== undefined) updateData.userEmail = body.userEmail === '' ? null : body.userEmail;
+    if (body.partnerEmail !== undefined) updateData.partnerEmail = body.partnerEmail === '' ? null : body.partnerEmail;
+    if (body.userPhone !== undefined) updateData.userPhone = body.userPhone === '' ? null : body.userPhone;
+    if (body.partnerPhone !== undefined) updateData.partnerPhone = body.partnerPhone === '' ? null : body.partnerPhone;
+    if (body.userAddress !== undefined) updateData.userAddress = body.userAddress === '' ? null : body.userAddress;
+    if (body.partnerAddress !== undefined) updateData.partnerAddress = body.partnerAddress === '' ? null : body.partnerAddress;
+    if (body.userLawyer !== undefined) updateData.userLawyer = body.userLawyer === '' ? null : body.userLawyer;
+    if (body.partnerLawyer !== undefined) updateData.partnerLawyer = body.partnerLawyer === '' ? null : body.partnerLawyer;
     if (body.children !== undefined) updateData.children = body.children || [];
-    if (body.residenceAddress !== undefined) updateData.residenceAddress = body.residenceAddress || null;
-    if (body.residenceOwnership !== undefined) updateData.residenceOwnership = body.residenceOwnership || null;
-    if (body.expenseSplitType !== undefined) updateData.expenseSplitType = body.expenseSplitType || null;
+    if (body.residenceAddress !== undefined) updateData.residenceAddress = body.residenceAddress === '' ? null : body.residenceAddress;
+    if (body.residenceOwnership !== undefined) updateData.residenceOwnership = body.residenceOwnership === '' ? null : body.residenceOwnership;
+    if (body.expenseSplitType !== undefined) updateData.expenseSplitType = body.expenseSplitType === '' ? null : body.expenseSplitType;
     if (body.customExpenseSplit !== undefined) updateData.customExpenseSplit = body.customExpenseSplit || null;
-    if (body.additionalClauses !== undefined) updateData.additionalClauses = body.additionalClauses || null;
-    if (body.notes !== undefined) updateData.notes = body.notes || null;
+    if (body.additionalClauses !== undefined) updateData.additionalClauses = body.additionalClauses === '' ? null : body.additionalClauses;
+    if (body.notes !== undefined) updateData.notes = body.notes === '' ? null : body.notes;
     if (body.status !== undefined) updateData.status = body.status || 'draft';
+
+    console.log('Updating contract with:', {
+      contractId,
+      userId: user.id,
+      teamId: userWithTeam.teamId,
+      updateDataKeys: Object.keys(updateData)
+    });
 
     const [updatedContract] = await db
       .update(familyContracts)
@@ -115,6 +129,11 @@ export async function PUT(
         )
       )
       .returning();
+
+    console.log('Update result:', {
+      found: !!updatedContract,
+      updatedId: updatedContract?.id
+    });
 
     if (!updatedContract) {
       return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
