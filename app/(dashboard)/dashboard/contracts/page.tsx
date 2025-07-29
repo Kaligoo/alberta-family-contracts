@@ -186,7 +186,7 @@ export default function ContractsPage() {
                         className="flex-1"
                       >
                         <ArrowRight className="mr-2 h-3 w-3" />
-                        Edit This Contract
+                        Edit
                       </Button>
                       <Link href={`/dashboard/contracts/${contract.id}/preview`} className="flex-1">
                         <Button variant="outline" size="sm" className="w-full">
