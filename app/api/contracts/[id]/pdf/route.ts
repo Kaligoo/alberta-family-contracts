@@ -351,9 +351,9 @@ function prepareTemplateData(contract: any, user: any) {
       day: 'numeric' 
     }) : '',
     
-    // Ages
-    userAge: contract.userAge || '[Your Age]',
-    partnerAge: contract.partnerAge || '[Partner Age]', 
+    // Ages - using correct field names
+    userAge: contract.user_age || contract.userAge || '[Your Age]',
+    partnerAge: contract.partner_age || contract.partnerAge || '[Partner Age]', 
     
     // Legal counsel
     userLawyer: contract.userLawyer || '[Your Legal Counsel]',
@@ -367,6 +367,18 @@ function prepareTemplateData(contract: any, user: any) {
     hasChildren: contract.children && contract.children.length > 0,
     childrenCount: contract.children ? contract.children.length : 0,
     childrenList: contract.children || [],
+    childrenStatus: (contract.children && contract.children.length > 0) ? 
+      `The parties have ${contract.children.length} child${contract.children.length > 1 ? 'ren' : ''} of the relationship: ${contract.children.map((child: any) => {
+        const childInfo = child.name;
+        if (child.age) {
+          // Calculate approximate birth year from age
+          const currentYear = new Date().getFullYear();
+          const birthYear = currentYear - parseInt(child.age);
+          return `${childInfo} (born approximately ${birthYear})`;
+        }
+        return childInfo;
+      }).join(', ')}.` : 
+      'There are no children of the relationship as of the Effective Date of this Agreement. The parties may or may not have children together in the future, either biological or adopted.',
     
     // Additional clauses
     additionalClauses: contract.additionalClauses || '',
