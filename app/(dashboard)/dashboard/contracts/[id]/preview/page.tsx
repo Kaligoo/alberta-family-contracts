@@ -158,193 +158,195 @@ export default function ContractPreviewPage() {
           </div>
         </div>
 
-        {/* Contract Document Preview - Legal Document Style */}
+        {/* Contract Document Preview - Matching Word Template Exactly */}
         <div className="bg-white shadow-lg border border-gray-200 mb-6" style={{ fontFamily: 'Times, "Times New Roman", serif' }}>
-          <div className="p-8 md:p-12 lg:p-16 min-h-[11in] max-w-[8.5in] mx-auto">
-            {/* Document Header */}
-            <div className="text-center mb-10">
-              <h1 className="text-4xl font-bold text-black mb-3 tracking-wide">
-                COHABITATION AGREEMENT
-              </h1>
-              <div className="border-b-2 border-black w-64 mx-auto mb-4"></div>
-              <p className="text-xl text-black font-medium">Province of Alberta, Canada</p>
-              <p className="text-sm text-gray-600 mt-6">
-                This agreement was created on {formatDate(contract.createdAt)}
+          <div className="p-8 md:p-12 lg:p-16 max-w-[8.5in] mx-auto text-black">
+            
+            {/* Page Header - Exactly as in Word template */}
+            <div className="text-center mb-8">
+              <p className="text-lg leading-relaxed mb-4">
+                {contract.userFullName || '[Your Name]'} (hereinafter referred to as "{contract.userFirstName || '[Your First Name]'}")
               </p>
-            </div>
-
-            {/* Parties Section */}
-            <div className="mb-10">
-              <h2 className="text-2xl font-bold text-black mb-6 text-center border-b border-gray-300 pb-2">
-                THE PARTIES
-              </h2>
-              <div className="bg-gray-50 border border-gray-200 p-6 rounded-none">
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-bold text-lg text-black mb-3">FIRST PARTY:</h3>
-                    <div className="ml-4 space-y-2">
-                      <p className="text-black"><strong>Name:</strong> {contract.userFullName || '[First Party Name]'}</p>
-                      {contract.userJobTitle && (
-                        <p className="text-black"><strong>Occupation:</strong> {contract.userJobTitle}</p>
-                      )}
-                      {contract.userIncome && (
-                        <p className="text-black"><strong>Annual Income:</strong> {formatCurrency(contract.userIncome)}</p>
-                      )}
-                      {contract.userEmail && (
-                        <p className="text-black"><strong>Email:</strong> {contract.userEmail}</p>
-                      )}
-                      {contract.userPhone && (
-                        <p className="text-black"><strong>Phone:</strong> {contract.userPhone}</p>
-                      )}
-                      {contract.userAddress && (
-                        <p className="text-black"><strong>Address:</strong> {contract.userAddress}</p>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="border-t border-gray-300 pt-6">
-                    <h3 className="font-bold text-lg text-black mb-3">SECOND PARTY:</h3>
-                    <div className="ml-4 space-y-2">
-                      <p className="text-black"><strong>Name:</strong> {contract.partnerFullName || '[Second Party Name]'}</p>
-                      {contract.partnerJobTitle && (
-                        <p className="text-black"><strong>Occupation:</strong> {contract.partnerJobTitle}</p>
-                      )}
-                      {contract.partnerIncome && (
-                        <p className="text-black"><strong>Annual Income:</strong> {formatCurrency(contract.partnerIncome)}</p>
-                      )}
-                      {contract.partnerEmail && (
-                        <p className="text-black"><strong>Email:</strong> {contract.partnerEmail}</p>
-                      )}
-                      {contract.partnerPhone && (
-                        <p className="text-black"><strong>Phone:</strong> {contract.partnerPhone}</p>
-                      )}
-                      {contract.partnerAddress && (
-                        <p className="text-black"><strong>Address:</strong> {contract.partnerAddress}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
+              <p className="text-lg leading-relaxed mb-4">- and -</p>
+              <p className="text-lg leading-relaxed mb-8">
+                {contract.partnerFullName || '[Partner Name]'} (hereinafter referred to as "{contract.partnerFirstName || '[Partner First Name]'}")
+              </p>
+              
+              <div className="border-b-2 border-black w-96 mx-auto mb-2"></div>
+              <div className="border-b border-black w-48 mx-auto mb-6"></div>
+              
+              <h1 className="text-2xl font-bold tracking-wide mb-6">
+                COHABITATION AND PRENUPTIAL AGREEMENT
+              </h1>
+              
+              <div className="border-b-2 border-black w-96 mx-auto mb-2"></div>
+              <div className="border-b border-black w-48 mx-auto mb-8"></div>
+              
+              <div className="text-left max-w-sm mx-auto mb-8">
+                <p className="text-sm leading-relaxed">
+                  Drafted by Garrett Horvath<br/>
+                  Kahane Law LLP<br/>
+                  7309 Flint Rd SE<br/>
+                  Calgary, Alberta T2H 1G4<br/>
+                  ghorvath@kahanelaw.com<br/>
+                  Ph: 403-910-5387
+                </p>
               </div>
             </div>
 
-            {/* Residence Section */}
-            <div className="mb-10">
-              <h2 className="text-2xl font-bold text-black mb-6 text-center border-b border-gray-300 pb-2">
-                RESIDENCE
+            {/* Agreement Header */}
+            <div className="mb-8">
+              <p className="text-base font-bold mb-6">
+                THIS AGREEMENT MADE effective upon execution by both parties.
+              </p>
+              
+              <p className="text-base font-bold mb-4">BETWEEN:</p>
+              
+              <p className="text-base leading-relaxed mb-4">
+                {contract.userFullName || '[Your Name]'} (hereinafter referred to as "{contract.userFirstName || '[Your First Name]'}")
+              </p>
+              
+              <p className="text-base leading-relaxed mb-4">- and -</p>
+              
+              <p className="text-base leading-relaxed mb-8">
+                {contract.partnerFullName || '[Partner Name]'} (hereinafter referred to as "{contract.partnerFirstName || '[Partner First Name]'}")
+              </p>
+            </div>
+
+            {/* Main Title */}
+            <div className="text-center mb-8">
+              <h2 className="text-xl font-bold tracking-wide">
+                COHABITATION AND PRENUPTIAL AGREEMENT
               </h2>
-              <div className="bg-gray-50 border border-gray-200 p-6 rounded-none">
-                <div className="space-y-3">
-                  <p className="text-black text-lg leading-relaxed">
-                    <strong>Property Address:</strong> {contract.residenceAddress || '[Residence Address]'}
+            </div>
+
+            {/* Part I: Recitals */}
+            <div className="mb-8">
+              <h3 className="text-lg font-bold mb-6">PART I: RECITALS</h3>
+              
+              <div className="space-y-4 text-base leading-relaxed">
+                <p>
+                  {contract.userFirstName || '[Your First Name]'} and {contract.partnerFirstName || '[Partner First Name]'} currently live together. They are engaged to be married and intend to be married {formatDate(contract.createdAt)}.
+                </p>
+                
+                <p>
+                  {contract.userFirstName || '[Your First Name]'} and {contract.partnerFirstName || '[Partner First Name]'} have resided together since {contract.cohabDate ? formatDate(contract.cohabDate) : formatDate(contract.createdAt)}.
+                </p>
+                
+                <p>
+                  {contract.userFirstName || '[Your First Name]'}, presently age {contract.userAge || '[Your Age]'}, owns assets and is responsible for debts as set out in the attached Schedule A. {contract.userJobTitle ? `She is presently ${contract.userJobTitle}.` : 'She is presently [Your Occupation].'} {contract.userIncome ? `Her current income is approximately ${formatCurrency(contract.userIncome)} annually.` : 'Her current income is approximately [Your Income] annually.'}
+                </p>
+                
+                <p>
+                  {contract.partnerFirstName || '[Partner First Name]'}, presently age {contract.partnerAge || '[Partner Age]'}, owns assets and is responsible for debts as set out in the attached Schedule B. {contract.partnerJobTitle ? `He is presently ${contract.partnerJobTitle}.` : 'He is presently [Partner Occupation].'} {contract.partnerIncome ? `His current income is approximately ${formatCurrency(contract.partnerIncome)} annually.` : 'His current income is approximately [Partner Income] annually.'}
+                </p>
+                
+                <p>
+                  {contract.children && contract.children.length > 0 
+                    ? `The parties have children as detailed in this agreement.`
+                    : 'There are no children of the relationship as of the Effective Date of this Agreement. The parties may or may not have children together in the future, either biological or adopted.'
+                  }
+                </p>
+                
+                <p>
+                  {contract.userFirstName || '[Your First Name]'} and {contract.partnerFirstName || '[Partner First Name]'} acknowledge that she/he:
+                </p>
+                
+                <ul className="list-disc list-inside ml-4 space-y-2">
+                  <li>has had independent legal advice as evidenced by the execution of the certificates attached to this Agreement;</li>
+                  <li>understands his or her respective rights and obligations under this Agreement; and</li>
+                  <li>is signing this Agreement voluntarily and is under no duress or undue influence from the other party.</li>
+                </ul>
+                
+                <p>
+                  {contract.userFirstName || '[Your First Name]'} and {contract.partnerFirstName || '[Partner First Name]'} have been advised and informed of the assets and liabilities of the other as of the Effective Date of this Agreement through the completion of and exchange of their respective Schedules, attached to this Agreement.
+                </p>
+              </div>
+            </div>
+
+            {/* Property Section - Based on residence information */}
+            {contract.residenceAddress && (
+              <div className="mb-8">
+                <h3 className="text-lg font-bold mb-4">{contract.residenceAddress} (the "House")</h3>
+                
+                <div className="space-y-4 text-base leading-relaxed">
+                  <p>
+                    The parties have purchased or reside at the property located at {contract.residenceAddress}. The parties have resided together at this property.
                   </p>
+                  
                   {contract.residenceOwnership && (
-                    <p className="text-black text-lg leading-relaxed">
-                      <strong>Ownership Structure:</strong> {contract.residenceOwnership.charAt(0).toUpperCase() + contract.residenceOwnership.slice(1)}
+                    <p>
+                      The property ownership structure is: {contract.residenceOwnership.charAt(0).toUpperCase() + contract.residenceOwnership.slice(1)}.
+                    </p>
+                  )}
+                  
+                  {contract.expenseSplitType && (
+                    <p>
+                      The parties agree that they are sharing the costs of the residence {
+                        contract.expenseSplitType === 'equal' ? 'equally' :
+                        contract.expenseSplitType === 'proportional' ? 'proportionally based on income' :
+                        'according to their custom arrangement'
+                      }.
                     </p>
                   )}
                 </div>
               </div>
-            </div>
-
-            {/* Financial Arrangements */}
-            <div className="mb-10">
-              <h2 className="text-2xl font-bold text-black mb-6 text-center border-b border-gray-300 pb-2">
-                FINANCIAL ARRANGEMENTS
-              </h2>
-              <div className="bg-gray-50 border border-gray-200 p-6 rounded-none">
-                <div className="space-y-4">
-                  <p className="text-black text-lg leading-relaxed">
-                    <strong>Expense Sharing:</strong> {
-                      contract.expenseSplitType === 'equal' ? 'All household expenses shall be split equally between both parties (50/50).' :
-                      contract.expenseSplitType === 'proportional' ? 'Household expenses shall be allocated proportionally based on each party\'s respective income.' :
-                      contract.expenseSplitType === 'custom' ? 'Household expenses shall be managed according to custom arrangements as agreed upon by both parties.' :
-                      contract.expenseSplitType || 'To be determined by mutual agreement.'
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Standard Legal Provisions */}
-            <div className="mb-10">
-              <h2 className="text-2xl font-bold text-black mb-6 text-center border-b border-gray-300 pb-2">
-                TERMS AND CONDITIONS
-              </h2>
-              <div className="space-y-6">
-                <div className="bg-gray-50 border border-gray-200 p-6 rounded-none">
-                  <h3 className="font-bold text-lg text-black mb-3">1. INTERPRETATION</h3>
-                  <p className="text-black text-base leading-relaxed">
-                    This Agreement shall be governed by and interpreted in accordance with the laws of the Province of Alberta and the laws of Canada applicable therein. Any disputes arising from this Agreement shall be resolved in the courts of Alberta.
-                  </p>
-                </div>
-                
-                <div className="bg-gray-50 border border-gray-200 p-6 rounded-none">
-                  <h3 className="font-bold text-lg text-black mb-3">2. FINANCIAL INDEPENDENCE</h3>
-                  <p className="text-black text-base leading-relaxed">
-                    Each party acknowledges that they are financially independent and capable of supporting themselves. Neither party shall be responsible for the debts or financial obligations of the other party incurred before or during the cohabitation.
-                  </p>
-                </div>
-                
-                <div className="bg-gray-50 border border-gray-200 p-6 rounded-none">
-                  <h3 className="font-bold text-lg text-black mb-3">3. PROPERTY RIGHTS</h3>
-                  <p className="text-black text-base leading-relaxed">
-                    Property owned by each party before the commencement of cohabitation shall remain the separate property of that party. Any property acquired jointly during cohabitation shall be owned in proportion to each party's financial contribution.
-                  </p>
-                </div>
-                
-                <div className="bg-gray-50 border border-gray-200 p-6 rounded-none">
-                  <h3 className="font-bold text-lg text-black mb-3">4. AMENDMENT AND TERMINATION</h3>
-                  <p className="text-black text-base leading-relaxed">
-                    This Agreement may only be amended by written agreement signed by both parties in the presence of independent legal counsel. This Agreement shall terminate upon the cessation of cohabitation or by mutual written consent.
-                  </p>
-                </div>
-              </div>
-            </div>
+            )}
 
             {/* Additional Clauses */}
             {contract.additionalClauses && (
-              <div className="mb-10">
-                <h2 className="text-2xl font-bold text-black mb-6 text-center border-b border-gray-300 pb-2">
-                  ADDITIONAL TERMS
-                </h2>
-                <div className="bg-gray-50 border border-gray-200 p-6 rounded-none">
-                  <p className="text-black text-base leading-relaxed whitespace-pre-wrap">
-                    {contract.additionalClauses}
-                  </p>
-                </div>
+              <div className="mb-8">
+                <h3 className="text-lg font-bold mb-4">ADDITIONAL TERMS</h3>
+                <p className="text-base leading-relaxed whitespace-pre-wrap">
+                  {contract.additionalClauses}
+                </p>
               </div>
             )}
 
-            {/* Signatures */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-black mb-8 text-center border-b border-gray-300 pb-2">
-                EXECUTION
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <div className="text-center">
-                  <div className="border-b-2 border-black mb-2 pb-8">
-                    {/* Signature line */}
-                  </div>
-                  <p className="font-bold text-black">{contract.userFullName || '[First Party Name]'}</p>
-                  <p className="text-sm text-black mt-1">First Party</p>
-                  <div className="mt-4">
-                    <div className="border-b border-black mb-1 w-32 mx-auto"></div>
-                    <p className="text-sm text-black">Date</p>
-                  </div>
-                </div>
+            {/* Signature Section - Legal Format */}
+            <div className="mt-12 pt-8">
+              <p className="text-center font-bold mb-8">
+                [Remainder of page intentionally left blank]
+              </p>
+              
+              <div className="mt-16">
+                <h3 className="text-lg font-bold text-center mb-8">EXECUTION</h3>
                 
-                <div className="text-center">
-                  <div className="border-b-2 border-black mb-2 pb-8">
-                    {/* Signature line */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+                  <div>
+                    <div className="mb-4">
+                      <div className="border-b-2 border-black h-12 mb-2"></div>
+                      <p className="font-bold">{contract.userFullName || '[Your Name]'}</p>
+                      <p className="text-sm">({contract.userFirstName || '[Your First Name]'})</p>
+                    </div>
+                    
+                    <div className="mt-8">
+                      <div className="border-b border-black w-32 mb-2"></div>
+                      <p className="text-sm">Date</p>
+                    </div>
                   </div>
-                  <p className="font-bold text-black">{contract.partnerFullName || '[Second Party Name]'}</p>
-                  <p className="text-sm text-black mt-1">Second Party</p>
-                  <div className="mt-4">
-                    <div className="border-b border-black mb-1 w-32 mx-auto"></div>
-                    <p className="text-sm text-black">Date</p>
+                  
+                  <div>
+                    <div className="mb-4">
+                      <div className="border-b-2 border-black h-12 mb-2"></div>
+                      <p className="font-bold">{contract.partnerFullName || '[Partner Name]'}</p>
+                      <p className="text-sm">({contract.partnerFirstName || '[Partner First Name]'})</p>
+                    </div>
+                    
+                    <div className="mt-8">
+                      <div className="border-b border-black w-32 mb-2"></div>
+                      <p className="text-sm">Date</p>
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-12 pt-8 border-t border-gray-300 text-xs text-gray-600">
+              <p className="text-center">
+                This document is a preview generated by Alberta Family Contracts on {formatDate(contract.createdAt)}
+              </p>
             </div>
           </div>
         </div>
