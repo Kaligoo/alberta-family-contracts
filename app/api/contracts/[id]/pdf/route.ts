@@ -3,12 +3,71 @@ import { getUser, getUserWithTeam } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts, templates } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import puppeteer from 'puppeteer';
-import mammoth from 'mammoth';
+import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer';
+import React from 'react';
 
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
+
+// Styles for the PDF document
+const styles = StyleSheet.create({
+  page: {
+    flexDirection: 'column',
+    backgroundColor: '#FFFFFF',
+    padding: 72, // 1 inch margins
+    fontFamily: 'Times-Roman',
+  },
+  container: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 1.6,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 30,
+    fontFamily: 'Times-Bold',
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+    fontFamily: 'Times-Bold',
+  },
+  section: {
+    marginBottom: 20,
+  },
+  text: {
+    fontSize: 12,
+    marginBottom: 8,
+    fontFamily: 'Times-Roman',
+  },
+  boldText: {
+    fontSize: 12,
+    marginBottom: 8,
+    fontFamily: 'Times-Bold',
+    fontWeight: 'bold',
+  },
+  footer: {
+    marginTop: 'auto',
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#000000',
+  },
+  notice: {
+    fontSize: 10,
+    textAlign: 'justify',
+    marginBottom: 20,
+    fontFamily: 'Times-Roman',
+  },
+  footerInfo: {
+    fontSize: 10,
+    marginBottom: 2,
+    fontFamily: 'Times-Roman',
+  },
+});
 
 export async function GET(
   request: NextRequest,
@@ -22,16 +81,11 @@ export async function GET(
     }
 
     const userWithTeam = await getUserWithTeam(user.id);
-    
-    if (!userWithTeam?.teamId) {
-      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
-    }
-
     const resolvedParams = await params;
     const contractId = parseInt(resolvedParams.id);
     
-    if (isNaN(contractId)) {
-      return NextResponse.json({ error: 'Invalid contract ID' }, { status: 400 });
+    if (!userWithTeam?.teamId || isNaN(contractId)) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
 
     // Get the contract to verify ownership
@@ -51,8 +105,8 @@ export async function GET(
       return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
     }
 
-    // Generate PDF using Puppeteer HTML-to-PDF conversion
-    const pdfBytes = await generateContractPDF(contract, user, userWithTeam.teamId);
+    // Generate PDF using @react-pdf/renderer
+    const pdfBytes = await generateContractPDF(contract, user);
     
     return new NextResponse(pdfBytes, {
       headers: {
@@ -70,169 +124,138 @@ export async function GET(
   }
 }
 
-async function generateContractPDF(contract: any, user: any, teamId: number): Promise<Uint8Array> {
+async function generateContractPDF(contract: any, user: any): Promise<Uint8Array> {
   try {
-    // First, try to generate PDF from Word document using Puppeteer
-    const wordBuffer = await generateWordDocument(contract, user, teamId);
+    const templateData = prepareTemplateData(contract, user);
     
-    // Convert Word document to HTML using mammoth
-    const result = await mammoth.convertToHtml({ buffer: wordBuffer });
-    const htmlContent = result.value;
+    // Create the PDF document
+    const MyDocument = React.createElement(
+      Document,
+      {},
+      React.createElement(
+        Page,
+        { size: 'A4', style: styles.page },
+        React.createElement(
+          View,
+          { style: styles.container },
+          [
+            // Title
+            React.createElement(Text, { style: styles.title, key: 'title' }, 'ALBERTA COHABITATION AGREEMENT'),
+            
+            // Parties Section
+            React.createElement(
+              View,
+              { style: styles.section, key: 'parties' },
+              [
+                React.createElement(Text, { style: styles.sectionTitle, key: 'parties-title' }, 'PARTIES TO THIS AGREEMENT'),
+                React.createElement(Text, { style: styles.boldText, key: 'party-a' }, `Party A: ${templateData.userFullName}`),
+                contract.userAddress ? React.createElement(Text, { style: styles.text, key: 'user-address' }, `Address: ${contract.userAddress}`) : null,
+                contract.userEmail ? React.createElement(Text, { style: styles.text, key: 'user-email' }, `Email: ${contract.userEmail}`) : null,
+                contract.userPhone ? React.createElement(Text, { style: styles.text, key: 'user-phone' }, `Phone: ${contract.userPhone}`) : null,
+                React.createElement(Text, { style: [styles.boldText, { marginTop: 15 }], key: 'party-b' }, `Party B: ${templateData.partnerFullName}`),
+                contract.partnerAddress ? React.createElement(Text, { style: styles.text, key: 'partner-address' }, `Address: ${contract.partnerAddress}`) : null,
+                contract.partnerEmail ? React.createElement(Text, { style: styles.text, key: 'partner-email' }, `Email: ${contract.partnerEmail}`) : null,
+                contract.partnerPhone ? React.createElement(Text, { style: styles.text, key: 'partner-phone' }, `Phone: ${contract.partnerPhone}`) : null,
+              ].filter(Boolean)
+            ),
+            
+            // Agreement Details Section
+            React.createElement(
+              View,
+              { style: styles.section, key: 'agreement' },
+              [
+                React.createElement(Text, { style: styles.sectionTitle, key: 'agreement-title' }, 'AGREEMENT DETAILS'),
+                React.createElement(Text, { style: styles.text, key: 'date' }, `Date of Agreement: ${templateData.currentDate}`),
+                contract.cohabDate ? React.createElement(Text, { style: styles.text, key: 'cohab-date' }, `Date Cohabitation Began: ${templateData.cohabDate}`) : null,
+                contract.residenceAddress ? React.createElement(Text, { style: styles.text, key: 'residence' }, `Residence Address: ${contract.residenceAddress}`) : null,
+              ].filter(Boolean)
+            ),
+            
+            // Financial Information Section
+            (contract.userIncome || contract.partnerIncome) ? React.createElement(
+              View,
+              { style: styles.section, key: 'financial' },
+              [
+                React.createElement(Text, { style: styles.sectionTitle, key: 'financial-title' }, 'FINANCIAL INFORMATION'),
+                contract.userIncome ? React.createElement(Text, { style: styles.text, key: 'user-income' }, `Party A Annual Income: ${templateData.userIncome}`) : null,
+                contract.partnerIncome ? React.createElement(Text, { style: styles.text, key: 'partner-income' }, `Party B Annual Income: ${templateData.partnerIncome}`) : null,
+              ].filter(Boolean)
+            ) : null,
+            
+            // Employment Information Section
+            (contract.userJobTitle || contract.partnerJobTitle) ? React.createElement(
+              View,
+              { style: styles.section, key: 'employment' },
+              [
+                React.createElement(Text, { style: styles.sectionTitle, key: 'employment-title' }, 'EMPLOYMENT INFORMATION'),
+                contract.userJobTitle ? React.createElement(Text, { style: styles.text, key: 'user-job' }, `Party A Occupation: ${contract.userJobTitle}`) : null,
+                contract.partnerJobTitle ? React.createElement(Text, { style: styles.text, key: 'partner-job' }, `Party B Occupation: ${contract.partnerJobTitle}`) : null,
+              ].filter(Boolean)
+            ) : null,
+            
+            // Children Section
+            (contract.children && contract.children.length > 0) ? React.createElement(
+              View,
+              { style: styles.section, key: 'children' },
+              [
+                React.createElement(Text, { style: styles.sectionTitle, key: 'children-title' }, 'CHILDREN'),
+                ...contract.children.map((child: any, index: number) => 
+                  React.createElement(Text, { style: styles.text, key: `child-${index}` }, 
+                    `Child ${index + 1}: ${child.name}${child.age ? ` (Age ${child.age})` : ''}`
+                  )
+                )
+              ]
+            ) : null,
+            
+            // Additional Clauses Section
+            contract.additionalClauses ? React.createElement(
+              View,
+              { style: styles.section, key: 'clauses' },
+              [
+                React.createElement(Text, { style: styles.sectionTitle, key: 'clauses-title' }, 'ADDITIONAL CLAUSES'),
+                React.createElement(Text, { style: styles.text, key: 'clauses-content' }, contract.additionalClauses),
+              ]
+            ) : null,
+            
+            // Notes Section
+            contract.notes ? React.createElement(
+              View,
+              { style: styles.section, key: 'notes' },
+              [
+                React.createElement(Text, { style: styles.sectionTitle, key: 'notes-title' }, 'NOTES'),
+                React.createElement(Text, { style: styles.text, key: 'notes-content' }, contract.notes),
+              ]
+            ) : null,
+            
+            // Footer
+            React.createElement(
+              View,
+              { style: styles.footer, key: 'footer' },
+              [
+                React.createElement(Text, { style: styles.boldText, key: 'notice-title' }, 'IMPORTANT NOTICE'),
+                React.createElement(Text, { style: styles.notice, key: 'notice' }, 
+                  'This document is a draft cohabitation agreement generated for informational purposes only. It should be reviewed by qualified legal counsel before signing. Alberta Family Contracts does not provide legal advice.'
+                ),
+                React.createElement(Text, { style: styles.footerInfo, key: 'gen-date' }, `Generated on: ${templateData.currentDate}`),
+                React.createElement(Text, { style: styles.footerInfo, key: 'contract-id' }, `Contract ID: #${contract.id}`),
+              ]
+            )
+          ].filter(Boolean)
+        )
+      )
+    );
+
+    // Generate the PDF
+    const pdfStream = await pdf(MyDocument).toBlob();
+    const pdfArrayBuffer = await pdfStream.arrayBuffer();
     
-    // Create professional HTML with proper styling
-    const styledHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <style>
-          @page {
-            margin: 1in;
-            size: A4;
-          }
-          body {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 12pt;
-            line-height: 1.6;
-            color: #000;
-            margin: 0;
-            padding: 0;
-          }
-          h1, h2, h3, h4, h5, h6 {
-            font-weight: bold;
-            margin-top: 20px;
-            margin-bottom: 10px;
-          }
-          h1 {
-            font-size: 16pt;
-            text-align: center;
-            text-transform: uppercase;
-          }
-          h2 {
-            font-size: 14pt;
-            text-transform: uppercase;
-          }
-          h3 {
-            font-size: 13pt;
-          }
-          p {
-            margin-bottom: 10px;
-            text-align: justify;
-          }
-          .header {
-            text-align: center;
-            margin-bottom: 30px;
-          }
-          .signature-section {
-            margin-top: 40px;
-            page-break-inside: avoid;
-          }
-          .signature-line {
-            border-bottom: 1px solid #000;
-            width: 300px;
-            margin: 20px 0 5px 0;
-            display: inline-block;
-          }
-          table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 10px 0;
-          }
-          th, td {
-            border: 1px solid #000;
-            padding: 8px;
-            text-align: left;
-          }
-          th {
-            background-color: #f5f5f5;
-            font-weight: bold;
-          }
-          .page-break {
-            page-break-before: always;
-          }
-        </style>
-      </head>
-      <body>
-        ${htmlContent}
-      </body>
-      </html>
-    `;
-    
-    // Generate PDF using Puppeteer
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu'
-      ]
-    });
-    
-    const page = await browser.newPage();
-    await page.setContent(styledHtml, { waitUntil: 'networkidle0' });
-    
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '1in',
-        right: '1in',
-        bottom: '1in',
-        left: '1in'
-      }
-    });
-    
-    await browser.close();
-    
-    console.log('Successfully generated PDF using Puppeteer');
-    return new Uint8Array(pdfBuffer);
+    console.log('Successfully generated PDF using @react-pdf/renderer');
+    return new Uint8Array(pdfArrayBuffer);
     
   } catch (error) {
-    console.warn('Failed to generate PDF using Puppeteer, falling back to pdf-lib:', error);
-    // Fallback to pdf-lib if Puppeteer conversion fails
-    return await generateFallbackPDF(contract, user);
+    console.error('Failed to generate PDF using @react-pdf/renderer:', error);
+    throw error;
   }
-}
-
-async function generateWordDocument(contract: any, user: any, teamId: number): Promise<Buffer> {
-  // Get active template from database (same logic as generate-professional route)
-  const activeTemplate = await db
-    .select()
-    .from(templates)
-    .where(eq(templates.isActive, 'true'))
-    .limit(1);
-
-  if (activeTemplate.length === 0) {
-    throw new Error('No active template found');
-  }
-
-  const template = activeTemplate[0];
-
-  // Prepare template data (same as generate-professional route)
-  const templateData = prepareTemplateData(contract, user);
-  
-  // Generate document from database-stored template
-  const templateBuffer = Buffer.from(template.content, 'base64');
-  const zip = new PizZip(templateBuffer);
-  
-  const doc = new Docxtemplater(zip, {
-    paragraphLoop: true,
-    linebreaks: true,
-    delimiters: {
-      start: '{',
-      end: '}'
-    }
-  });
-
-  doc.render(templateData);
-  
-  const buffer = doc.getZip().generate({ type: 'nodebuffer' });
-  return buffer;
 }
 
 function prepareTemplateData(contract: any, user: any) {
@@ -242,7 +265,6 @@ function prepareTemplateData(contract: any, user: any) {
     day: 'numeric' 
   });
 
-  // Extract first names from full names if not provided separately
   const getUserFirstName = () => {
     if (contract.userFirstName) return contract.userFirstName;
     if (contract.userFullName) return contract.userFullName.split(' ')[0];
@@ -256,113 +278,17 @@ function prepareTemplateData(contract: any, user: any) {
   };
 
   return {
-    // Core party information
     userFullName: contract.userFullName || '[Your Name]',
     partnerFullName: contract.partnerFullName || '[Partner Name]',
     userFirstName: getUserFirstName(),
     partnerFirstName: getPartnerFirstName(),
-    
-    // Employment and income
-    userJobTitle: contract.userJobTitle || '[Your Occupation]',
-    partnerJobTitle: contract.partnerJobTitle || '[Partner Occupation]',
     userIncome: contract.userIncome ? `$${parseInt(contract.userIncome).toLocaleString()} CAD` : '[Your Income]',
     partnerIncome: contract.partnerIncome ? `$${parseInt(contract.partnerIncome).toLocaleString()} CAD` : '[Partner Income]',
-    
-    // Contact information
-    userEmail: contract.userEmail || user.email || '[Your Email]',
-    partnerEmail: contract.partnerEmail || '[Partner Email]',
-    userPhone: contract.userPhone || '[Your Phone]',
-    partnerPhone: contract.partnerPhone || '[Partner Phone]',
-    userAddress: contract.userAddress || '[Your Address]',
-    partnerAddress: contract.partnerAddress || '[Partner Address]',
-    
-    // Residence
-    residenceAddress: contract.residenceAddress || '[Residence Address]',
-    
-    // Dates
     currentDate: currentDate,
-    contractDate: currentDate,
-    weddingDate: '', // Not applicable for cohabitation
     cohabDate: contract.cohabDate ? new Date(contract.cohabDate).toLocaleDateString('en-US', {
       year: 'numeric', 
       month: 'long', 
       day: 'numeric' 
     }) : currentDate,
-    
-    // Ages
-    userAge: contract.userAge || '[Your Age]',
-    partnerAge: contract.partnerAge || '[Partner Age]', 
-    
-    // Legal counsel (placeholder - could be made configurable)
-    userLawyer: contract.userLawyer || '[Your Legal Counsel]',
-    partnerLawyer: contract.partnerLawyer || '[Partner Legal Counsel]',
-    
-    // Property/financial values
-    value: contract.propertyValue || '[Property Value]',
-    
-    // Location
-    province: 'Alberta',
-    country: 'Canada',
-    
-    // Conditional sections
-    hasChildren: contract.children && contract.children.length > 0,
-    childrenCount: contract.children ? contract.children.length : 0,
-    childrenStatus: (contract.children && contract.children.length > 0) ? 
-      'The parties have children as detailed in this agreement.' : 
-      'There are no children of the relationship as of the Effective Date of this Agreement. The parties may or may not have children together in the future, either biological or adopted.',
-    waiverSpousalSupport: contract.waiverSpousalSupport || false,
-    
-    // Additional clauses
-    additionalClauses: contract.additionalClauses || '',
-    notes: contract.notes || ''
   };
-}
-
-// Fallback PDF generation using pdf-lib (simplified version)
-async function generateFallbackPDF(contract: any, user: any): Promise<Uint8Array> {
-  const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([595.276, 841.890]); // A4 size in points
-  
-  const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const helveticaBoldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  
-  const { width, height } = page.getSize();
-  const margin = 50;
-  let yPosition = height - margin;
-  
-  // Helper function to add text
-  const addText = (text: string, fontSize: number = 12, isBold = false) => {
-    const font = isBold ? helveticaBoldFont : helveticaFont;
-    page.drawText(text, {
-      x: margin,
-      y: yPosition,
-      size: fontSize,
-      font: font,
-      color: rgb(0, 0, 0),
-    });
-    yPosition -= fontSize + 8;
-  };
-  
-  // Simplified PDF content
-  addText('ALBERTA COHABITATION AGREEMENT', 20, true);
-  yPosition -= 30;
-  
-  addText('SIMPLIFIED PDF VERSION', 16, true);
-  addText('This PDF was generated using the simplified fallback method.', 12);
-  addText('The system was unable to generate the full formatted version.', 12);
-  yPosition -= 20;
-  
-  addText(`Party A: ${contract.userFullName || '[Your Name]'}`, 12);
-  addText(`Party B: ${contract.partnerFullName || '[Partner Name]'}`, 12);
-  yPosition -= 20;
-  
-  const currentDate = new Date().toLocaleDateString('en-CA');
-  addText(`Generated on: ${currentDate}`, 10);
-  addText(`Contract ID: #${contract.id}`, 10);
-  yPosition -= 30;
-  
-  addText('NOTICE: For full formatting, please download the Word version.', 10, true);
-  
-  const pdfBytes = await pdfDoc.save();
-  return pdfBytes;
 }
