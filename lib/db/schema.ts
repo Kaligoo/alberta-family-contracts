@@ -135,6 +135,9 @@ export const familyContracts = pgTable('family_contracts', {
   documentGenerated: timestamp('document_generated'),
   documentPath: varchar('document_path', { length: 500 }),
   
+  // Current Contract Flag
+  isCurrentContract: varchar('is_current_contract', { length: 10 }).notNull().default('false'),
+  
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

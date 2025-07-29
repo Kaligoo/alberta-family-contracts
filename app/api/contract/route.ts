@@ -18,18 +18,33 @@ export async function GET() {
       return NextResponse.json({ contract: null });
     }
 
-    // Get the user's most recent contract data
-    const [contract] = await db
+    // Get the user's current contract (marked as current, or most recent if none marked)
+    let [contract] = await db
       .select()
       .from(familyContracts)
       .where(
         and(
           eq(familyContracts.userId, user.id),
-          eq(familyContracts.teamId, userWithTeam.teamId)
+          eq(familyContracts.teamId, userWithTeam.teamId),
+          eq(familyContracts.isCurrentContract, 'true')
         )
       )
-      .orderBy(desc(familyContracts.updatedAt))
       .limit(1);
+
+    // If no current contract is set, get the most recent one
+    if (!contract) {
+      [contract] = await db
+        .select()
+        .from(familyContracts)
+        .where(
+          and(
+            eq(familyContracts.userId, user.id),
+            eq(familyContracts.teamId, userWithTeam.teamId)
+          )
+        )
+        .orderBy(desc(familyContracts.updatedAt))
+        .limit(1);
+    }
 
     return NextResponse.json({ contract: contract || null });
   } catch (error) {

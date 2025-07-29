@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Plus, FileText, Trash2, Eye, Edit } from 'lucide-react';
+import { Plus, FileText, Trash2, Eye, ArrowRight } from 'lucide-react';
 import useSWR from 'swr';
 import Link from 'next/link';
 
@@ -20,6 +20,7 @@ interface Contract {
   partnerFullName: string;
   status: string;
   contractType: string;
+  isCurrentContract: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,6 +29,24 @@ export default function ContractsPage() {
   const { data: contractsData, error, mutate } = useSWR('/api/contracts', fetcher);
 
   const contracts: Contract[] = contractsData?.contracts || [];
+
+  const handleSetCurrentContract = async (contractId: number) => {
+    try {
+      const response = await fetch(`/api/contracts/${contractId}/set-current`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        // Redirect to dashboard to edit the now-current contract
+        window.location.href = '/dashboard';
+      } else {
+        alert('Failed to set current contract. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error setting current contract:', error);
+      alert('Failed to set current contract. Please try again.');
+    }
+  };
 
   const handleDeleteContract = async (contractId: number) => {
     if (!confirm('Are you sure you want to delete this contract? This action cannot be undone.')) {
@@ -138,6 +157,11 @@ export default function ContractsPage() {
                       {contract.userFullName && contract.partnerFullName
                         ? `${contract.userFullName} & ${contract.partnerFullName}`
                         : 'Untitled Contract'}
+                      {contract.isCurrentContract === 'true' && (
+                        <span className="ml-2 px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">
+                          Current
+                        </span>
+                      )}
                     </CardTitle>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(contract.status)}`}>
                       {contract.status.charAt(0).toUpperCase() + contract.status.slice(1)}
@@ -153,12 +177,24 @@ export default function ContractsPage() {
                     </div>
                     
                     <div className="flex space-x-2 pt-4">
-                      <Link href={`/dashboard/contracts/${contract.id}`} className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full">
-                          <Edit className="mr-2 h-3 w-3" />
-                          Edit
+                      {contract.isCurrentContract === 'true' ? (
+                        <Link href="/dashboard" className="flex-1">
+                          <Button variant="outline" size="sm" className="w-full bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100">
+                            <ArrowRight className="mr-2 h-3 w-3" />
+                            Edit Current
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSetCurrentContract(contract.id)}
+                          className="flex-1"
+                        >
+                          <ArrowRight className="mr-2 h-3 w-3" />
+                          Set as Current
                         </Button>
-                      </Link>
+                      )}
                       <Link href={`/dashboard/contracts/${contract.id}/preview`} className="flex-1">
                         <Button variant="outline" size="sm" className="w-full">
                           <Eye className="mr-2 h-3 w-3" />

@@ -7,13 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { useActionState, useState, useTransition, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, FileText, Users, DollarSign, Home, Save } from 'lucide-react';
 import { User } from '@/lib/db/schema';
 import useSWR from 'swr';
-import { saveFamilyContract } from '@/app/(login)/actions';
 
 type ActionState = {
   error?: string;
@@ -85,7 +84,7 @@ function PersonalInfoCard({ formData, updateFormData }: {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="userAge">Your Age</Label>
             <Input
@@ -108,15 +107,6 @@ function PersonalInfoCard({ formData, updateFormData }: {
               value={formData.partnerAge}
               onChange={(e) => updateFormData('partnerAge', e.target.value)}
               placeholder="Age"
-            />
-          </div>
-          <div>
-            <Label htmlFor="cohabDate">Date Started Living Together</Label>
-            <Input
-              id="cohabDate"
-              type="date"
-              value={formData.cohabDate}
-              onChange={(e) => updateFormData('cohabDate', e.target.value)}
             />
           </div>
         </div>
@@ -539,8 +529,8 @@ export default function DashboardPage() {
     children: [] as ChildInfo[]
   });
 
-  const [saveState, saveAction, isSaving] = useActionState<ActionState, FormData>(saveFamilyContract, {});
-  const [isPending, startTransition] = useTransition();
+  const [saveState, setSaveState] = useState<ActionState>({});
+  const [isSaving, setIsSaving] = useState(false);
   
   // Load saved contract data
   const { data: contractData, error: contractError } = useSWR('/api/contract', fetcher);
@@ -579,37 +569,65 @@ export default function DashboardPage() {
     }
   }, [contractData]);
 
-  const handleSave = () => {
-    const form = new FormData();
-    form.append('userFullName', formData.userFullName);
-    form.append('partnerFullName', formData.partnerFullName);
-    form.append('userFirstName', formData.userFirstName);
-    form.append('partnerFirstName', formData.partnerFirstName);
-    form.append('userAge', formData.userAge);
-    form.append('partnerAge', formData.partnerAge);
-    form.append('cohabDate', formData.cohabDate);
-    form.append('userJobTitle', formData.userJobTitle);
-    form.append('partnerJobTitle', formData.partnerJobTitle);
-    form.append('userIncome', formData.userIncome);
-    form.append('partnerIncome', formData.partnerIncome);
-    form.append('userEmail', formData.userEmail);
-    form.append('partnerEmail', formData.partnerEmail);
-    form.append('userPhone', formData.userPhone);
-    form.append('partnerPhone', formData.partnerPhone);
-    form.append('userAddress', formData.userAddress);
-    form.append('partnerAddress', formData.partnerAddress);
-    form.append('userLawyer', formData.userLawyer);
-    form.append('partnerLawyer', formData.partnerLawyer);
-    form.append('residenceAddress', formData.residenceAddress);
-    form.append('residenceOwnership', formData.residenceOwnership);
-    form.append('expenseSplitType', formData.expenseSplitType);
-    form.append('additionalClauses', formData.additionalClauses);
-    form.append('notes', formData.notes);
-    form.append('children', JSON.stringify(formData.children));
-    
-    startTransition(() => {
-      saveAction(form);
-    });
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveState({});
+
+    try {
+      // If there's an existing contract, update it, otherwise the API will create a new one
+      const contractId = contractData?.contract?.id;
+      
+      if (contractId) {
+        // Update existing current contract
+        const response = await fetch(`/api/contracts/${contractId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        if (response.ok) {
+          setSaveState({ success: 'Contract saved successfully!' });
+          // Refresh the contract data
+          window.location.reload();
+        } else {
+          const errorData = await response.json();
+          setSaveState({ error: errorData.error || 'Failed to save contract' });
+        }
+      } else {
+        // Create new contract via the contracts API
+        const response = await fetch('/api/contracts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...formData,
+            children: formData.children || []
+          }),
+        });
+
+        if (response.ok) {
+          const { contract } = await response.json();
+          // Set the new contract as current
+          await fetch(`/api/contracts/${contract.id}/set-current`, {
+            method: 'POST',
+          });
+          setSaveState({ success: 'Contract created and saved successfully!' });
+          // Refresh the page to load the new contract
+          window.location.reload();
+        } else {
+          const errorData = await response.json();
+          setSaveState({ error: errorData.error || 'Failed to create contract' });
+        }
+      }
+    } catch (error) {
+      console.error('Error saving contract:', error);
+      setSaveState({ error: 'Failed to save contract. Please try again.' });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
 
@@ -654,6 +672,25 @@ export default function DashboardPage() {
         
         <div className="max-w-4xl mx-auto space-y-6">
           <PersonalInfoCard formData={formData} updateFormData={updateFormData} />
+          
+          {/* Relationship Information */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Relationship Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="cohabDate">Date Started Living Together</Label>
+                <Input
+                  id="cohabDate"
+                  type="date"
+                  value={formData.cohabDate}
+                  onChange={(e) => updateFormData('cohabDate', e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+          
           <IncomeCard formData={formData} updateFormData={updateFormData} />
           <ResidenceCard formData={formData} updateFormData={updateFormData} />
           <FinancialCard formData={formData} updateFormData={updateFormData} />
@@ -666,10 +703,10 @@ export default function DashboardPage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   onClick={handleSave}
-                  disabled={isSaving || isPending}
+                  disabled={isSaving}
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                 >
-                  {(isSaving || isPending) ? (
+                  {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Saving...

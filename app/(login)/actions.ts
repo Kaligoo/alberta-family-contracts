@@ -496,27 +496,43 @@ export const saveFamilyContract = validatedActionWithUser(
         contractType: 'cohabitation',
       };
 
-      // Check if contract already exists
-      const existingContract = await db
+      // Check if there's a current contract
+      let [currentContract] = await db
         .select()
         .from(familyContracts)
         .where(
           and(
             eq(familyContracts.userId, user.id),
-            eq(familyContracts.teamId, userWithTeam.teamId)
+            eq(familyContracts.teamId, userWithTeam.teamId),
+            eq(familyContracts.isCurrentContract, 'true')
           )
         )
         .limit(1);
 
-      if (existingContract.length > 0) {
+      // If no current contract, get the most recent one
+      if (!currentContract) {
+        [currentContract] = await db
+          .select()
+          .from(familyContracts)
+          .where(
+            and(
+              eq(familyContracts.userId, user.id),
+              eq(familyContracts.teamId, userWithTeam.teamId)
+            )
+          )
+          .orderBy(sql`updated_at DESC`)
+          .limit(1);
+      }
+
+      if (currentContract) {
         // Update existing contract
         await db
           .update(familyContracts)
-          .set(contractData)
-          .where(eq(familyContracts.id, existingContract[0].id));
+          .set({...contractData, updatedAt: sql`CURRENT_TIMESTAMP`})
+          .where(eq(familyContracts.id, currentContract.id));
       } else {
-        // Create new contract
-        await db.insert(familyContracts).values(contractData);
+        // Create new contract and set it as current
+        await db.insert(familyContracts).values({...contractData, isCurrentContract: 'true'});
       }
 
       await logActivity(userWithTeam.teamId, user.id, ActivityType.CREATE_CONTRACT);
