@@ -135,7 +135,7 @@ export default function NewContractPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="userAge">Your Age</Label>
                   <Input
@@ -158,15 +158,6 @@ export default function NewContractPage() {
                     value={formData.partnerAge}
                     onChange={(e) => updateFormData('partnerAge', e.target.value)}
                     placeholder="Age"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="cohabDate">Date Started Living Together</Label>
-                  <Input
-                    id="cohabDate"
-                    type="date"
-                    value={formData.cohabDate}
-                    onChange={(e) => updateFormData('cohabDate', e.target.value)}
                   />
                 </div>
               </div>
@@ -220,6 +211,23 @@ export default function NewContractPage() {
                   <p className="text-red-600 text-sm">{error}</p>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Relationship Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="cohabDate">Date Started Living Together</Label>
+                <Input
+                  id="cohabDate"
+                  type="date"
+                  value={formData.cohabDate}
+                  onChange={(e) => updateFormData('cohabDate', e.target.value)}
+                />
+              </div>
             </CardContent>
           </Card>
 

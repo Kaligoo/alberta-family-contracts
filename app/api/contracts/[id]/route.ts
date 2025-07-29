@@ -93,6 +93,8 @@ export async function PUT(
     if (body.partnerPhone !== undefined) updateData.partnerPhone = body.partnerPhone || null;
     if (body.userAddress !== undefined) updateData.userAddress = body.userAddress || null;
     if (body.partnerAddress !== undefined) updateData.partnerAddress = body.partnerAddress || null;
+    if (body.userLawyer !== undefined) updateData.userLawyer = body.userLawyer || null;
+    if (body.partnerLawyer !== undefined) updateData.partnerLawyer = body.partnerLawyer || null;
     if (body.children !== undefined) updateData.children = body.children || [];
     if (body.residenceAddress !== undefined) updateData.residenceAddress = body.residenceAddress || null;
     if (body.residenceOwnership !== undefined) updateData.residenceOwnership = body.residenceOwnership || null;

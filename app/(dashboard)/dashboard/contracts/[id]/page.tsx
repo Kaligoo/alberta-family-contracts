@@ -36,6 +36,8 @@ interface Contract {
   partnerPhone: string;
   userAddress: string;
   partnerAddress: string;
+  userLawyer: string;
+  partnerLawyer: string;
   children: Array<{
     name: string;
     age?: number;
@@ -71,6 +73,8 @@ interface ContractFormData {
   partnerPhone?: string;
   userAddress?: string;
   partnerAddress?: string;
+  userLawyer?: string;
+  partnerLawyer?: string;
   residenceAddress?: string;
   residenceOwnership?: string;
   expenseSplitType?: string;
@@ -121,6 +125,8 @@ export default function ContractDetailPage() {
         partnerPhone: contract.partnerPhone || '',
         userAddress: contract.userAddress || '',
         partnerAddress: contract.partnerAddress || '',
+        userLawyer: contract.userLawyer || '',
+        partnerLawyer: contract.partnerLawyer || '',
         residenceAddress: contract.residenceAddress || '',
         residenceOwnership: contract.residenceOwnership || '',
         expenseSplitType: contract.expenseSplitType || '',
@@ -309,7 +315,7 @@ export default function ContractDetailPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="userAge">Your Age</Label>
                   <Input
@@ -332,15 +338,6 @@ export default function ContractDetailPage() {
                     value={formData.partnerAge || ''}
                     onChange={(e) => updateFormData('partnerAge', e.target.value)}
                     placeholder="Age"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="cohabDate">Date Started Living Together</Label>
-                  <Input
-                    id="cohabDate"
-                    type="date"
-                    value={formData.cohabDate ? new Date(formData.cohabDate).toISOString().split('T')[0] : ''}
-                    onChange={(e) => updateFormData('cohabDate', e.target.value)}
                   />
                 </div>
               </div>
@@ -454,6 +451,45 @@ export default function ContractDetailPage() {
                     placeholder="Enter partner's address"
                   />
                 </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="userLawyer">Your Lawyer (Optional)</Label>
+                  <Input
+                    id="userLawyer"
+                    value={formData.userLawyer || ''}
+                    onChange={(e) => updateFormData('userLawyer', e.target.value)}
+                    placeholder="Enter your lawyer's information"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="partnerLawyer">Partner's Lawyer (Optional)</Label>
+                  <Input
+                    id="partnerLawyer"
+                    value={formData.partnerLawyer || ''}
+                    onChange={(e) => updateFormData('partnerLawyer', e.target.value)}
+                    placeholder="Enter partner's lawyer's information"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Relationship Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Relationship Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="cohabDate">Date Started Living Together</Label>
+                <Input
+                  id="cohabDate"
+                  type="date"
+                  value={formData.cohabDate ? new Date(formData.cohabDate).toISOString().split('T')[0] : ''}
+                  onChange={(e) => updateFormData('cohabDate', e.target.value)}
+                />
               </div>
             </CardContent>
           </Card>
