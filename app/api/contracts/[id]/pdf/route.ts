@@ -3,71 +3,12 @@ import { getUser, getUserWithTeam } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts, templates } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
-import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer';
-import React from 'react';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
+import mammoth from 'mammoth';
 
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
-
-// Styles for the PDF document
-const styles = StyleSheet.create({
-  page: {
-    flexDirection: 'column',
-    backgroundColor: '#FFFFFF',
-    padding: 72, // 1 inch margins
-    fontFamily: 'Times-Roman',
-  },
-  container: {
-    flex: 1,
-    fontSize: 12,
-    lineHeight: 1.6,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 30,
-    fontFamily: 'Times-Bold',
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 10,
-    fontFamily: 'Times-Bold',
-  },
-  section: {
-    marginBottom: 20,
-  },
-  text: {
-    fontSize: 12,
-    marginBottom: 8,
-    fontFamily: 'Times-Roman',
-  },
-  boldText: {
-    fontSize: 12,
-    marginBottom: 8,
-    fontFamily: 'Times-Bold',
-    fontWeight: 'bold',
-  },
-  footer: {
-    marginTop: 'auto',
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#000000',
-  },
-  notice: {
-    fontSize: 10,
-    textAlign: 'justify',
-    marginBottom: 20,
-    fontFamily: 'Times-Roman',
-  },
-  footerInfo: {
-    fontSize: 10,
-    marginBottom: 2,
-    fontFamily: 'Times-Roman',
-  },
-});
 
 export async function GET(
   request: NextRequest,
@@ -105,8 +46,8 @@ export async function GET(
       return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
     }
 
-    // Generate PDF using @react-pdf/renderer
-    const pdfBytes = await generateContractPDF(contract, user);
+    // Generate PDF using Word template + Puppeteer
+    const pdfBytes = await generateContractPDFFromTemplate(contract, user);
     
     return new NextResponse(pdfBytes, {
       headers: {
@@ -124,137 +65,337 @@ export async function GET(
   }
 }
 
-async function generateContractPDF(contract: any, user: any): Promise<Uint8Array> {
+async function generateContractPDFFromTemplate(contract: any, user: any): Promise<Uint8Array> {
+  let browser;
+  
+  try {
+    console.log('Starting PDF generation using Word template + Puppeteer...');
+    
+    // Get active template from database
+    const activeTemplate = await db
+      .select()
+      .from(templates)
+      .where(eq(templates.isActive, 'true'))
+      .limit(1);
+
+    if (activeTemplate.length === 0) {
+      console.log('No active template found, falling back to basic PDF generation');
+      return await generateBasicPDF(contract, user);
+    }
+
+    const template = activeTemplate[0];
+    const templateData = prepareTemplateData(contract, user);
+    
+    // Generate filled Word document
+    const templateBuffer = Buffer.from(template.content, 'base64');
+    const zip = new PizZip(templateBuffer);
+    
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+      delimiters: {
+        start: '{',
+        end: '}'
+      }
+    });
+
+    doc.render(templateData);
+    const filledDocxBuffer = doc.getZip().generate({ type: 'nodebuffer' });
+    
+    // Convert Word document to HTML
+    console.log('Converting Word document to HTML...');
+    const result = await mammoth.convertToHtml({ buffer: filledDocxBuffer });
+    const html = result.value;
+    
+    if (result.messages.length > 0) {
+      console.log('Mammoth conversion warnings:', result.messages);
+    }
+    
+    // Create styled HTML for PDF generation
+    const styledHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Alberta Cohabitation Agreement</title>
+      <style>
+        @page {
+          size: A4;
+          margin: 1in;
+        }
+        body {
+          font-family: 'Times New Roman', Times, serif;
+          font-size: 12pt;
+          line-height: 1.6;
+          color: #000;
+          margin: 0;
+          padding: 0;
+        }
+        h1, h2, h3 {
+          font-weight: bold;
+          margin-top: 20px;
+          margin-bottom: 10px;
+        }
+        h1 {
+          font-size: 16pt;
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        h2 {
+          font-size: 14pt;
+        }
+        p {
+          margin-bottom: 8px;
+          text-align: justify;
+        }
+        strong, b {
+          font-weight: bold;
+        }
+        .section {
+          margin-bottom: 20px;
+        }
+        .signature-line {
+          border-bottom: 1px solid #000;
+          width: 200px;
+          display: inline-block;
+          margin-bottom: 5px;
+        }
+        .footer {
+          margin-top: 40px;
+          padding-top: 20px;
+          border-top: 1px solid #000;
+          font-size: 10pt;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 20px;
+        }
+        th, td {
+          border: 1px solid #000;
+          padding: 8px;
+          text-align: left;
+        }
+        th {
+          background-color: #f0f0f0;
+          font-weight: bold;
+        }
+      </style>
+    </head>
+    <body>
+      ${html}
+      <div class="footer">
+        <p><strong>IMPORTANT NOTICE</strong></p>
+        <p style="font-size: 10pt; text-align: justify;">
+          This document is a draft cohabitation agreement generated for informational purposes only. 
+          It should be reviewed by qualified legal counsel before signing. Alberta Family Contracts 
+          does not provide legal advice.
+        </p>
+        <br>
+        <p style="font-size: 10pt;">Generated on: ${templateData.currentDate}</p>
+        <p style="font-size: 10pt;">Contract ID: #${contract.id}</p>
+      </div>
+    </body>
+    </html>
+    `;
+    
+    // Launch Puppeteer with Chromium
+    console.log('Launching Puppeteer...');
+    browser = await puppeteer.launch({
+      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: await chromium.executablePath(),
+      headless: true,
+      defaultViewport: null,
+    });
+    
+    const page = await browser.newPage();
+    
+    // Set content and generate PDF
+    console.log('Setting HTML content and generating PDF...');
+    await page.setContent(styledHtml, { waitUntil: 'networkidle0' });
+    
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '1in',
+        right: '1in',
+        bottom: '1in',
+        left: '1in'
+      }
+    });
+    
+    console.log('Successfully generated PDF using Word template + Puppeteer');
+    return new Uint8Array(pdfBuffer);
+    
+  } catch (error) {
+    console.error('Failed to generate PDF using Word template + Puppeteer:', error);
+    console.log('Falling back to basic PDF generation...');
+    return await generateBasicPDF(contract, user);
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+  }
+}
+
+async function generateBasicPDF(contract: any, user: any): Promise<Uint8Array> {
+  let browser;
+  
   try {
     const templateData = prepareTemplateData(contract, user);
     
-    // Create the PDF document
-    const MyDocument = React.createElement(
-      Document,
-      {},
-      React.createElement(
-        Page,
-        { size: 'A4', style: styles.page },
-        React.createElement(
-          View,
-          { style: styles.container },
-          [
-            // Title
-            React.createElement(Text, { style: styles.title, key: 'title' }, 'ALBERTA COHABITATION AGREEMENT'),
-            
-            // Parties Section
-            React.createElement(
-              View,
-              { style: styles.section, key: 'parties' },
-              [
-                React.createElement(Text, { style: styles.sectionTitle, key: 'parties-title' }, 'PARTIES TO THIS AGREEMENT'),
-                React.createElement(Text, { style: styles.boldText, key: 'party-a' }, `Party A: ${templateData.userFullName}`),
-                contract.userAddress ? React.createElement(Text, { style: styles.text, key: 'user-address' }, `Address: ${contract.userAddress}`) : null,
-                contract.userEmail ? React.createElement(Text, { style: styles.text, key: 'user-email' }, `Email: ${contract.userEmail}`) : null,
-                contract.userPhone ? React.createElement(Text, { style: styles.text, key: 'user-phone' }, `Phone: ${contract.userPhone}`) : null,
-                React.createElement(Text, { style: [styles.boldText, { marginTop: 15 }], key: 'party-b' }, `Party B: ${templateData.partnerFullName}`),
-                contract.partnerAddress ? React.createElement(Text, { style: styles.text, key: 'partner-address' }, `Address: ${contract.partnerAddress}`) : null,
-                contract.partnerEmail ? React.createElement(Text, { style: styles.text, key: 'partner-email' }, `Email: ${contract.partnerEmail}`) : null,
-                contract.partnerPhone ? React.createElement(Text, { style: styles.text, key: 'partner-phone' }, `Phone: ${contract.partnerPhone}`) : null,
-              ].filter(Boolean)
-            ),
-            
-            // Agreement Details Section
-            React.createElement(
-              View,
-              { style: styles.section, key: 'agreement' },
-              [
-                React.createElement(Text, { style: styles.sectionTitle, key: 'agreement-title' }, 'AGREEMENT DETAILS'),
-                React.createElement(Text, { style: styles.text, key: 'date' }, `Date of Agreement: ${templateData.currentDate}`),
-                contract.cohabDate ? React.createElement(Text, { style: styles.text, key: 'cohab-date' }, `Date Cohabitation Began: ${templateData.cohabDate}`) : null,
-                contract.residenceAddress ? React.createElement(Text, { style: styles.text, key: 'residence' }, `Residence Address: ${contract.residenceAddress}`) : null,
-              ].filter(Boolean)
-            ),
-            
-            // Financial Information Section
-            (contract.userIncome || contract.partnerIncome) ? React.createElement(
-              View,
-              { style: styles.section, key: 'financial' },
-              [
-                React.createElement(Text, { style: styles.sectionTitle, key: 'financial-title' }, 'FINANCIAL INFORMATION'),
-                contract.userIncome ? React.createElement(Text, { style: styles.text, key: 'user-income' }, `Party A Annual Income: ${templateData.userIncome}`) : null,
-                contract.partnerIncome ? React.createElement(Text, { style: styles.text, key: 'partner-income' }, `Party B Annual Income: ${templateData.partnerIncome}`) : null,
-              ].filter(Boolean)
-            ) : null,
-            
-            // Employment Information Section
-            (contract.userJobTitle || contract.partnerJobTitle) ? React.createElement(
-              View,
-              { style: styles.section, key: 'employment' },
-              [
-                React.createElement(Text, { style: styles.sectionTitle, key: 'employment-title' }, 'EMPLOYMENT INFORMATION'),
-                contract.userJobTitle ? React.createElement(Text, { style: styles.text, key: 'user-job' }, `Party A Occupation: ${contract.userJobTitle}`) : null,
-                contract.partnerJobTitle ? React.createElement(Text, { style: styles.text, key: 'partner-job' }, `Party B Occupation: ${contract.partnerJobTitle}`) : null,
-              ].filter(Boolean)
-            ) : null,
-            
-            // Children Section
-            (contract.children && contract.children.length > 0) ? React.createElement(
-              View,
-              { style: styles.section, key: 'children' },
-              [
-                React.createElement(Text, { style: styles.sectionTitle, key: 'children-title' }, 'CHILDREN'),
-                ...contract.children.map((child: any, index: number) => 
-                  React.createElement(Text, { style: styles.text, key: `child-${index}` }, 
-                    `Child ${index + 1}: ${child.name}${child.age ? ` (Age ${child.age})` : ''}`
-                  )
-                )
-              ]
-            ) : null,
-            
-            // Additional Clauses Section
-            contract.additionalClauses ? React.createElement(
-              View,
-              { style: styles.section, key: 'clauses' },
-              [
-                React.createElement(Text, { style: styles.sectionTitle, key: 'clauses-title' }, 'ADDITIONAL CLAUSES'),
-                React.createElement(Text, { style: styles.text, key: 'clauses-content' }, contract.additionalClauses),
-              ]
-            ) : null,
-            
-            // Notes Section
-            contract.notes ? React.createElement(
-              View,
-              { style: styles.section, key: 'notes' },
-              [
-                React.createElement(Text, { style: styles.sectionTitle, key: 'notes-title' }, 'NOTES'),
-                React.createElement(Text, { style: styles.text, key: 'notes-content' }, contract.notes),
-              ]
-            ) : null,
-            
-            // Footer
-            React.createElement(
-              View,
-              { style: styles.footer, key: 'footer' },
-              [
-                React.createElement(Text, { style: styles.boldText, key: 'notice-title' }, 'IMPORTANT NOTICE'),
-                React.createElement(Text, { style: styles.notice, key: 'notice' }, 
-                  'This document is a draft cohabitation agreement generated for informational purposes only. It should be reviewed by qualified legal counsel before signing. Alberta Family Contracts does not provide legal advice.'
-                ),
-                React.createElement(Text, { style: styles.footerInfo, key: 'gen-date' }, `Generated on: ${templateData.currentDate}`),
-                React.createElement(Text, { style: styles.footerInfo, key: 'contract-id' }, `Contract ID: #${contract.id}`),
-              ]
-            )
-          ].filter(Boolean)
-        )
-      )
-    );
-
-    // Generate the PDF
-    const pdfStream = await pdf(MyDocument).toBlob();
-    const pdfArrayBuffer = await pdfStream.arrayBuffer();
+    // Create basic HTML template
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Alberta Cohabitation Agreement</title>
+      <style>
+        @page {
+          size: A4;
+          margin: 1in;
+        }
+        body {
+          font-family: 'Times New Roman', Times, serif;
+          font-size: 12pt;
+          line-height: 1.6;
+          color: #000;
+          margin: 0;
+          padding: 0;
+        }
+        h1 {
+          font-size: 16pt;
+          text-align: center;
+          margin-bottom: 30px;
+          font-weight: bold;
+        }
+        h2 {
+          font-size: 14pt;
+          margin-top: 20px;
+          margin-bottom: 10px;
+          font-weight: bold;
+        }
+        p {
+          margin-bottom: 8px;
+        }
+        .section {
+          margin-bottom: 20px;
+        }
+        .footer {
+          margin-top: 40px;
+          padding-top: 20px;
+          border-top: 1px solid #000;
+          font-size: 10pt;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>ALBERTA COHABITATION AGREEMENT</h1>
+      
+      <div class="section">
+        <h2>PARTIES TO THIS AGREEMENT</h2>
+        <p><strong>Party A:</strong> ${templateData.userFullName}</p>
+        ${contract.userAddress ? `<p>Address: ${contract.userAddress}</p>` : ''}
+        ${contract.userEmail ? `<p>Email: ${contract.userEmail}</p>` : ''}
+        ${contract.userPhone ? `<p>Phone: ${contract.userPhone}</p>` : ''}
+        
+        <br>
+        <p><strong>Party B:</strong> ${templateData.partnerFullName}</p>
+        ${contract.partnerAddress ? `<p>Address: ${contract.partnerAddress}</p>` : ''}
+        ${contract.partnerEmail ? `<p>Email: ${contract.partnerEmail}</p>` : ''}
+        ${contract.partnerPhone ? `<p>Phone: ${contract.partnerPhone}</p>` : ''}
+      </div>
+      
+      <div class="section">
+        <h2>AGREEMENT DETAILS</h2>
+        <p>Date of Agreement: ${templateData.currentDate}</p>
+        ${contract.cohabDate ? `<p>Date Cohabitation Began: ${templateData.cohabDate}</p>` : ''}
+        ${contract.residenceAddress ? `<p>Residence Address: ${contract.residenceAddress}</p>` : ''}
+      </div>
+      
+      ${(contract.userIncome || contract.partnerIncome) ? `
+      <div class="section">
+        <h2>FINANCIAL INFORMATION</h2>
+        ${contract.userIncome ? `<p>Party A Annual Income: ${templateData.userIncome}</p>` : ''}
+        ${contract.partnerIncome ? `<p>Party B Annual Income: ${templateData.partnerIncome}</p>` : ''}
+      </div>
+      ` : ''}
+      
+      ${(contract.userJobTitle || contract.partnerJobTitle) ? `
+      <div class="section">
+        <h2>EMPLOYMENT INFORMATION</h2>
+        ${contract.userJobTitle ? `<p>Party A Occupation: ${contract.userJobTitle}</p>` : ''}
+        ${contract.partnerJobTitle ? `<p>Party B Occupation: ${contract.partnerJobTitle}</p>` : ''}
+      </div>
+      ` : ''}
+      
+      ${(contract.children && contract.children.length > 0) ? `
+      <div class="section">
+        <h2>CHILDREN</h2>
+        ${contract.children.map((child: any, index: number) => 
+          `<p>Child ${index + 1}: ${child.name}${child.age ? ` (Age ${child.age})` : ''}</p>`
+        ).join('')}
+      </div>
+      ` : ''}
+      
+      ${contract.additionalClauses ? `
+      <div class="section">
+        <h2>ADDITIONAL CLAUSES</h2>
+        <p>${contract.additionalClauses}</p>
+      </div>
+      ` : ''}
+      
+      ${contract.notes ? `
+      <div class="section">
+        <h2>NOTES</h2>
+        <p>${contract.notes}</p>
+      </div>
+      ` : ''}
+      
+      <div class="footer">
+        <p><strong>IMPORTANT NOTICE</strong></p>
+        <p>This document is a draft cohabitation agreement generated for informational purposes only. It should be reviewed by qualified legal counsel before signing. Alberta Family Contracts does not provide legal advice.</p>
+        <br>
+        <p>Generated on: ${templateData.currentDate}</p>
+        <p>Contract ID: #${contract.id}</p>
+      </div>
+    </body>
+    </html>
+    `;
     
-    console.log('Successfully generated PDF using @react-pdf/renderer');
-    return new Uint8Array(pdfArrayBuffer);
+    browser = await puppeteer.launch({
+      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: await chromium.executablePath(),
+      headless: true,
+      defaultViewport: null,
+    });
+    
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '1in',
+        right: '1in',
+        bottom: '1in',
+        left: '1in'
+      }
+    });
+    
+    console.log('Successfully generated basic PDF using Puppeteer');
+    return new Uint8Array(pdfBuffer);
     
   } catch (error) {
-    console.error('Failed to generate PDF using @react-pdf/renderer:', error);
+    console.error('Failed to generate basic PDF using Puppeteer:', error);
     throw error;
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 }
 
@@ -278,17 +419,88 @@ function prepareTemplateData(contract: any, user: any) {
   };
 
   return {
+    // Core party information
     userFullName: contract.userFullName || '[Your Name]',
     partnerFullName: contract.partnerFullName || '[Partner Name]',
     userFirstName: getUserFirstName(),
     partnerFirstName: getPartnerFirstName(),
+    
+    // Employment and income
+    userJobTitle: contract.userJobTitle || '[Your Occupation]',
+    partnerJobTitle: contract.partnerJobTitle || '[Partner Occupation]',
     userIncome: contract.userIncome ? `$${parseInt(contract.userIncome).toLocaleString()} CAD` : '[Your Income]',
     partnerIncome: contract.partnerIncome ? `$${parseInt(contract.partnerIncome).toLocaleString()} CAD` : '[Partner Income]',
+    
+    // Contact information
+    userEmail: contract.userEmail || user.email || '[Your Email]',
+    partnerEmail: contract.partnerEmail || '[Partner Email]',
+    userPhone: contract.userPhone || '[Your Phone]',
+    partnerPhone: contract.partnerPhone || '[Partner Phone]',
+    userAddress: contract.userAddress || '[Your Address]',
+    partnerAddress: contract.partnerAddress || '[Partner Address]',
+    
+    // Pronouns
+    userPronouns: contract.userPronouns || '[Your Pronouns]',
+    partnerPronouns: contract.partnerPronouns || '[Partner Pronouns]',
+    
+    // Residence
+    residenceAddress: contract.residenceAddress || '[Residence Address]',
+    
+    // Dates
     currentDate: currentDate,
+    contractDate: currentDate,
     cohabDate: contract.cohabDate ? new Date(contract.cohabDate).toLocaleDateString('en-US', {
       year: 'numeric', 
       month: 'long', 
       day: 'numeric' 
     }) : currentDate,
+    proposedMarriageDate: contract.proposedMarriageDate ? new Date(contract.proposedMarriageDate).toLocaleDateString('en-US', {
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }) : '',
+    
+    // Ages
+    userAge: contract.userAge || '[Your Age]',
+    partnerAge: contract.partnerAge || '[Partner Age]', 
+    
+    // Legal counsel
+    userLawyer: contract.userLawyer || '[Your Legal Counsel]',
+    partnerLawyer: contract.partnerLawyer || '[Partner Legal Counsel]',
+    
+    // Location
+    province: 'Alberta',
+    country: 'Canada',
+    
+    // Children information
+    hasChildren: contract.children && contract.children.length > 0,
+    childrenCount: contract.children ? contract.children.length : 0,
+    childrenList: contract.children || [],
+    
+    // Additional clauses
+    additionalClauses: contract.additionalClauses || '',
+    notes: contract.notes || '',
+    
+    // Schedule A data - format for display
+    scheduleIncomeEmployment: contract.scheduleIncomeEmployment ? `$${parseFloat(contract.scheduleIncomeEmployment).toLocaleString()} CAD` : '',
+    scheduleIncomeEI: contract.scheduleIncomeEI ? `$${parseFloat(contract.scheduleIncomeEI).toLocaleString()} CAD` : '',
+    scheduleIncomeWorkersComp: contract.scheduleIncomeWorkersComp ? `$${parseFloat(contract.scheduleIncomeWorkersComp).toLocaleString()} CAD` : '',
+    scheduleIncomeInvestment: contract.scheduleIncomeInvestment ? `$${parseFloat(contract.scheduleIncomeInvestment).toLocaleString()} CAD` : '',
+    scheduleIncomePension: contract.scheduleIncomePension ? `$${parseFloat(contract.scheduleIncomePension).toLocaleString()} CAD` : '',
+    scheduleIncomeGovernmentAssistance: contract.scheduleIncomeGovernmentAssistance ? `$${parseFloat(contract.scheduleIncomeGovernmentAssistance).toLocaleString()} CAD` : '',
+    scheduleIncomeSelfEmployment: contract.scheduleIncomeSelfEmployment ? `$${parseFloat(contract.scheduleIncomeSelfEmployment).toLocaleString()} CAD` : '',
+    scheduleIncomeOther: contract.scheduleIncomeOther ? `$${parseFloat(contract.scheduleIncomeOther).toLocaleString()} CAD` : '',
+    scheduleIncomeTotalTaxReturn: contract.scheduleIncomeTotalTaxReturn ? `$${parseFloat(contract.scheduleIncomeTotalTaxReturn).toLocaleString()} CAD` : '',
+    
+    // Schedule A assets and debts (these will be arrays, can be processed in template)
+    scheduleAssetsRealEstate: contract.scheduleAssetsRealEstate || [],
+    scheduleAssetsVehicles: contract.scheduleAssetsVehicles || [],
+    scheduleAssetsFinancial: contract.scheduleAssetsFinancial || [],
+    scheduleAssetsPensions: contract.scheduleAssetsPensions || [],
+    scheduleAssetsBusiness: contract.scheduleAssetsBusiness || [],
+    scheduleAssetsOther: contract.scheduleAssetsOther || [],
+    scheduleDebtsSecured: contract.scheduleDebtsSecured || [],
+    scheduleDebtsUnsecured: contract.scheduleDebtsUnsecured || [],
+    scheduleDebtsOther: contract.scheduleDebtsOther || [],
   };
 }
