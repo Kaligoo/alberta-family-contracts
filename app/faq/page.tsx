@@ -39,8 +39,9 @@ export default function FAQPage() {
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
                     While not legally required, a cohabitation agreement is highly recommended for unmarried couples in Alberta. 
-                    Unlike married couples, common-law partners do not have automatic property rights under Alberta's 
-                    Matrimonial Property Act. A cohabitation agreement provides clarity and protection for both parties.
+                    Unlike married couples, common-law partners (called "adult interdependent partners" in Alberta) have limited 
+                    property rights under Alberta's Family Property Act (2020). A cohabitation agreement provides clarity and 
+                    protection for both parties regarding property division and support obligations.
                   </p>
                 </div>
 
@@ -60,6 +61,43 @@ export default function FAQPage() {
             {/* Section 2: Legal Requirements */}
             <section className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Legal Requirements in Alberta</h2>
+              
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    What is an Adult Interdependent Partner in Alberta?
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed mb-3">
+                    Under Alberta's Family Law Act, you are considered "adult interdependent partners" if you:
+                  </p>
+                  <ul className="list-disc list-inside text-gray-600 space-y-1 mb-4">
+                    <li>Have lived together in a relationship of interdependence for at least 3 continuous years</li>
+                    <li>Have lived together in a relationship of interdependence and have a child together</li>
+                    <li>Have entered into an adult interdependent partner agreement</li>
+                  </ul>
+                  <p className="text-gray-600 leading-relaxed">
+                    Adult interdependent partners have some legal rights under the Family Property Act (2020), but these 
+                    rights are more limited than those of married couples.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    How does the Family Property Act (2020) affect unmarried couples?
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    The Family Property Act, which replaced the Matrimonial Property Act in 2020, provides some property 
+                    rights for adult interdependent partners, but these are more limited than for married couples. 
+                    Adult interdependent partners may have claims to property acquired during the relationship, but 
+                    the process is more complex and uncertain than for married couples.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* Section 3: Legal Requirements for Agreements */}
+            <section className="bg-white rounded-lg shadow-sm p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Requirements for Valid Agreements</h2>
               
               <div className="space-y-6">
                 <div>
@@ -102,38 +140,42 @@ export default function FAQPage() {
               </div>
             </section>
 
-            {/* Section 3: What to Include */}
+            {/* Section 4: What to Include */}
             <section className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">What Should Be Included</h2>
               
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                    What topics should a cohabitation agreement cover?
+                    What topics should a cohabitation agreement cover under Alberta law?
                   </h3>
                   <p className="text-gray-600 leading-relaxed mb-3">
                     A comprehensive cohabitation agreement should address:
                   </p>
                   <ul className="list-disc list-inside text-gray-600 space-y-1">
-                    <li>Property ownership and division (including future property)</li>
+                    <li>Property ownership and division (including exempt and family property under the Family Property Act)</li>
                     <li>Debt responsibility and management</li>
                     <li>Household expenses and financial contributions</li>
                     <li>Bank accounts and investments</li>
-                    <li>Support obligations (spousal support)</li>
+                    <li>Partner support obligations (formerly spousal support)</li>
                     <li>Children and parenting arrangements</li>
                     <li>Life insurance and beneficiaries</li>
-                    <li>Dispute resolution procedures</li>
+                    <li>Whether you want to be considered adult interdependent partners</li>
+                    <li>Dispute resolution procedures (mediation, arbitration)</li>
+                    <li>What happens if you marry later</li>
                   </ul>
                 </div>
 
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                    How should we handle property we owned before the relationship?
+                    How should we handle property under the Family Property Act?
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
-                    Property owned before the relationship typically remains with the original owner unless specifically 
-                    stated otherwise in the agreement. However, increases in value during the relationship and property 
-                    acquired together should be clearly addressed in your cohabitation agreement.
+                    Under Alberta's Family Property Act (2020), property is classified as either "exempt property" 
+                    (generally property owned before the relationship) or "family property" (property acquired during 
+                    the relationship). For adult interdependent partners, the division rules are complex and different 
+                    from married couples. Your cohabitation agreement should clearly specify how all property will be 
+                    treated, including pre-relationship property, increases in value, and jointly acquired property.
                   </p>
                 </div>
 
@@ -142,15 +184,16 @@ export default function FAQPage() {
                     What about spousal support in Alberta?
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
-                    Under Alberta's Family Law Act, common-law partners may be entitled to spousal support after separation 
-                    if they lived together for at least 3 years or have a child together. Your cohabitation agreement can 
-                    address whether spousal support will be paid and under what circumstances.
+                    Under Alberta's Family Law Act, adult interdependent partners may be entitled to partner support after separation 
+                    if they qualify as adult interdependent partners (lived together for at least 3 years, have a child together, 
+                    or entered into an adult interdependent partner agreement). Your cohabitation agreement can address whether 
+                    partner support will be paid and under what circumstances.
                   </p>
                 </div>
               </div>
             </section>
 
-            {/* Section 4: Common Concerns */}
+            {/* Section 5: Common Concerns */}
             <section className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Common Concerns</h2>
               
@@ -193,15 +236,17 @@ export default function FAQPage() {
                     Can the court override our cohabitation agreement?
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
-                    Alberta courts generally respect cohabitation agreements that were fairly made with proper disclosure 
-                    and independent legal advice. However, courts may intervene if the agreement is unconscionable, 
-                    was made under duress, or if circumstances have changed dramatically since it was signed.
+                    Under the Family Property Act (2020), Alberta courts generally respect cohabitation agreements that were 
+                    fairly made with proper disclosure and independent legal advice. However, courts may set aside agreements 
+                    if they are found to be significantly unfair, were made under duress, involved material non-disclosure, 
+                    or if circumstances have changed dramatically since signing. The Act provides courts with discretion to 
+                    ensure fair outcomes.
                   </p>
                 </div>
               </div>
             </section>
 
-            {/* Section 5: Getting Help */}
+            {/* Section 6: Getting Help */}
             <section className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Getting Help</h2>
               
@@ -250,8 +295,9 @@ export default function FAQPage() {
                   </h3>
                   <p className="mt-1 text-sm text-yellow-700">
                     This information is provided for general educational purposes only and does not constitute legal advice. 
-                    Alberta family law can be complex, and every situation is unique. Always consult with a qualified 
-                    Alberta family law lawyer for advice specific to your circumstances.
+                    Alberta family law, including the Family Property Act (2020) and related legislation, can be complex, 
+                    and every situation is unique. Always consult with a qualified Alberta family law lawyer for advice 
+                    specific to your circumstances.
                   </p>
                 </div>
               </div>
