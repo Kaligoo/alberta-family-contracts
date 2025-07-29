@@ -17,3 +17,9 @@
 - Follow semantic commit message format
 - Include co-author attribution in commits
 - **ALWAYS push changes to git automatically after committing - user prefers automatic pushing**
+
+## Database Migrations
+- **CRITICAL**: After making ANY changes to database schema (lib/db/schema.ts), ALWAYS run database migration
+- Auto-migration endpoint: `/api/admin/auto-migrate` with header `x-auto-migrate-key: claude-auto-migrate-2024`
+- Manual migration via admin dashboard at `/dashboard/admin` -> "Apply Schema Changes" button
+- Schema changes without migration will cause production database queries to fail
