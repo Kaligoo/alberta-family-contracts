@@ -96,6 +96,19 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ Pronouns and marriage date fields migration already applied or failed');
     }
 
+    // Apply migration 0008_terms_acceptance.sql (terms and conditions acceptance) if needed
+    try {
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        ADD COLUMN IF NOT EXISTS terms_accepted varchar(10) DEFAULT 'false',
+        ADD COLUMN IF NOT EXISTS terms_accepted_at timestamp;
+      `);
+      appliedMigrations.push('0008_terms_acceptance');
+      console.log('✅ Terms acceptance fields migration applied');
+    } catch (error) {
+      console.log('⚠️ Terms acceptance fields migration already applied or failed');
+    }
+
     // Update the migration journal
     for (const migration of appliedMigrations) {
       try {

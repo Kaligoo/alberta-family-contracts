@@ -45,16 +45,16 @@ export function Navigation() {
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
               <Link
-                href="/"
-                className="text-gray-900 hover:text-orange-500 px-3 py-2 text-sm font-medium transition-colors"
-              >
-                Home
-              </Link>
-              <Link
                 href="/about"
                 className="text-gray-600 hover:text-orange-500 px-3 py-2 text-sm font-medium transition-colors"
               >
                 About
+              </Link>
+              <Link
+                href="/faq"
+                className="text-gray-600 hover:text-orange-500 px-3 py-2 text-sm font-medium transition-colors"
+              >
+                FAQ
               </Link>
               <Link
                 href="/contact"
@@ -85,7 +85,7 @@ export function Navigation() {
                   <span>Logout</span>
                 </Button>
                 <span className="text-sm text-gray-600">
-                  Welcome, {user?.name || user?.email}
+                  {user?.name || user?.email}
                 </span>
               </>
             ) : (
@@ -117,18 +117,18 @@ export function Navigation() {
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               <Link
-                href="/"
-                className="text-gray-900 hover:text-orange-500 block px-3 py-2 text-base font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Home
-              </Link>
-              <Link
                 href="/about"
                 className="text-gray-600 hover:text-orange-500 block px-3 py-2 text-base font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
                 About
+              </Link>
+              <Link
+                href="/faq"
+                className="text-gray-600 hover:text-orange-500 block px-3 py-2 text-base font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                FAQ
               </Link>
               <Link
                 href="/contact"
@@ -144,7 +144,7 @@ export function Navigation() {
                 {isAuthenticated ? (
                   <div className="space-y-2">
                     <span className="text-sm text-gray-600 block px-3 py-2">
-                      Welcome, {user?.name || user?.email}
+                      {user?.name || user?.email}
                     </span>
                     <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
                       <Button variant="outline" className="w-full flex items-center justify-center space-x-2">

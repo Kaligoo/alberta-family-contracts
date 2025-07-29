@@ -144,6 +144,10 @@ export const familyContracts = pgTable('family_contracts', {
   // Payment Status
   isPaid: varchar('is_paid', { length: 10 }).default('false'),
   
+  // Terms and Conditions Acceptance
+  termsAccepted: varchar('terms_accepted', { length: 10 }).default('false'),
+  termsAcceptedAt: timestamp('terms_accepted_at'),
+  
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
