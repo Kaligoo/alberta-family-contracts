@@ -8,10 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowLeft, Download, Edit, Printer, Loader2, FileText } from 'lucide-react';
+import { ArrowLeft, Download, Edit, Printer, Loader2, FileText, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import useSWR from 'swr';
+import { StepIndicator } from '@/components/ui/step-indicator';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -123,11 +124,23 @@ export default function ContractPreviewPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Edit
           </Link>
+          
+          {/* Step Indicator */}
+          <StepIndicator
+            steps={[
+              { id: 'edit', name: 'Fill Out Form' },
+              { id: 'preview', name: 'Preview Contract' },
+              { id: 'purchase', name: 'Purchase & Download' },
+            ]}
+            currentStep="preview"
+            completedSteps={['edit']}
+          />
+          
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="text-2xl lg:text-3xl font-bold mb-2">Contract Preview</h1>
+              <h1 className="text-2xl lg:text-3xl font-bold mb-2">Step 2: Preview Contract</h1>
               <p className="text-gray-600">
-                Review your cohabitation agreement before finalizing.
+                Review your cohabitation agreement before purchasing.
               </p>
             </div>
             <div className="flex gap-2">
@@ -141,16 +154,6 @@ export default function ContractPreviewPage() {
                 <Printer className="mr-2 h-4 w-4" />
                 Print
               </Button>
-            </div>
-          </div>
-          
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-            <div className="flex-1 max-w-xs">
-              <ProfessionalDocumentButton contractId={contractId} />
-            </div>
-            <div className="flex-1 max-w-xs">
-              <PaymentButton contractId={contractId} />
             </div>
           </div>
         </div>
@@ -346,14 +349,24 @@ export default function ContractPreviewPage() {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-center">
-          <Link href={`/dashboard/contracts/${contractId}`}>
-            <Button variant="outline" size="lg">
-              <Edit className="mr-2 h-4 w-4" />
-              Make Changes
-            </Button>
-          </Link>
+        {/* Action Buttons - Following the new workflow */}
+        <div className="space-y-6">
+          {/* Step 3: Purchase Button - Primary Action */}
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-4">Step 3: Purchase & Download</h3>
+            <PaymentButton contractId={contractId} />
+          </div>
+          
+          {/* Additional Options */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <ProfessionalDocumentButton contractId={contractId} />
+            <Link href={`/dashboard/contracts/${contractId}`}>
+              <Button variant="outline">
+                <Edit className="mr-2 h-4 w-4" />
+                Make Changes
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {contract.notes && (

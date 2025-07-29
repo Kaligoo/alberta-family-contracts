@@ -10,10 +10,11 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, Save, Eye } from 'lucide-react';
+import { ArrowLeft, Loader2, Save, Eye, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
+import { StepIndicator } from '@/components/ui/step-indicator';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -215,41 +216,28 @@ export default function ContractDetailPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Contracts
           </Link>
+          
+          {/* Step Indicator */}
+          <StepIndicator
+            steps={[
+              { id: 'edit', name: 'Fill Out Form' },
+              { id: 'preview', name: 'Preview Contract' },
+              { id: 'purchase', name: 'Purchase & Download' },
+            ]}
+            currentStep="edit"
+            completedSteps={[]}
+          />
+          
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-                {contract.userFullName && contract.partnerFullName
-                  ? `${contract.userFullName} & ${contract.partnerFullName}`
-                  : 'Edit Contract'}
+                Step 1: Fill Out Form
               </h1>
               <p className="text-gray-600">
-                Edit your cohabitation agreement details.
+                {contract.userFullName && contract.partnerFullName
+                  ? `Editing contract for ${contract.userFullName} & ${contract.partnerFullName}`
+                  : 'Edit your cohabitation agreement details'}
               </p>
-            </div>
-            <div className="flex gap-2">
-              <Link href={`/dashboard/contracts/${contractId}/preview`}>
-                <Button variant="outline">
-                  <Eye className="mr-2 h-4 w-4" />
-                  Preview
-                </Button>
-              </Link>
-              <Button 
-                onClick={handleSave}
-                disabled={isLoading}
-                className="bg-orange-500 hover:bg-orange-600"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Save Progress
-                  </>
-                )}
-              </Button>
             </div>
           </div>
         </div>
@@ -697,29 +685,50 @@ export default function ContractDetailPage() {
           </Card>
         </div>
 
-        <div className="mt-8 flex gap-4">
-          <Link href="/dashboard/contracts" className="flex-1">
-            <Button variant="outline" className="w-full">
-              Back to Contracts
+        <div className="mt-8 space-y-4">
+          {/* Save Progress Button - Primary Action */}
+          <div className="flex justify-center">
+            <Button 
+              onClick={handleSave}
+              disabled={isLoading}
+              size="lg"
+              className="bg-orange-500 hover:bg-orange-600 px-8 py-3"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving Progress...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Progress
+                </>
+              )}
             </Button>
-          </Link>
-          <Button 
-            onClick={handleSave}
-            disabled={isLoading}
-            className="flex-1 bg-orange-500 hover:bg-orange-600"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Save Progress
-              </>
-            )}
-          </Button>
+          </div>
+          
+          {/* Next Step Button - Shows only after save success */}
+          {saveSuccess && (
+            <div className="flex justify-center">
+              <Link href={`/dashboard/contracts/${contractId}/preview`}>
+                <Button variant="outline" size="lg" className="px-8 py-3">
+                  <Eye className="mr-2 h-4 w-4" />
+                  Next: Preview Contract
+                </Button>
+              </Link>
+            </div>
+          )}
+          
+          {/* Navigation */}
+          <div className="flex justify-center">
+            <Link href="/dashboard/contracts">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Contracts
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </section>

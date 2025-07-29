@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { StepIndicator } from '@/components/ui/step-indicator';
 
 export default function NewContractPage() {
   const [formData, setFormData] = useState({
@@ -79,7 +80,19 @@ export default function NewContractPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Contracts
           </Link>
-          <h1 className="text-2xl lg:text-3xl font-bold mb-2">Create New Contract</h1>
+          
+          {/* Step Indicator */}
+          <StepIndicator
+            steps={[
+              { id: 'edit', name: 'Fill Out Form' },
+              { id: 'preview', name: 'Preview Contract' },
+              { id: 'purchase', name: 'Purchase & Download' },
+            ]}
+            currentStep="edit"
+            completedSteps={[]}
+          />
+          
+          <h1 className="text-2xl lg:text-3xl font-bold mb-2">Step 1: Create New Contract</h1>
           <p className="text-gray-600">
             Start a new cohabitation agreement by providing basic information.
           </p>
