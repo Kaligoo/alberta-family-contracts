@@ -263,6 +263,33 @@ function IncomeCard({ formData, updateFormData }: {
   updateFormData: (field: string, value: any) => void; 
 }) {
 
+  // Format number as currency for display
+  const formatCurrency = (value: string) => {
+    if (!value) return '';
+    // Remove all non-numeric characters except decimal point
+    const numericValue = value.replace(/[^\d.]/g, '');
+    if (!numericValue) return '';
+    
+    // Convert to number and format with commas
+    const number = parseFloat(numericValue);
+    if (isNaN(number)) return '';
+    
+    return new Intl.NumberFormat('en-CA', {
+      style: 'currency',
+      currency: 'CAD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(number);
+  };
+
+  // Handle currency input changes
+  const handleCurrencyChange = (field: string, value: string) => {
+    // Remove all non-numeric characters except decimal point
+    const numericValue = value.replace(/[^\d.]/g, '');
+    // Store the clean numeric value
+    updateFormData(field, numericValue);
+  };
+
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -277,20 +304,20 @@ function IncomeCard({ formData, updateFormData }: {
             <Label htmlFor="userIncome">Your Annual Income</Label>
             <Input
               id="userIncome"
-              type="number"
-              value={formData.userIncome}
-              onChange={(e) => updateFormData('userIncome', e.target.value)}
-              placeholder="Enter annual income"
+              type="text"
+              value={formatCurrency(formData.userIncome)}
+              onChange={(e) => handleCurrencyChange('userIncome', e.target.value)}
+              placeholder="$75,000"
             />
           </div>
           <div>
             <Label htmlFor="partnerIncome">Partner's Annual Income</Label>
             <Input
               id="partnerIncome"
-              type="number"
-              value={formData.partnerIncome}
-              onChange={(e) => updateFormData('partnerIncome', e.target.value)}
-              placeholder="Enter partner's annual income"
+              type="text"
+              value={formatCurrency(formData.partnerIncome)}
+              onChange={(e) => handleCurrencyChange('partnerIncome', e.target.value)}
+              placeholder="$75,000"
             />
           </div>
         </div>
