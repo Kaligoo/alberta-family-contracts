@@ -109,6 +109,35 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ Terms acceptance fields migration already applied or failed');
     }
 
+    // Apply migration 0009_schedule_a.sql (Schedule A - Statement of Income, Assets and Liabilities) if needed
+    try {
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        ADD COLUMN IF NOT EXISTS schedule_income_employment numeric(12,2),
+        ADD COLUMN IF NOT EXISTS schedule_income_ei numeric(12,2),
+        ADD COLUMN IF NOT EXISTS schedule_income_workers_comp numeric(12,2),
+        ADD COLUMN IF NOT EXISTS schedule_income_investment numeric(12,2),
+        ADD COLUMN IF NOT EXISTS schedule_income_pension numeric(12,2),
+        ADD COLUMN IF NOT EXISTS schedule_income_government_assistance numeric(12,2),
+        ADD COLUMN IF NOT EXISTS schedule_income_self_employment numeric(12,2),
+        ADD COLUMN IF NOT EXISTS schedule_income_other numeric(12,2),
+        ADD COLUMN IF NOT EXISTS schedule_income_total_tax_return numeric(12,2),
+        ADD COLUMN IF NOT EXISTS schedule_assets_real_estate jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_assets_vehicles jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_assets_financial jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_assets_pensions jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_assets_business jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_assets_other jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_debts_secured jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_debts_unsecured jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_debts_other jsonb;
+      `);
+      appliedMigrations.push('0009_schedule_a');
+      console.log('✅ Schedule A fields migration applied');
+    } catch (error) {
+      console.log('⚠️ Schedule A fields migration already applied or failed');
+    }
+
     // Update the migration journal
     for (const migration of appliedMigrations) {
       try {

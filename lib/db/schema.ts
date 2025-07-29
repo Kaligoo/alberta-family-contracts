@@ -148,6 +148,70 @@ export const familyContracts = pgTable('family_contracts', {
   termsAccepted: varchar('terms_accepted', { length: 10 }).default('false'),
   termsAcceptedAt: timestamp('terms_accepted_at'),
   
+  // Schedule A - Statement of Income, Assets and Liabilities
+  // A. INCOME section
+  scheduleIncomeEmployment: decimal('schedule_income_employment', { precision: 12, scale: 2 }),
+  scheduleIncomeEI: decimal('schedule_income_ei', { precision: 12, scale: 2 }),
+  scheduleIncomeWorkersComp: decimal('schedule_income_workers_comp', { precision: 12, scale: 2 }),
+  scheduleIncomeInvestment: decimal('schedule_income_investment', { precision: 12, scale: 2 }),
+  scheduleIncomePension: decimal('schedule_income_pension', { precision: 12, scale: 2 }),
+  scheduleIncomeGovernmentAssistance: decimal('schedule_income_government_assistance', { precision: 12, scale: 2 }),
+  scheduleIncomeSelfEmployment: decimal('schedule_income_self_employment', { precision: 12, scale: 2 }),
+  scheduleIncomeOther: decimal('schedule_income_other', { precision: 12, scale: 2 }),
+  scheduleIncomeTotalTaxReturn: decimal('schedule_income_total_tax_return', { precision: 12, scale: 2 }),
+  
+  // B. ASSETS section (stored as JSON arrays)
+  scheduleAssetsRealEstate: json('schedule_assets_real_estate').$type<Array<{
+    particulars: string;
+    dateAcquired: string;
+    estimatedValue: number;
+  }>>(),
+  scheduleAssetsVehicles: json('schedule_assets_vehicles').$type<Array<{
+    particulars: string;
+    dateAcquired: string;
+    estimatedValue: number;
+  }>>(),
+  scheduleAssetsFinancial: json('schedule_assets_financial').$type<Array<{
+    particulars: string;
+    dateAcquired: string;
+    estimatedValue: number;
+  }>>(),
+  scheduleAssetsPensions: json('schedule_assets_pensions').$type<Array<{
+    particulars: string;
+    dateAcquired: string;
+    estimatedValue: number;
+  }>>(),
+  scheduleAssetsBusiness: json('schedule_assets_business').$type<Array<{
+    particulars: string;
+    dateAcquired: string;
+    estimatedValue: number;
+  }>>(),
+  scheduleAssetsOther: json('schedule_assets_other').$type<Array<{
+    particulars: string;
+    dateAcquired: string;
+    estimatedValue: number;
+  }>>(),
+  
+  // C. DEBTS section (stored as JSON arrays)
+  scheduleDebtsSecured: json('schedule_debts_secured').$type<Array<{
+    particulars: string;
+    dateIncurred: string;
+    balanceOwing: number;
+    monthlyPayment: number;
+  }>>(),
+  scheduleDebtsUnsecured: json('schedule_debts_unsecured').$type<Array<{
+    particulars: string;
+    dateIncurred: string;
+    balanceOwing: number;
+    monthlyPayment: number;
+  }>>(),
+  scheduleDebtsOther: json('schedule_debts_other').$type<Array<{
+    particulars: string;
+    dateIncurred: string;
+    balanceOwing: number;
+    monthlyPayment: number;
+  }>>(),
+  
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

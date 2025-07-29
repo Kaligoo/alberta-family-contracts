@@ -129,6 +129,26 @@ export async function PUT(
     if (body.additionalClauses !== undefined) updateData.additionalClauses = body.additionalClauses === '' ? null : body.additionalClauses;
     if (body.notes !== undefined) updateData.notes = body.notes === '' ? null : body.notes;
     if (body.status !== undefined) updateData.status = body.status || 'draft';
+    
+    // Schedule A fields
+    if (body.scheduleIncomeEmployment !== undefined) updateData.scheduleIncomeEmployment = body.scheduleIncomeEmployment === '' ? null : body.scheduleIncomeEmployment;
+    if (body.scheduleIncomeEI !== undefined) updateData.scheduleIncomeEI = body.scheduleIncomeEI === '' ? null : body.scheduleIncomeEI;
+    if (body.scheduleIncomeWorkersComp !== undefined) updateData.scheduleIncomeWorkersComp = body.scheduleIncomeWorkersComp === '' ? null : body.scheduleIncomeWorkersComp;
+    if (body.scheduleIncomeInvestment !== undefined) updateData.scheduleIncomeInvestment = body.scheduleIncomeInvestment === '' ? null : body.scheduleIncomeInvestment;
+    if (body.scheduleIncomePension !== undefined) updateData.scheduleIncomePension = body.scheduleIncomePension === '' ? null : body.scheduleIncomePension;
+    if (body.scheduleIncomeGovernmentAssistance !== undefined) updateData.scheduleIncomeGovernmentAssistance = body.scheduleIncomeGovernmentAssistance === '' ? null : body.scheduleIncomeGovernmentAssistance;
+    if (body.scheduleIncomeSelfEmployment !== undefined) updateData.scheduleIncomeSelfEmployment = body.scheduleIncomeSelfEmployment === '' ? null : body.scheduleIncomeSelfEmployment;
+    if (body.scheduleIncomeOther !== undefined) updateData.scheduleIncomeOther = body.scheduleIncomeOther === '' ? null : body.scheduleIncomeOther;
+    if (body.scheduleIncomeTotalTaxReturn !== undefined) updateData.scheduleIncomeTotalTaxReturn = body.scheduleIncomeTotalTaxReturn === '' ? null : body.scheduleIncomeTotalTaxReturn;
+    if (body.scheduleAssetsRealEstate !== undefined) updateData.scheduleAssetsRealEstate = body.scheduleAssetsRealEstate || [];
+    if (body.scheduleAssetsVehicles !== undefined) updateData.scheduleAssetsVehicles = body.scheduleAssetsVehicles || [];
+    if (body.scheduleAssetsFinancial !== undefined) updateData.scheduleAssetsFinancial = body.scheduleAssetsFinancial || [];
+    if (body.scheduleAssetsPensions !== undefined) updateData.scheduleAssetsPensions = body.scheduleAssetsPensions || [];
+    if (body.scheduleAssetsBusiness !== undefined) updateData.scheduleAssetsBusiness = body.scheduleAssetsBusiness || [];
+    if (body.scheduleAssetsOther !== undefined) updateData.scheduleAssetsOther = body.scheduleAssetsOther || [];
+    if (body.scheduleDebtsSecured !== undefined) updateData.scheduleDebtsSecured = body.scheduleDebtsSecured || [];
+    if (body.scheduleDebtsUnsecured !== undefined) updateData.scheduleDebtsUnsecured = body.scheduleDebtsUnsecured || [];
+    if (body.scheduleDebtsOther !== undefined) updateData.scheduleDebtsOther = body.scheduleDebtsOther || [];
 
     console.log('Updating contract with:', {
       contractId,

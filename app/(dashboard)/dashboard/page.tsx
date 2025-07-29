@@ -10,7 +10,7 @@ import {
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, FileText, Users, DollarSign, Home, Save } from 'lucide-react';
+import { Loader2, FileText, Users, DollarSign, Home, Save, ChevronDown, ChevronUp, Calculator } from 'lucide-react';
 import { User } from '@/lib/db/schema';
 import useSWR from 'swr';
 
@@ -559,7 +559,394 @@ function ChildrenCard({ formData, updateFormData }: {
   );
 }
 
+function ScheduleACard({ formData, updateFormData }: { 
+  formData: any; 
+  updateFormData: (field: string, value: any) => void; 
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
 
+  const formatCurrency = (value: string | number) => {
+    if (!value) return '';
+    const numericValue = typeof value === 'string' ? value.replace(/[^\d.]/g, '') : value.toString();
+    if (!numericValue) return '';
+    
+    const number = parseFloat(numericValue);
+    if (isNaN(number)) return '';
+    
+    return new Intl.NumberFormat('en-CA', {
+      style: 'currency',
+      currency: 'CAD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(number);
+  };
+
+  const handleCurrencyChange = (field: string, value: string) => {
+    const numericValue = value.replace(/[^\d.]/g, '');
+    updateFormData(field, numericValue);
+  };
+
+  const addAssetItem = (category: string) => {
+    const currentItems = formData[category] || [];
+    const newItems = [...currentItems, {
+      particulars: '',
+      dateAcquired: '',
+      estimatedValue: 0
+    }];
+    updateFormData(category, newItems);
+  };
+
+  const updateAssetItem = (category: string, index: number, field: string, value: any) => {
+    const currentItems = formData[category] || [];
+    const updatedItems = [...currentItems];
+    updatedItems[index] = { ...updatedItems[index], [field]: value };
+    updateFormData(category, updatedItems);
+  };
+
+  const removeAssetItem = (category: string, index: number) => {
+    const currentItems = formData[category] || [];
+    const newItems = currentItems.filter((_: any, i: number) => i !== index);
+    updateFormData(category, newItems);
+  };
+
+  const addDebtItem = (category: string) => {
+    const currentItems = formData[category] || [];
+    const newItems = [...currentItems, {
+      particulars: '',
+      dateIncurred: '',
+      balanceOwing: 0,
+      monthlyPayment: 0
+    }];
+    updateFormData(category, newItems);
+  };
+
+  const updateDebtItem = (category: string, index: number, field: string, value: any) => {
+    const currentItems = formData[category] || [];
+    const updatedItems = [...currentItems];
+    updatedItems[index] = { ...updatedItems[index], [field]: value };
+    updateFormData(category, updatedItems);
+  };
+
+  const removeDebtItem = (category: string, index: number) => {
+    const currentItems = formData[category] || [];
+    const newItems = currentItems.filter((_: any, i: number) => i !== index);
+    updateFormData(category, newItems);
+  };
+
+  const AssetSection = ({ title, category }: { title: string; category: string }) => {
+    const items = formData[category] || [];
+    
+    return (
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <h4 className="font-medium text-gray-900">{title}</h4>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => addAssetItem(category)}
+          >
+            Add Item
+          </Button>
+        </div>
+        
+        {items.length === 0 ? (
+          <p className="text-sm text-gray-500 italic">No items added</p>
+        ) : (
+          <div className="space-y-3">
+            {items.map((item: any, index: number) => (
+              <div key={index} className="border rounded-lg p-3 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Item {index + 1}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeAssetItem(category, index)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <div>
+                    <Label className="text-xs">Particulars</Label>
+                    <Input
+                      value={item.particulars}
+                      onChange={(e) => updateAssetItem(category, index, 'particulars', e.target.value)}
+                      placeholder="Description"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Date Acquired</Label>
+                    <Input
+                      type="date"
+                      value={item.dateAcquired}
+                      onChange={(e) => updateAssetItem(category, index, 'dateAcquired', e.target.value)}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Estimated Value</Label>
+                    <Input
+                      type="text"
+                      value={formatCurrency(item.estimatedValue)}
+                      onChange={(e) => updateAssetItem(category, index, 'estimatedValue', e.target.value.replace(/[^\d.]/g, ''))}
+                      placeholder="$0"
+                      className="text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const DebtSection = ({ title, category }: { title: string; category: string }) => {
+    const items = formData[category] || [];
+    
+    return (
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <h4 className="font-medium text-gray-900">{title}</h4>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => addDebtItem(category)}
+          >
+            Add Item
+          </Button>
+        </div>
+        
+        {items.length === 0 ? (
+          <p className="text-sm text-gray-500 italic">No items added</p>
+        ) : (
+          <div className="space-y-3">
+            {items.map((item: any, index: number) => (
+              <div key={index} className="border rounded-lg p-3 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Item {index + 1}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeDebtItem(category, index)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                  <div>
+                    <Label className="text-xs">Particulars</Label>
+                    <Input
+                      value={item.particulars}
+                      onChange={(e) => updateDebtItem(category, index, 'particulars', e.target.value)}
+                      placeholder="Description"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Date Incurred</Label>
+                    <Input
+                      type="date"
+                      value={item.dateIncurred}
+                      onChange={(e) => updateDebtItem(category, index, 'dateIncurred', e.target.value)}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Balance Owing</Label>
+                    <Input
+                      type="text"
+                      value={formatCurrency(item.balanceOwing)}
+                      onChange={(e) => updateDebtItem(category, index, 'balanceOwing', e.target.value.replace(/[^\d.]/g, ''))}
+                      placeholder="$0"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Monthly Payment</Label>
+                    <Input
+                      type="text"
+                      value={formatCurrency(item.monthlyPayment)}
+                      onChange={(e) => updateDebtItem(category, index, 'monthlyPayment', e.target.value.replace(/[^\d.]/g, ''))}
+                      placeholder="$0"
+                      className="text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <button
+          type="button"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center justify-between w-full text-left"
+        >
+          <CardTitle className="flex items-center gap-2">
+            <Calculator className="h-5 w-5" />
+            Schedule A - Statement of Income, Assets and Liabilities
+          </CardTitle>
+          {isExpanded ? (
+            <ChevronUp className="h-5 w-5 text-gray-500" />
+          ) : (
+            <ChevronDown className="h-5 w-5 text-gray-500" />
+          )}
+        </button>
+        <p className="text-sm text-gray-600">
+          Complete financial disclosure required for your cohabitation agreement
+        </p>
+      </CardHeader>
+      
+      {isExpanded && (
+        <CardContent className="space-y-8">
+          {/* A. INCOME Section */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">A. INCOME</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="scheduleIncomeEmployment">Employment Income</Label>
+                <Input
+                  id="scheduleIncomeEmployment"
+                  type="text"
+                  value={formatCurrency(formData.scheduleIncomeEmployment)}
+                  onChange={(e) => handleCurrencyChange('scheduleIncomeEmployment', e.target.value)}
+                  placeholder="$0"
+                />
+              </div>
+              <div>
+                <Label htmlFor="scheduleIncomeEI">Employment Insurance</Label>
+                <Input
+                  id="scheduleIncomeEI"
+                  type="text"
+                  value={formatCurrency(formData.scheduleIncomeEI)}
+                  onChange={(e) => handleCurrencyChange('scheduleIncomeEI', e.target.value)}
+                  placeholder="$0"
+                />
+              </div>
+              <div>
+                <Label htmlFor="scheduleIncomeWorkersComp">Workers' Compensation</Label>
+                <Input
+                  id="scheduleIncomeWorkersComp"
+                  type="text"
+                  value={formatCurrency(formData.scheduleIncomeWorkersComp)}
+                  onChange={(e) => handleCurrencyChange('scheduleIncomeWorkersComp', e.target.value)}
+                  placeholder="$0"
+                />
+              </div>
+              <div>
+                <Label htmlFor="scheduleIncomeInvestment">Investment Income</Label>
+                <Input
+                  id="scheduleIncomeInvestment"
+                  type="text"
+                  value={formatCurrency(formData.scheduleIncomeInvestment)}
+                  onChange={(e) => handleCurrencyChange('scheduleIncomeInvestment', e.target.value)}
+                  placeholder="$0"
+                />
+              </div>
+              <div>
+                <Label htmlFor="scheduleIncomePension">Pension Income</Label>
+                <Input
+                  id="scheduleIncomePension"
+                  type="text"
+                  value={formatCurrency(formData.scheduleIncomePension)}
+                  onChange={(e) => handleCurrencyChange('scheduleIncomePension', e.target.value)}
+                  placeholder="$0"
+                />
+              </div>
+              <div>
+                <Label htmlFor="scheduleIncomeGovernmentAssistance">Government Assistance</Label>
+                <Input
+                  id="scheduleIncomeGovernmentAssistance"
+                  type="text"
+                  value={formatCurrency(formData.scheduleIncomeGovernmentAssistance)}
+                  onChange={(e) => handleCurrencyChange('scheduleIncomeGovernmentAssistance', e.target.value)}
+                  placeholder="$0"
+                />
+              </div>
+              <div>
+                <Label htmlFor="scheduleIncomeSelfEmployment">Self-Employment Income</Label>
+                <Input
+                  id="scheduleIncomeSelfEmployment"
+                  type="text"
+                  value={formatCurrency(formData.scheduleIncomeSelfEmployment)}
+                  onChange={(e) => handleCurrencyChange('scheduleIncomeSelfEmployment', e.target.value)}
+                  placeholder="$0"
+                />
+              </div>
+              <div>
+                <Label htmlFor="scheduleIncomeOther">Other Income</Label>
+                <Input
+                  id="scheduleIncomeOther"
+                  type="text"
+                  value={formatCurrency(formData.scheduleIncomeOther)}
+                  onChange={(e) => handleCurrencyChange('scheduleIncomeOther', e.target.value)}
+                  placeholder="$0"
+                />
+              </div>
+            </div>
+            <div className="mt-4">
+              <Label htmlFor="scheduleIncomeTotalTaxReturn">Total Income from Last Tax Return</Label>
+              <Input
+                id="scheduleIncomeTotalTaxReturn"
+                type="text"
+                value={formatCurrency(formData.scheduleIncomeTotalTaxReturn)}
+                onChange={(e) => handleCurrencyChange('scheduleIncomeTotalTaxReturn', e.target.value)}
+                placeholder="$0"
+                className="font-semibold"
+              />
+            </div>
+          </div>
+
+          {/* B. ASSETS Section */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">B. ASSETS</h3>
+            <div className="space-y-6">
+              <AssetSection title="Real Estate" category="scheduleAssetsRealEstate" />
+              <AssetSection title="Vehicles" category="scheduleAssetsVehicles" />
+              <AssetSection title="Financial Assets (Bank accounts, investments, etc.)" category="scheduleAssetsFinancial" />
+              <AssetSection title="Pensions/RRSPs" category="scheduleAssetsPensions" />
+              <AssetSection title="Corporate/Business Interests" category="scheduleAssetsBusiness" />
+              <AssetSection title="Other Assets" category="scheduleAssetsOther" />
+            </div>
+          </div>
+
+          {/* C. DEBTS Section */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">C. DEBTS</h3>
+            <div className="space-y-6">
+              <DebtSection title="Secured Debts (Mortgages, car loans, etc.)" category="scheduleDebtsSecured" />
+              <DebtSection title="Unsecured Debts (Credit cards, personal loans, etc.)" category="scheduleDebtsUnsecured" />
+              <DebtSection title="Other Debts" category="scheduleDebtsOther" />
+            </div>
+          </div>
+
+          {/* Solemn Declaration Notice */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-semibold text-blue-900 mb-2">Solemn Declaration</h4>
+            <p className="text-sm text-blue-800">
+              This Schedule A requires a solemn declaration that all information provided is true and complete. 
+              You will need to sign this declaration before a Commissioner for Oaths or other authorized person 
+              when your agreement is finalized.
+            </p>
+          </div>
+        </CardContent>
+      )}
+    </Card>
+  );
+}
 
 export default function DashboardPage() {
   const [formData, setFormData] = useState({
@@ -590,7 +977,26 @@ export default function DashboardPage() {
     expenseSplitType: '',
     additionalClauses: '',
     notes: '',
-    children: [] as ChildInfo[]
+    children: [] as ChildInfo[],
+    // Schedule A fields
+    scheduleIncomeEmployment: '',
+    scheduleIncomeEI: '',
+    scheduleIncomeWorkersComp: '',
+    scheduleIncomeInvestment: '',
+    scheduleIncomePension: '',
+    scheduleIncomeGovernmentAssistance: '',
+    scheduleIncomeSelfEmployment: '',
+    scheduleIncomeOther: '',
+    scheduleIncomeTotalTaxReturn: '',
+    scheduleAssetsRealEstate: [],
+    scheduleAssetsVehicles: [],
+    scheduleAssetsFinancial: [],
+    scheduleAssetsPensions: [],
+    scheduleAssetsBusiness: [],
+    scheduleAssetsOther: [],
+    scheduleDebtsSecured: [],
+    scheduleDebtsUnsecured: [],
+    scheduleDebtsOther: []
   });
 
   const [saveState, setSaveState] = useState<ActionState>({});
@@ -646,7 +1052,26 @@ export default function DashboardPage() {
         expenseSplitType: contract.expenseSplitType || '',
         additionalClauses: contract.additionalClauses || '',
         notes: contract.notes || '',
-        children: contract.children || []
+        children: contract.children || [],
+        // Schedule A fields
+        scheduleIncomeEmployment: contract.scheduleIncomeEmployment || '',
+        scheduleIncomeEI: contract.scheduleIncomeEI || '',
+        scheduleIncomeWorkersComp: contract.scheduleIncomeWorkersComp || '',
+        scheduleIncomeInvestment: contract.scheduleIncomeInvestment || '',
+        scheduleIncomePension: contract.scheduleIncomePension || '',
+        scheduleIncomeGovernmentAssistance: contract.scheduleIncomeGovernmentAssistance || '',
+        scheduleIncomeSelfEmployment: contract.scheduleIncomeSelfEmployment || '',
+        scheduleIncomeOther: contract.scheduleIncomeOther || '',
+        scheduleIncomeTotalTaxReturn: contract.scheduleIncomeTotalTaxReturn || '',
+        scheduleAssetsRealEstate: contract.scheduleAssetsRealEstate || [],
+        scheduleAssetsVehicles: contract.scheduleAssetsVehicles || [],
+        scheduleAssetsFinancial: contract.scheduleAssetsFinancial || [],
+        scheduleAssetsPensions: contract.scheduleAssetsPensions || [],
+        scheduleAssetsBusiness: contract.scheduleAssetsBusiness || [],
+        scheduleAssetsOther: contract.scheduleAssetsOther || [],
+        scheduleDebtsSecured: contract.scheduleDebtsSecured || [],
+        scheduleDebtsUnsecured: contract.scheduleDebtsUnsecured || [],
+        scheduleDebtsOther: contract.scheduleDebtsOther || []
       });
     }
   }, [contractData]);
@@ -803,6 +1228,7 @@ export default function DashboardPage() {
           <ResidenceCard formData={formData} updateFormData={updateFormData} />
           <FinancialCard formData={formData} updateFormData={updateFormData} />
           <ChildrenCard formData={formData} updateFormData={updateFormData} />
+          <ScheduleACard formData={formData} updateFormData={updateFormData} />
           <AdditionalInfoCard formData={formData} updateFormData={updateFormData} />
           
           {/* Save Button */}
