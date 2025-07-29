@@ -3,6 +3,7 @@ import { getUser, getUserWithTeam } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts, templates } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
+import { generateResidenceContent } from '@/lib/content/residence-content';
 
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
@@ -156,6 +157,9 @@ function prepareTemplateData(contract: any, user: any) {
     
     // Residence
     residenceAddress: contract.residenceAddress || '[Residence Address]',
+    
+    // Dynamic residence content based on ownership type
+    ...generateResidenceContent(contract),
     
     // Dates
     currentDate: currentDate,
