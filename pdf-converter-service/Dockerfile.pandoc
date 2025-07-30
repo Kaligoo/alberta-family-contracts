@@ -1,0 +1,39 @@
+# Alternative approach using pandoc for document conversion
+FROM node:18-bookworm-slim
+
+# Install pandoc and texlive for high-quality PDF generation
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    pandoc \
+    texlive-latex-base \
+    texlive-fonts-recommended \
+    texlive-extra-utils \
+    texlive-latex-extra \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy server code (we'll create a pandoc version)
+COPY server-pandoc.js ./server.js
+
+# Create user and directories
+RUN groupadd -r appuser && \
+    useradd -r -g appuser appuser && \
+    mkdir -p /tmp/uploads /tmp/output && \
+    chown -R appuser:appuser /tmp/uploads /tmp/output /usr/src/app
+
+USER appuser
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+CMD ["node", "server.js"]

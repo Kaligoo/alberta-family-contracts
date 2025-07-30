@@ -1,0 +1,42 @@
+# Headless LibreOffice for PDF conversion
+FROM node:18-bullseye-slim
+
+# Install LibreOffice headless and minimal dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libreoffice \
+    default-jre-headless \
+    fonts-liberation \
+    curl \
+    xvfb \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy application code  
+COPY server-working.js ./server.js
+
+# Create user and directories
+RUN groupadd -r appuser && \
+    useradd -r -g appuser appuser && \
+    mkdir -p /tmp/uploads /tmp/output && \
+    chown -R appuser:appuser /tmp/uploads /tmp/output /usr/src/app
+
+USER appuser
+
+EXPOSE 8080
+
+# Set display for headless operation
+ENV DISPLAY=:99
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Start virtual display and app
+CMD ["sh", "-c", "Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 & node server.js"]

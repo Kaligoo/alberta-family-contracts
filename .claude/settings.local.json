@@ -41,7 +41,17 @@
       "WebFetch(domain:www.albertafamilycontracts.com)",
       "Bash(chmod:*)",
       "Bash(npm uninstall:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(mkdir:*)",
+      "Bash(gcloud:*)",
+      "Bash(docker:*)",
+      "Bash(\"/c/Users/Gnymede/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/gcloud.cmd\" version)",
+      "Bash(cmd.exe /c '\"\"C:\\Users\\Gnymede\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\"\" version')",
+      "Bash(export PATH=\"$PATH:/c/Users/Gnymede/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin\")",
+      "Bash(cmd.exe /c 'gcloud builds log 5fa359bb-eca4-48f5-9fb7-e051d41aca35')",
+      "Bash(grep:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:gotenberg.dev)"
     ],
     "deny": []
   }

@@ -61,22 +61,16 @@ const ensureDirectories = async () => {
   await fs.ensureDir('/tmp/output');
 };
 
-// LibreOffice conversion function
-const convertToPdf = async (inputPath, outputDir) => {
+// PDF conversion using unoconv
+const convertToPdfUnoconv = async (inputPath, outputPath) => {
   return new Promise((resolve, reject) => {
-    const libreofficeCommand = 'libreoffice';
-    const args = [
-      '--headless',
-      '--convert-to', 'pdf',
-      '--outdir', outputDir,
-      inputPath
-    ];
-
-    console.log(`Converting: ${libreofficeCommand} ${args.join(' ')}`);
+    const args = ['-f', 'pdf', '-o', outputPath, inputPath];
     
-    const child = spawn(libreofficeCommand, args, {
+    console.log(`Converting with unoconv: unoconv ${args.join(' ')}`);
+    
+    const child = spawn('unoconv', args, {
       stdio: ['ignore', 'pipe', 'pipe'],
-      timeout: 30000 // 30 second timeout
+      timeout: 30000
     });
 
     let stdout = '';
@@ -91,33 +85,24 @@ const convertToPdf = async (inputPath, outputDir) => {
     });
 
     child.on('close', (code) => {
-      console.log(`LibreOffice process exited with code ${code}`);
+      console.log(`unoconv process exited with code ${code}`);
       console.log('stdout:', stdout);
       console.log('stderr:', stderr);
       
-      if (code === 0) {
-        // Find the generated PDF file
-        const inputFilename = path.basename(inputPath, path.extname(inputPath));
-        const pdfPath = path.join(outputDir, `${inputFilename}.pdf`);
-        
-        if (fs.existsSync(pdfPath)) {
-          resolve(pdfPath);
-        } else {
-          reject(new Error(`PDF file not found at ${pdfPath}`));
-        }
+      if (code === 0 && fs.existsSync(outputPath)) {
+        resolve(outputPath);
       } else {
-        reject(new Error(`LibreOffice conversion failed with code ${code}: ${stderr}`));
+        reject(new Error(`unoconv conversion failed with code ${code}: ${stderr}`));
       }
     });
 
     child.on('error', (error) => {
-      reject(new Error(`Failed to start LibreOffice: ${error.message}`));
+      reject(new Error(`Failed to start unoconv: ${error.message}`));
     });
 
-    // Handle timeout
     child.on('timeout', () => {
       child.kill('SIGKILL');
-      reject(new Error('LibreOffice conversion timed out'));
+      reject(new Error('unoconv conversion timed out'));
     });
   });
 };
@@ -128,16 +113,16 @@ app.get('/health', (req, res) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     service: 'pdf-converter-service',
-    version: '1.0.0',
-    libreoffice: true,
-    message: 'Service is running with LibreOffice integration'
+    version: '1.1.0',
+    converter: 'unoconv',
+    message: 'Service is running with unoconv LibreOffice integration'
   });
 });
 
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    message: 'PDF Converter Service',
+    message: 'PDF Converter Service with unoconv',
     status: 'running',
     endpoints: {
       health: '/health',
@@ -146,7 +131,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// Convert endpoint - now with LibreOffice integration
+// Convert endpoint with unoconv
 app.post('/convert', upload.single('file'), async (req, res) => {
   let tempFiles = [];
   
@@ -163,6 +148,7 @@ app.post('/convert', upload.single('file'), async (req, res) => {
     const uploadedFile = req.file;
     const requestId = uuidv4();
     const outputDir = `/tmp/output/${requestId}`;
+    const outputFile = path.join(outputDir, `${path.basename(uploadedFile.originalname, path.extname(uploadedFile.originalname))}.pdf`);
     
     console.log(`Processing file: ${uploadedFile.originalname} (${uploadedFile.size} bytes)`);
     
@@ -171,12 +157,12 @@ app.post('/convert', upload.single('file'), async (req, res) => {
     tempFiles.push(outputDir);
     tempFiles.push(uploadedFile.path);
 
-    // Convert Word document to PDF using LibreOffice
-    const pdfPath = await convertToPdf(uploadedFile.path, outputDir);
-    console.log(`PDF generated at: ${pdfPath}`);
+    // Convert Word document to PDF using unoconv
+    await convertToPdfUnoconv(uploadedFile.path, outputFile);
+    console.log(`PDF generated at: ${outputFile}`);
     
     // Read the generated PDF
-    const pdfBuffer = await fs.readFile(pdfPath);
+    const pdfBuffer = await fs.readFile(outputFile);
     
     // Set response headers
     res.setHeader('Content-Type', 'application/pdf');
@@ -192,10 +178,10 @@ app.post('/convert', upload.single('file'), async (req, res) => {
     console.error('Conversion error:', error);
     
     // Determine error type and send appropriate response
-    if (error.message.includes('LibreOffice')) {
+    if (error.message.includes('unoconv') || error.message.includes('LibreOffice')) {
       res.status(500).json({
         error: 'Conversion failed',
-        message: 'LibreOffice conversion process failed',
+        message: 'PDF conversion process failed',
         details: error.message
       });
     } else if (error.message.includes('timeout')) {
@@ -267,9 +253,9 @@ const startServer = async () => {
     await ensureDirectories();
     
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`PDF Converter Service running on port ${PORT}`);
+      console.log(`PDF Converter Service (unoconv) running on port ${PORT}`);
       console.log(`Health check: http://localhost:${PORT}/health`);
-      console.log('Service ready - file upload working, LibreOffice integration pending');
+      console.log('Service ready with unoconv LibreOffice conversion');
     });
   } catch (error) {
     console.error('Failed to start server:', error);

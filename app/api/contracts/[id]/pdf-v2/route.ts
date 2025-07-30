@@ -110,8 +110,8 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
 }
 
 async function convertWordToPDFWithGotenberg(docxBuffer: Buffer): Promise<Buffer> {
-  // Default to localhost for development, but allow override via environment variable
-  const GOTENBERG_URL = process.env.GOTENBERG_URL || 'http://localhost:3000';
+  // Use production Gotenberg service by default, fallback to localhost for development
+  const GOTENBERG_URL = process.env.GOTENBERG_URL || 'https://gotenberg-service-162295646145.us-central1.run.app';
   
   try {
     console.log('Converting Word document to PDF using Gotenberg LibreOffice conversion...');

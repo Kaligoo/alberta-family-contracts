@@ -1,0 +1,65 @@
+# Multi-stage build for LibreOffice PDF Converter Service
+FROM ubuntu:22.04 as libreoffice-base
+
+# Install LibreOffice and dependencies in a single layer
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libreoffice-writer \
+    libreoffice-calc \
+    libreoffice-impress \
+    fonts-liberation \
+    fonts-dejavu-core \
+    curl \
+    ca-certificates \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
+
+# Final stage with Node.js
+FROM node:18-slim
+
+# Copy LibreOffice from the base stage
+COPY --from=libreoffice-base /usr/lib/libreoffice /usr/lib/libreoffice
+COPY --from=libreoffice-base /usr/bin/libreoffice* /usr/bin/
+COPY --from=libreoffice-base /usr/share/fonts /usr/share/fonts
+COPY --from=libreoffice-base /etc/fonts /etc/fonts
+
+# Install runtime dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    fontconfig \
+    libx11-6 \
+    libxinerama1 \
+    libgl1-mesa-glx \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy and install Node.js dependencies
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy application code
+COPY server-working.js ./server.js
+
+# Create non-root user and set permissions
+RUN groupadd -r appuser && \
+    useradd -r -g appuser appuser && \
+    mkdir -p /tmp/uploads /tmp/output && \
+    chown -R appuser:appuser /tmp/uploads /tmp/output /usr/src/app
+
+USER appuser
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+CMD ["node", "server.js"]

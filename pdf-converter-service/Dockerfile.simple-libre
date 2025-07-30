@@ -1,0 +1,41 @@
+# Simple LibreOffice PDF Converter Service
+FROM node:18-bookworm-slim
+
+# Install LibreOffice and essential dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libreoffice-writer-nogui \
+    libreoffice-java-common \
+    fonts-liberation \
+    curl \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy and install dependencies
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy application code
+COPY server-working.js ./server.js
+
+# Create directories and user with home directory for LibreOffice
+RUN groupadd -r appuser && \
+    useradd -r -g appuser appuser -m -d /home/appuser && \
+    mkdir -p /tmp/uploads /tmp/output /home/appuser/.config && \
+    chown -R appuser:appuser /tmp/uploads /tmp/output /usr/src/app /home/appuser
+
+USER appuser
+
+# Set LibreOffice user profile path
+ENV HOME=/home/appuser
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+CMD ["node", "server.js"]
