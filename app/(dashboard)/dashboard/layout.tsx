@@ -4,7 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { FileText, List, Settings, Shield, Activity, Menu, CogIcon, Eye, Download, ShoppingCart, Send, Loader2 } from 'lucide-react';
+import { FileText, List, Settings, Shield, Activity, Menu, CogIcon, Eye, Download, ShoppingCart, Send, Loader2, Play } from 'lucide-react';
+import { ProgressTrack } from '@/components/ProgressTrack';
 import useSWR from 'swr';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -153,11 +154,12 @@ export default function DashboardLayout({
   };
 
   const navItems = [
-    { href: '/dashboard', icon: FileText, label: 'Current Contract' },
-    { href: '/dashboard/contracts', icon: List, label: 'Other Contracts' },
-    { href: '/dashboard/general', icon: Settings, label: 'General' },
-    { href: '/dashboard/activity', icon: Activity, label: 'Activity' },
-    { href: '/dashboard/security', icon: Shield, label: 'Security' }
+    { href: '/dashboard/get-started', icon: Play, label: 'Get Started', section: 'main' },
+    { href: '/dashboard', icon: FileText, label: 'Current Contract', section: 'contracts' },
+    { href: '/dashboard/contracts', icon: List, label: 'Other Contracts', section: 'contracts' },
+    { href: '/dashboard/general', icon: Settings, label: 'General', section: 'settings' },
+    { href: '/dashboard/activity', icon: Activity, label: 'Activity', section: 'settings' },
+    { href: '/dashboard/security', icon: Shield, label: 'Security', section: 'settings' }
   ];
 
   // Contract action buttons (show on dashboard page and specific contract pages)
@@ -209,7 +211,7 @@ export default function DashboardLayout({
 
   // Add admin nav item if user is admin
   if (isAdmin) {
-    navItems.push({ href: '/dashboard/admin', icon: CogIcon, label: 'Admin' });
+    navItems.push({ href: '/dashboard/admin', icon: CogIcon, label: 'Admin', section: 'settings' });
   }
 
   return (
@@ -238,52 +240,118 @@ export default function DashboardLayout({
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          <nav className="h-full overflow-y-auto p-4">
-            {navItems.map((item) => (
-              <Link key={item.href} href={item.href} passHref>
-                <Button
-                  variant={pathname === item.href ? 'secondary' : 'ghost'}
-                  className={`shadow-none my-1 w-full justify-start ${
-                    pathname === item.href ? 'bg-gray-100' : ''
-                  }`}
-                  onClick={() => setIsSidebarOpen(false)}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Button>
-              </Link>
-            ))}
+          <nav className="h-full overflow-y-auto">
+            {/* Progress Track */}
+            <ProgressTrack 
+              contractId={specificContractId} 
+              contract={contract}
+              className="border-b border-gray-200"
+            />
             
-            {/* Contract Actions Section */}
-            {contractActions.length > 0 && (
-              <>
-                <div className="border-t border-gray-200 my-4"></div>
-                <div className="mb-2">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3">
-                    Contract Actions
-                  </h3>
+            <div className="p-4">
+              {/* Contract Actions Section - Now at the top */}
+              {contractActions.length > 0 && (
+                <>
+                  <div className="mb-4">
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 mb-2">
+                      Contract Actions
+                    </h3>
+                    <div className="space-y-1">
+                      {contractActions.map((action) => (
+                        <Button
+                          key={action.id}
+                          variant="ghost"
+                          className="shadow-none w-full justify-start text-left"
+                          onClick={() => {
+                            action.onClick();
+                            setIsSidebarOpen(false);
+                          }}
+                          disabled={action.disabled || loadingAction === action.id}
+                        >
+                          {loadingAction === action.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <action.icon className="h-4 w-4" />
+                          )}
+                          {action.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="border-t border-gray-200 my-4"></div>
+                </>
+              )}
+
+              {/* Main Navigation - Get Started */}
+              <div className="mb-4">
+                {navItems
+                  .filter(item => item.section === 'main')
+                  .map((item) => (
+                    <Link key={item.href} href={item.href} passHref>
+                      <Button
+                        variant={pathname === item.href ? 'secondary' : 'ghost'}
+                        className={`shadow-none my-1 w-full justify-start ${
+                          pathname === item.href ? 'bg-gray-100' : ''
+                        }`}
+                        onClick={() => setIsSidebarOpen(false)}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {item.label}
+                      </Button>
+                    </Link>
+                  ))}
+              </div>
+
+              {/* Contracts Section */}
+              <div className="mb-4">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 mb-2">
+                  Contracts
+                </h3>
+                <div className="space-y-1">
+                  {navItems
+                    .filter(item => item.section === 'contracts')
+                    .map((item) => (
+                      <Link key={item.href} href={item.href} passHref>
+                        <Button
+                          variant={pathname === item.href ? 'secondary' : 'ghost'}
+                          className={`shadow-none w-full justify-start ${
+                            pathname === item.href ? 'bg-gray-100' : ''
+                          }`}
+                          onClick={() => setIsSidebarOpen(false)}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          {item.label}
+                        </Button>
+                      </Link>
+                    ))}
                 </div>
-                {contractActions.map((action) => (
-                  <Button
-                    key={action.id}
-                    variant="ghost"
-                    className="shadow-none my-1 w-full justify-start text-left"
-                    onClick={() => {
-                      action.onClick();
-                      setIsSidebarOpen(false);
-                    }}
-                    disabled={action.disabled || loadingAction === action.id}
-                  >
-                    {loadingAction === action.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <action.icon className="h-4 w-4" />
-                    )}
-                    {action.label}
-                  </Button>
-                ))}
-              </>
-            )}
+              </div>
+
+              {/* Settings Section */}
+              <div className="mb-4">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 mb-2">
+                  Settings
+                </h3>
+                <div className="space-y-1">
+                  {navItems
+                    .filter(item => item.section === 'settings')
+                    .map((item) => (
+                      <Link key={item.href} href={item.href} passHref>
+                        <Button
+                          variant={pathname === item.href ? 'secondary' : 'ghost'}
+                          className={`shadow-none w-full justify-start ${
+                            pathname === item.href ? 'bg-gray-100' : ''
+                          }`}
+                          onClick={() => setIsSidebarOpen(false)}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          {item.label}
+                        </Button>
+                      </Link>
+                    ))}
+                </div>
+              </div>
+            </div>
           </nav>
         </aside>
 

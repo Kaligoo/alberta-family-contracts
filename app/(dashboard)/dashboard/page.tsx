@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, FileText, Users, DollarSign, Home, Save, ChevronDown, ChevronUp, Calculator } from 'lucide-react';
@@ -950,6 +951,7 @@ function ScheduleACard({ formData, updateFormData }: {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     userFullName: '',
     partnerFullName: '',
@@ -1158,6 +1160,21 @@ export default function DashboardPage() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
             <span className="ml-2 text-gray-600">Loading your contract...</span>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Redirect to get-started if no contract exists
+  if (contractData && !contractData.contract) {
+    router.push('/dashboard/get-started');
+    return (
+      <section className="flex-1 p-4 lg:p-8">
+        <div className="max-w-4xl">
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+            <span className="ml-2 text-gray-600">Redirecting to get started...</span>
           </div>
         </div>
       </section>

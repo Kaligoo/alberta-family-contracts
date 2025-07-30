@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",
+    "@radix-ui/react-tooltip": "^1.2.7",
     "@react-pdf/renderer": "^4.3.0",
     "@sparticuz/chromium": "^138.0.2",
     "@tailwindcss/postcss": "4.1.7",
