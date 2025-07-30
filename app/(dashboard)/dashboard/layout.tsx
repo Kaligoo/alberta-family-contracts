@@ -75,6 +75,33 @@ export default function DashboardLayout({
     }
   };
 
+  const handleDownloadPDFv2 = async () => {
+    if (!contract?.id) return;
+    setLoadingAction('pdf-v2');
+    try {
+      const response = await fetch(`/api/contracts/${contract.id}/pdf-v2`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `cohabitation-agreement-v2-${contract.id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        const errorText = await response.text();
+        console.error('PDF v2 download failed:', errorText);
+        // Could show user-friendly error message here
+      }
+    } catch (error) {
+      console.error('Error downloading PDF v2:', error);
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
   const handleDownloadWord = async () => {
     if (!contract?.id) return;
     setLoadingAction('word');
@@ -148,6 +175,13 @@ export default function DashboardLayout({
       label: 'Download PDF',
       icon: Download,
       onClick: handleDownloadPDF,
+      disabled: false
+    },
+    {
+      id: 'pdf-v2',
+      label: 'Download PDF v2',
+      icon: Download,
+      onClick: handleDownloadPDFv2,
       disabled: false
     },
     {
