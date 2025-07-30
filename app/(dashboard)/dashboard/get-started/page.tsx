@@ -73,7 +73,7 @@ export default function GetStartedPage() {
 
         if (response.ok) {
           const data = await response.json();
-          router.push(`/dashboard/contracts/${data.contract.id}`);
+          router.push(`/dashboard/edit-contract`);
         } else {
           console.error('Failed to create contract');
         }

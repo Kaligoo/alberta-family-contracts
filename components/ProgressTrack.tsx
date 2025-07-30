@@ -20,10 +20,10 @@ const steps = [
   },
   {
     id: 'edit',
-    title: 'Fill Details',
+    title: 'Fill out Details',
     description: 'Complete your information',
     icon: Edit,
-    paths: ['/dashboard', '/dashboard/contracts/'],
+    paths: ['/dashboard/edit-contract', '/dashboard/contracts/'],
     requiresContract: true
   },
   {

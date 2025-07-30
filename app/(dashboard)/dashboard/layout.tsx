@@ -154,16 +154,15 @@ export default function DashboardLayout({
   };
 
   const navItems = [
-    { href: '/dashboard/get-started', icon: Play, label: 'Get Started', section: 'main' },
-    { href: '/dashboard', icon: FileText, label: 'Current Contract', section: 'contracts' },
+    { href: '/dashboard/edit-contract', icon: FileText, label: 'Current Contract', section: 'contracts' },
     { href: '/dashboard/contracts', icon: List, label: 'Other Contracts', section: 'contracts' },
     { href: '/dashboard/general', icon: Settings, label: 'General', section: 'settings' },
     { href: '/dashboard/activity', icon: Activity, label: 'Activity', section: 'settings' },
     { href: '/dashboard/security', icon: Shield, label: 'Security', section: 'settings' }
   ];
 
-  // Contract action buttons (show on dashboard page and specific contract pages)
-  const shouldShowContractActions = (pathname === '/dashboard' || specificContractId) && contract;
+  // Contract action buttons (show on edit-contract page and specific contract pages)
+  const shouldShowContractActions = (pathname === '/dashboard/edit-contract' || specificContractId) && contract;
   const contractActions = shouldShowContractActions ? [
     {
       id: 'preview',
@@ -254,7 +253,7 @@ export default function DashboardLayout({
                 <>
                   <div className="mb-4">
                     <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 mb-2">
-                      Contract Actions
+                      For Testing Purposes Only
                     </h3>
                     <div className="space-y-1">
                       {contractActions.map((action) => (
@@ -282,25 +281,6 @@ export default function DashboardLayout({
                 </>
               )}
 
-              {/* Main Navigation - Get Started */}
-              <div className="mb-4">
-                {navItems
-                  .filter(item => item.section === 'main')
-                  .map((item) => (
-                    <Link key={item.href} href={item.href} passHref>
-                      <Button
-                        variant={pathname === item.href ? 'secondary' : 'ghost'}
-                        className={`shadow-none my-1 w-full justify-start ${
-                          pathname === item.href ? 'bg-gray-100' : ''
-                        }`}
-                        onClick={() => setIsSidebarOpen(false)}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        {item.label}
-                      </Button>
-                    </Link>
-                  ))}
-              </div>
 
               {/* Contracts Section */}
               <div className="mb-4">
