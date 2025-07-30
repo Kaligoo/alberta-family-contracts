@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser, getUserWithTeam } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
-import { familyContracts } from '@/lib/db/schema';
+import { familyContracts, templates } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
+import { generateResidenceContent } from '@/lib/content/residence-content';
+
+const PizZip = require('pizzip');
+const Docxtemplater = require('docxtemplater');
 
 export async function GET(
   request: NextRequest,
@@ -40,7 +44,7 @@ export async function GET(
       return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
     }
 
-    // Generate PDF using Gotenberg
+    // Generate PDF using Gotenberg (Word-to-PDF conversion)
     const pdfBytes = await generateContractPDFWithGotenberg(contract, user);
     
     return new NextResponse(pdfBytes, {
@@ -61,18 +65,42 @@ export async function GET(
 
 async function generateContractPDFWithGotenberg(contract: any, user: any): Promise<Uint8Array> {
   try {
-    console.log('Starting PDF v2 generation using Gotenberg...');
+    console.log('Starting PDF v2 generation using Gotenberg Word-to-PDF conversion...');
     
-    // Prepare template data
+    // Get active template from database
+    const activeTemplate = await db
+      .select()
+      .from(templates)
+      .where(eq(templates.isActive, 'true'))
+      .limit(1);
+
+    if (activeTemplate.length === 0) {
+      throw new Error('No active template found for PDF v2 generation');
+    }
+
+    const template = activeTemplate[0];
     const templateData = prepareTemplateData(contract, user);
     
-    // Create enhanced HTML for Gotenberg conversion
-    const html = generateEnhancedHTML(templateData, contract);
+    // Generate filled Word document (same as PDF v1)
+    const templateBuffer = Buffer.from(template.content, 'base64');
+    const zip = new PizZip(templateBuffer);
     
-    // Convert HTML to PDF using Gotenberg
-    const pdfBuffer = await convertWithGotenberg(html);
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+      delimiters: {
+        start: '{',
+        end: '}'
+      }
+    });
+
+    doc.render(templateData);
+    const filledDocxBuffer = doc.getZip().generate({ type: 'nodebuffer' });
     
-    console.log('Successfully generated PDF v2 using Gotenberg');
+    // Convert Word document to PDF using Gotenberg
+    const pdfBuffer = await convertWordToPDFWithGotenberg(filledDocxBuffer);
+    
+    console.log('Successfully generated PDF v2 using Gotenberg Word-to-PDF conversion');
     return new Uint8Array(pdfBuffer);
     
   } catch (error) {
@@ -81,47 +109,36 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
   }
 }
 
-async function convertWithGotenberg(html: string): Promise<Buffer> {
+async function convertWordToPDFWithGotenberg(docxBuffer: Buffer): Promise<Buffer> {
   // Default to localhost for development, but allow override via environment variable
   const GOTENBERG_URL = process.env.GOTENBERG_URL || 'http://localhost:3000';
   
   try {
-    // Create form data for Gotenberg
+    console.log('Converting Word document to PDF using Gotenberg LibreOffice conversion...');
+    
+    // Create form data for Gotenberg LibreOffice conversion
     const formData = new FormData();
     
-    // Add the main HTML file
-    const htmlBlob = new Blob([html], { type: 'text/html' });
-    formData.append('files', htmlBlob, 'index.html');
+    // Add the Word document file
+    const docxBlob = new Blob([docxBuffer], { 
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+    });
+    formData.append('files', docxBlob, 'contract.docx');
     
-    // Optional: Add CSS for better styling (can be enhanced later)
-    const css = `
-      @page {
-        size: A4;
-        margin: 1in;
-      }
-      body {
-        font-family: 'Times New Roman', Times, serif;
-        font-size: 12pt;
-        line-height: 1.6;
-        color: #000;
-      }
-    `;
-    const cssBlob = new Blob([css], { type: 'text/css' });
-    formData.append('files', cssBlob, 'style.css');
-    
-    // Send request to Gotenberg
-    const response = await fetch(`${GOTENBERG_URL}/forms/chromium/convert/html`, {
+    // Send request to Gotenberg LibreOffice conversion endpoint
+    const response = await fetch(`${GOTENBERG_URL}/forms/libreoffice/convert`, {
       method: 'POST',
       body: formData
     });
     
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Gotenberg returned ${response.status}: ${errorText}`);
+      throw new Error(`Gotenberg LibreOffice conversion returned ${response.status}: ${errorText}`);
     }
     
     // Get PDF buffer
     const arrayBuffer = await response.arrayBuffer();
+    console.log('Successfully converted Word document to PDF using Gotenberg');
     return Buffer.from(arrayBuffer);
     
   } catch (error) {
@@ -133,339 +150,6 @@ async function convertWithGotenberg(html: string): Promise<Buffer> {
   }
 }
 
-function generateEnhancedHTML(templateData: any, contract: any): string {
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="utf-8">
-      <title>Alberta Cohabitation Agreement</title>
-      <link rel="stylesheet" href="style.css">
-      <style>
-        @page {
-          size: A4;
-          margin: 0.75in;
-        }
-        body {
-          font-family: 'Times New Roman', Times, serif;
-          font-size: 11pt;
-          line-height: 1.5;
-          color: #000;
-          margin: 0;
-          padding: 0;
-        }
-        .header {
-          text-align: center;
-          margin-bottom: 40px;
-          border-bottom: 2px solid #000;
-          padding-bottom: 20px;
-        }
-        .header h1 {
-          font-size: 18pt;
-          font-weight: bold;
-          margin: 0;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-        }
-        .parties {
-          text-align: center;
-          margin-bottom: 30px;
-          font-size: 12pt;
-        }
-        .parties p {
-          margin: 8px 0;
-        }
-        .section {
-          margin-bottom: 25px;
-          page-break-inside: avoid;
-        }
-        .section-title {
-          font-size: 14pt;
-          font-weight: bold;
-          margin-bottom: 15px;
-          text-transform: uppercase;
-          border-bottom: 1px solid #333;
-          padding-bottom: 5px;
-        }
-        .subsection {
-          margin-bottom: 15px;
-        }
-        .subsection-title {
-          font-weight: bold;
-          margin-bottom: 8px;
-        }
-        .clause {
-          margin-bottom: 12px;
-          text-align: justify;
-        }
-        .signature-section {
-          margin-top: 50px;
-          page-break-inside: avoid;
-        }
-        .signature-line {
-          border-bottom: 1px solid #000;
-          display: inline-block;
-          width: 300px;
-          height: 20px;
-          margin: 20px 0 5px 0;
-        }
-        .date-line {
-          border-bottom: 1px solid #000;
-          display: inline-block;
-          width: 150px;
-          height: 20px;
-          margin: 10px 0 5px 0;
-        }
-        .footer {
-          margin-top: 40px;
-          padding-top: 20px;
-          border-top: 1px solid #666;
-          font-size: 9pt;
-          color: #666;
-        }
-        .legal-notice {
-          background: #f5f5f5;
-          padding: 15px;
-          border: 1px solid #ccc;
-          margin: 20px 0;
-          font-size: 10pt;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin: 15px 0;
-        }
-        td, th {
-          padding: 8px;
-          border: 1px solid #333;
-          text-align: left;
-        }
-        th {
-          background: #f0f0f0;
-          font-weight: bold;
-        }
-        .financial-table td:last-child {
-          text-align: right;
-        }
-        ul {
-          margin: 10px 0;
-          padding-left: 25px;
-        }
-        li {
-          margin-bottom: 5px;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h1>Alberta Cohabitation Agreement</h1>
-      </div>
-      
-      <div class="parties">
-        <p><strong>${templateData.userFullName}</strong></p>
-        <p>(hereinafter referred to as "${templateData.userFirstName}")</p>
-        <p style="margin: 20px 0; font-size: 14pt;">- and -</p>
-        <p><strong>${templateData.partnerFullName}</strong></p>
-        <p>(hereinafter referred to as "${templateData.partnerFirstName}")</p>
-      </div>
-
-      <div class="section">
-        <div class="section-title">Agreement Details</div>
-        <div class="clause">
-          <strong>Effective Date:</strong> ${templateData.currentDate}
-        </div>
-        ${contract.cohabDate ? `
-        <div class="clause">
-          <strong>Cohabitation Start Date:</strong> ${templateData.cohabDate}
-        </div>
-        ` : ''}
-        ${contract.residenceAddress ? `
-        <div class="clause">
-          <strong>Residence Address:</strong> ${contract.residenceAddress}
-        </div>
-        ` : ''}
-      </div>
-
-      <div class="section">
-        <div class="section-title">Parties Information</div>
-        <table>
-          <tr>
-            <th>Detail</th>
-            <th>${templateData.userFirstName}</th>
-            <th>${templateData.partnerFirstName}</th>
-          </tr>
-          ${(contract.userAge || contract.partnerAge) ? `
-          <tr>
-            <td>Age</td>
-            <td>${contract.userAge || 'Not specified'}</td>
-            <td>${contract.partnerAge || 'Not specified'}</td>
-          </tr>
-          ` : ''}
-          ${(contract.userJobTitle || contract.partnerJobTitle) ? `
-          <tr>
-            <td>Occupation</td>
-            <td>${contract.userJobTitle || 'Not specified'}</td>
-            <td>${contract.partnerJobTitle || 'Not specified'}</td>
-          </tr>
-          ` : ''}
-          ${(contract.userIncome || contract.partnerIncome) ? `
-          <tr>
-            <td>Annual Income</td>
-            <td>${templateData.userIncome}</td>
-            <td>${templateData.partnerIncome}</td>
-          </tr>
-          ` : ''}
-          ${(contract.userEmail || contract.partnerEmail) ? `
-          <tr>
-            <td>Email</td>
-            <td>${contract.userEmail || 'Not provided'}</td>
-            <td>${contract.partnerEmail || 'Not provided'}</td>
-          </tr>
-          ` : ''}
-          ${(contract.userPhone || contract.partnerPhone) ? `
-          <tr>
-            <td>Phone</td>
-            <td>${contract.userPhone || 'Not provided'}</td>
-            <td>${contract.partnerPhone || 'Not provided'}</td>
-          </tr>
-          ` : ''}
-          ${(contract.userAddress || contract.partnerAddress) ? `
-          <tr>
-            <td>Address</td>
-            <td>${contract.userAddress || 'Not provided'}</td>
-            <td>${contract.partnerAddress || 'Not provided'}</td>
-          </tr>
-          ` : ''}
-        </table>
-      </div>
-
-      ${(contract.children && contract.children.length > 0) ? `
-      <div class="section">
-        <div class="section-title">Children</div>
-        <div class="clause">
-          The parties have ${contract.children.length} child${contract.children.length > 1 ? 'ren' : ''} of the relationship:
-        </div>
-        <ul>
-          ${contract.children.map((child: any, index: number) => {
-            let childInfo = `<li><strong>${child.name}</strong>`;
-            if (child.birthdate) {
-              const birthDate = new Date(child.birthdate);
-              const birthYear = birthDate.getFullYear();
-              const birthMonth = birthDate.toLocaleDateString('en-US', { month: 'long' });
-              const birthDay = birthDate.getDate();
-              childInfo += ` (born ${birthMonth} ${birthDay}, ${birthYear})`;
-            }
-            if (child.relationship && child.relationship !== 'biological') {
-              childInfo += ` - ${child.relationship} child`;
-            }
-            if (child.parentage && child.parentage !== 'both') {
-              childInfo += ` - ${child.parentage === 'user' ? templateData.userFirstName : templateData.partnerFirstName}'s child`;
-            }
-            childInfo += `</li>`;
-            return childInfo;
-          }).join('')}
-        </ul>
-      </div>
-      ` : `
-      <div class="section">
-        <div class="section-title">Children</div>
-        <div class="clause">
-          There are no children of the relationship as of the Effective Date of this Agreement. 
-          The parties may or may not have children together in the future, either biological or adopted.
-        </div>
-      </div>
-      `}
-
-      ${contract.residenceOwnership ? `
-      <div class="section">
-        <div class="section-title">Residence</div>
-        <div class="clause">
-          <strong>Property Ownership:</strong> ${contract.residenceOwnership.charAt(0).toUpperCase() + contract.residenceOwnership.slice(1)}
-        </div>
-        ${contract.expenseSplitType ? `
-        <div class="clause">
-          <strong>Expense Arrangement:</strong> ${
-            contract.expenseSplitType === 'equal' ? 'Equal split (50/50)' :
-            contract.expenseSplitType === 'proportional' ? 'Proportional to income' :
-            'Custom arrangement'
-          }
-        </div>
-        ` : ''}
-      </div>
-      ` : ''}
-
-      ${contract.additionalClauses ? `
-      <div class="section">
-        <div class="section-title">Additional Terms</div>
-        <div class="clause">
-          ${contract.additionalClauses.replace(/\n/g, '<br>')}
-        </div>
-      </div>
-      ` : ''}
-
-      <div class="legal-notice">
-        <p><strong>IMPORTANT LEGAL NOTICE</strong></p>
-        <p>
-          This document is a draft cohabitation agreement generated for informational purposes only. 
-          Both parties should seek independent legal advice before signing this agreement. 
-          This document should be reviewed by qualified legal counsel to ensure it meets your specific needs 
-          and complies with current Alberta law.
-        </p>
-      </div>
-
-      <div class="signature-section">
-        <div class="section-title">Execution</div>
-        
-        <table style="margin-top: 40px;">
-          <tr>
-            <td style="width: 50%; border: none; padding: 20px;">
-              <div>
-                <div class="signature-line"></div>
-                <p><strong>${templateData.userFullName}</strong></p>
-                <p>(${templateData.userFirstName})</p>
-                <br>
-                <div class="date-line"></div>
-                <p>Date</p>
-              </div>
-            </td>
-            <td style="width: 50%; border: none; padding: 20px;">
-              <div>
-                <div class="signature-line"></div>
-                <p><strong>${templateData.partnerFullName}</strong></p>
-                <p>(${templateData.partnerFirstName})</p>
-                <br>
-                <div class="date-line"></div>
-                <p>Date</p>
-              </div>
-            </td>
-          </tr>
-        </table>
-      </div>
-
-      ${contract.notes ? `
-      <div class="section">
-        <div class="section-title">Personal Notes</div>
-        <div class="clause">
-          ${contract.notes.replace(/\n/g, '<br>')}
-        </div>
-      </div>
-      ` : ''}
-
-      <div class="footer">
-        <p><strong>Document Information</strong></p>
-        <p>Generated by: Alberta Family Contracts</p>
-        <p>Generated on: ${templateData.currentDate}</p>
-        <p>Contract ID: #${contract.id}</p>
-        <p>Version: Gotenberg PDF v2</p>
-        <p>
-          <em>This document was generated using Gotenberg PDF conversion technology. 
-          For questions or support, please contact Alberta Family Contracts.</em>
-        </p>
-      </div>
-    </body>
-    </html>
-  `;
-}
 
 function prepareTemplateData(contract: any, user: any) {
   const currentDate = new Date().toLocaleDateString('en-US', { 
@@ -507,6 +191,16 @@ function prepareTemplateData(contract: any, user: any) {
     userAddress: contract.userAddress || '[Your Address]',
     partnerAddress: contract.partnerAddress || '[Partner Address]',
     
+    // Pronouns
+    userPronouns: contract.userPronouns || '[Your Pronouns]',
+    partnerPronouns: contract.partnerPronouns || '[Partner Pronouns]',
+    
+    // Residence
+    residenceAddress: contract.residenceAddress || '[Residence Address]',
+    
+    // Dynamic residence content based on ownership type
+    ...generateResidenceContent(contract),
+    
     // Dates
     currentDate: currentDate,
     contractDate: currentDate,
@@ -515,9 +209,66 @@ function prepareTemplateData(contract: any, user: any) {
       month: 'long', 
       day: 'numeric' 
     }) : currentDate,
+    proposedMarriageDate: contract.proposedMarriageDate ? new Date(contract.proposedMarriageDate).toLocaleDateString('en-US', {
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }) : '',
     
-    // Ages
+    // Ages - using correct field names
     userAge: contract.user_age || contract.userAge || '[Your Age]',
-    partnerAge: contract.partner_age || contract.partnerAge || '[Partner Age]',
+    partnerAge: contract.partner_age || contract.partnerAge || '[Partner Age]', 
+    
+    // Legal counsel
+    userLawyer: contract.userLawyer || '[Your Legal Counsel]',
+    partnerLawyer: contract.partnerLawyer || '[Partner Legal Counsel]',
+    
+    // Location
+    province: 'Alberta',
+    country: 'Canada',
+    
+    // Children information
+    hasChildren: contract.children && contract.children.length > 0,
+    childrenCount: contract.children ? contract.children.length : 0,
+    childrenList: contract.children || [],
+    childrenStatus: (contract.children && contract.children.length > 0) ? 
+      `The parties have ${contract.children.length} child${contract.children.length > 1 ? 'ren' : ''} of the relationship: ${contract.children.map((child: any) => {
+        const childInfo = child.name;
+        if (child.birthdate) {
+          const birthDate = new Date(child.birthdate);
+          const birthYear = birthDate.getFullYear();
+          const birthMonth = birthDate.toLocaleDateString('en-US', { month: 'long' });
+          const birthDay = birthDate.getDate();
+          return `${childInfo} (born ${birthMonth} ${birthDay}, ${birthYear})`;
+        }
+        return childInfo;
+      }).join(', ')}.` : 
+      'There are no children of the relationship as of the Effective Date of this Agreement. The parties may or may not have children together in the future, either biological or adopted.',
+    
+    // Additional clauses
+    additionalClauses: contract.additionalClauses || '',
+    notes: contract.notes || '',
+    
+    // Schedule A data - format for display
+    scheduleIncomeEmployment: contract.scheduleIncomeEmployment ? `$${parseFloat(contract.scheduleIncomeEmployment).toLocaleString()} CAD` : '',
+    scheduleIncomeEI: contract.scheduleIncomeEI ? `$${parseFloat(contract.scheduleIncomeEI).toLocaleString()} CAD` : '',
+    scheduleIncomeWorkersComp: contract.scheduleIncomeWorkersComp ? `$${parseFloat(contract.scheduleIncomeWorkersComp).toLocaleString()} CAD` : '',
+    scheduleIncomeInvestment: contract.scheduleIncomeInvestment ? `$${parseFloat(contract.scheduleIncomeInvestment).toLocaleString()} CAD` : '',
+    scheduleIncomePension: contract.scheduleIncomePension ? `$${parseFloat(contract.scheduleIncomePension).toLocaleString()} CAD` : '',
+    scheduleIncomeGovernmentAssistance: contract.scheduleIncomeGovernmentAssistance ? `$${parseFloat(contract.scheduleIncomeGovernmentAssistance).toLocaleString()} CAD` : '',
+    scheduleIncomeSelfEmployment: contract.scheduleIncomeSelfEmployment ? `$${parseFloat(contract.scheduleIncomeSelfEmployment).toLocaleString()} CAD` : '',
+    scheduleIncomeOther: contract.scheduleIncomeOther ? `$${parseFloat(contract.scheduleIncomeOther).toLocaleString()} CAD` : '',
+    scheduleIncomeTotalTaxReturn: contract.scheduleIncomeTotalTaxReturn ? `$${parseFloat(contract.scheduleIncomeTotalTaxReturn).toLocaleString()} CAD` : '',
+    
+    // Schedule A assets and debts (these will be arrays, can be processed in template)
+    scheduleAssetsRealEstate: contract.scheduleAssetsRealEstate || [],
+    scheduleAssetsVehicles: contract.scheduleAssetsVehicles || [],
+    scheduleAssetsFinancial: contract.scheduleAssetsFinancial || [],
+    scheduleAssetsPensions: contract.scheduleAssetsPensions || [],
+    scheduleAssetsBusiness: contract.scheduleAssetsBusiness || [],
+    scheduleAssetsOther: contract.scheduleAssetsOther || [],
+    scheduleDebtsSecured: contract.scheduleDebtsSecured || [],
+    scheduleDebtsUnsecured: contract.scheduleDebtsUnsecured || [],
+    scheduleDebtsOther: contract.scheduleDebtsOther || [],
   };
 }

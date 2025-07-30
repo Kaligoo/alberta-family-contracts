@@ -6,6 +6,16 @@ This document explains how to set up and test the new Gotenberg-based PDF genera
 
 Gotenberg is a Docker-powered API for converting HTML, Markdown, Word documents, and other formats into PDF files. It provides high-quality PDF generation with excellent performance and reliability.
 
+## How PDF v2 Works
+
+The PDF v2 system uses Gotenberg for Word-to-PDF conversion:
+
+1. **Same Word Document Generation**: Uses identical Word template and data as PDF v1
+2. **Gotenberg Conversion**: Sends the Word document to Gotenberg's LibreOffice conversion endpoint
+3. **PDF Output**: Returns the converted PDF with potentially faster processing
+
+This allows direct comparison between your current LibreOffice microservice and Gotenberg's LibreOffice conversion.
+
 ## Setup Instructions
 
 ### 1. Start Gotenberg Service
@@ -41,33 +51,34 @@ GOTENBERG_URL=http://localhost:3000
 2. Navigate to your dashboard at `http://localhost:3003/dashboard`
 
 3. In the left sidebar under "Contract Actions", you'll now see:
-   - **Download PDF** (LibreOffice-based, existing)
-   - **Download PDF v2** (Gotenberg-based, new)
+   - **Download PDF** (Your current LibreOffice microservice)
+   - **Download PDF v2** (Gotenberg LibreOffice conversion)
 
 ## Testing Comparison
 
 To compare the two PDF generation methods:
 
 1. **Speed Test**: Try downloading both versions and compare generation time
-2. **Quality Test**: Compare the visual quality and formatting of both PDFs
+2. **Quality Test**: Compare the visual quality and formatting of both PDFs (should be identical since both use LibreOffice)
 3. **Reliability Test**: Test with various contract configurations
 
 ## Key Differences
 
-| Feature | PDF v1 (LibreOffice) | PDF v2 (Gotenberg) |
-|---------|---------------------|-------------------|
-| Technology | LibreOffice + Word templates | HTML to PDF via Chromium |
-| Speed | ~10 seconds | Expected: 2-5 seconds |
-| Styling | Word template based | Modern CSS/HTML based |
-| Customization | Template modification | Direct HTML/CSS control |
-| Dependencies | LibreOffice service | Gotenberg Docker container |
+| Feature | PDF v1 (Current) | PDF v2 (Gotenberg) |
+|---------|------------------|-------------------|
+| **Word Generation** | ✅ Same template system | ✅ Same template system |
+| **LibreOffice Conversion** | Your microservice | Gotenberg's LibreOffice |
+| **Speed** | ~10 seconds | Expected: 2-5 seconds |
+| **Quality** | LibreOffice output | LibreOffice output (same) |
+| **Reliability** | Google Cloud Run service | Local Gotenberg container |
+| **Dependencies** | Custom microservice | Gotenberg Docker container |
 
 ## Gotenberg Features Used
 
-- **HTML to PDF conversion** using Chromium engine
-- **CSS styling** with advanced layout support
-- **Custom fonts and styling** 
-- **Professional document formatting**
+- **LibreOffice Word-to-PDF conversion** using `/forms/libreoffice/convert` endpoint
+- **Same document quality** as your current system
+- **Local processing** (no network calls to Google Cloud Run)  
+- **Potentially faster conversion** due to local processing
 
 ## Troubleshooting
 
