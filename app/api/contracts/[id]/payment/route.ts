@@ -58,17 +58,17 @@ export async function POST(
           price_data: {
             currency: 'cad',
             product_data: {
-              name: 'Alberta Cohabitation Agreement',
+              name: 'Agreeable.ca Cohabitation Agreement',
               description: `Professional cohabitation agreement for ${contract.userFullName || user.name || 'Customer'}`,
             },
-            unit_amount: 70000 // $700.00 CAD in cents
+            unit_amount: 73500 // $735.00 CAD in cents (includes 5% GST)
           },
           quantity: 1
         }
       ],
       mode: 'payment',
-      success_url: `${process.env.BASE_URL || 'https://www.albertafamilycontracts.com'}/purchase/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.BASE_URL || 'https://www.albertafamilycontracts.com'}/dashboard/contracts/${contractId}/preview`,
+      success_url: `${process.env.BASE_URL || 'https://www.agreeable.ca'}/purchase/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.BASE_URL || 'https://www.agreeable.ca'}/dashboard/contracts/${contractId}/preview`,
       customer_email: user.email,
       client_reference_id: contractId.toString(),
       metadata: {

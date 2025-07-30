@@ -12,7 +12,7 @@ export default function TermsPage() {
                 Terms and Conditions
               </h1>
               <p className="text-lg text-gray-600">
-                Alberta Family Contracts Service Agreement
+                Agreeable.ca Service Agreement
               </p>
               <p className="text-sm text-gray-500 mt-2">
                 Last updated: {new Date().toLocaleDateString()}
@@ -22,13 +22,13 @@ export default function TermsPage() {
             <div className="prose max-w-none">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">1. Acceptance of Terms</h2>
               <p className="text-gray-600 mb-6">
-                By accessing and using the Alberta Family Contracts service, you accept and agree to be bound by the terms 
+                By accessing and using the Agreeable.ca service, you accept and agree to be bound by the terms 
                 and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
               </p>
 
               <h2 className="text-xl font-semibold text-gray-900 mb-4">2. Service Description</h2>
               <p className="text-gray-600 mb-4">
-                Alberta Family Contracts provides an online platform for creating cohabitation agreements and family contracts. 
+                Agreeable.ca provides an online platform for creating cohabitation agreements and family contracts. 
                 Our service includes:
               </p>
               <ul className="list-disc list-inside text-gray-600 mb-6 space-y-1">
@@ -91,7 +91,7 @@ export default function TermsPage() {
 
               <h2 className="text-xl font-semibold text-gray-900 mb-4">7. Limitation of Liability</h2>
               <p className="text-gray-600 mb-6">
-                To the maximum extent permitted by law, Alberta Family Contracts and its operators shall not be liable for any 
+                To the maximum extent permitted by law, Agreeable.ca and its operators shall not be liable for any 
                 direct, indirect, incidental, special, consequential, or punitive damages arising from your use of this service, 
                 including but not limited to damages for loss of profits, goodwill, use, data, or other intangible losses, 
                 even if we have been advised of the possibility of such damages.
@@ -107,7 +107,7 @@ export default function TermsPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">9. Intellectual Property</h2>
               <p className="text-gray-600 mb-6">
                 All content, templates, software, and materials provided through this service are owned by or licensed to 
-                Alberta Family Contracts. Users receive a limited license to use the service and download generated documents 
+                Agreeable.ca. Users receive a limited license to use the service and download generated documents 
                 for their personal use only. Commercial use or redistribution is prohibited without explicit written permission.
               </p>
 

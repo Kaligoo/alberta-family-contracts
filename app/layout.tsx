@@ -5,7 +5,7 @@ import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
 
 export const metadata: Metadata = {
-  title: 'Alberta Family Contracts',
+  title: 'Agreeable.ca - Professional Family Agreements',
   description: 'Professional cohabitation agreements and family contracts. Protect your relationship with legally sound documents.'
 };
 

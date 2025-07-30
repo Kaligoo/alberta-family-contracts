@@ -51,7 +51,9 @@
       "Bash(cmd.exe /c 'gcloud builds log 5fa359bb-eca4-48f5-9fb7-e051d41aca35')",
       "Bash(grep:*)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:gotenberg.dev)"
+      "WebFetch(domain:gotenberg.dev)",
+      "WebFetch(domain:www.lawdepot.com)",
+      "WebFetch(domain:www.legalzoom.com)"
     ],
     "deny": []
   }

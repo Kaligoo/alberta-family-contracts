@@ -1,4 +1,4 @@
-# Project: Alberta Family Contracts
+# Project: Agreeable.ca
 
 ## Development Commands
 - Build: `npm run build`
