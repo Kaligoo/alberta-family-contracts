@@ -1189,7 +1189,7 @@ export default function DashboardPage() {
           <p className="text-gray-600">
             Let's gather some basic information to create your personalized family contract.
           </p>
-          {contractData?.contract && !isContractPaid && (
+          {contractData?.contract && !isContractPaid && (contractData.contract.userFullName || contractData.contract.partnerFullName || contractData.contract.userEmail) && (
             <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-700 flex items-center">
                 <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
