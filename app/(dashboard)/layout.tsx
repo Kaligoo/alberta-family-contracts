@@ -65,6 +65,23 @@ function UserMenu() {
             <span>Contract</span>
           </Link>
         </DropdownMenuItem>
+        <div className="md:hidden">
+          <DropdownMenuItem className="cursor-pointer">
+            <Link href="/about" className="flex w-full items-center">
+              <span>About</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer">
+            <Link href="/faq" className="flex w-full items-center">
+              <span>FAQ</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer">
+            <Link href="/contact" className="flex w-full items-center">
+              <span>Contact</span>
+            </Link>
+          </DropdownMenuItem>
+        </div>
         <form action={handleSignOut} className="w-full">
           <button type="submit" className="flex w-full">
             <DropdownMenuItem className="w-full flex-1 cursor-pointer">
@@ -86,7 +103,27 @@ function Header() {
           <Scale className="h-6 w-6 text-orange-500" />
           <span className="ml-2 text-xl font-semibold text-gray-900">Alberta Family Contracts</span>
         </Link>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-6">
+          <div className="hidden md:flex items-center space-x-4">
+            <Link
+              href="/about"
+              className="text-gray-600 hover:text-orange-500 px-3 py-2 text-sm font-medium transition-colors"
+            >
+              About
+            </Link>
+            <Link
+              href="/faq"
+              className="text-gray-600 hover:text-orange-500 px-3 py-2 text-sm font-medium transition-colors"
+            >
+              FAQ
+            </Link>
+            <Link
+              href="/contact"
+              className="text-gray-600 hover:text-orange-500 px-3 py-2 text-sm font-medium transition-colors"
+            >
+              Contact
+            </Link>
+          </div>
           <Suspense fallback={<div className="h-9" />}>
             <UserMenu />
           </Suspense>
