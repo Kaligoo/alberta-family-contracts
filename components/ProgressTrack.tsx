@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Check, Circle, Eye, Edit, ShoppingCart, Download, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -16,7 +16,8 @@ const steps = [
     title: 'Choose Agreement',
     description: 'Select agreement type',
     icon: Circle,
-    paths: ['/dashboard/get-started']
+    paths: ['/dashboard/get-started'],
+    linkTo: '/dashboard/get-started'
   },
   {
     id: 'edit',
@@ -24,7 +25,8 @@ const steps = [
     description: 'Complete your information',
     icon: Edit,
     paths: ['/dashboard/edit-contract', '/dashboard/contracts/'],
-    requiresContract: true
+    requiresContract: true,
+    linkTo: '/dashboard/edit-contract'
   },
   {
     id: 'preview',
@@ -33,7 +35,8 @@ const steps = [
     icon: Eye,
     paths: ['/dashboard/contracts/*/preview'],
     requiresContract: true,
-    requiresData: true
+    requiresData: true,
+    linkTo: null // Will be dynamic based on contract ID
   },
   {
     id: 'purchase',
@@ -42,7 +45,8 @@ const steps = [
     icon: ShoppingCart,
     paths: [],
     requiresContract: true,
-    requiresData: true
+    requiresData: true,
+    linkTo: null // Will be dynamic based on contract ID
   },
   {
     id: 'download',
@@ -51,7 +55,8 @@ const steps = [
     icon: Download,
     paths: ['/dashboard/contracts/*/download'],
     requiresContract: true,
-    requiresPurchase: true
+    requiresPurchase: true,
+    linkTo: null // Will be dynamic based on contract ID
   },
   {
     id: 'send-lawyer',
@@ -60,15 +65,24 @@ const steps = [
     icon: Send,
     paths: ['/dashboard/send-to-lawyer'],
     requiresContract: true,
-    requiresPurchase: true
+    requiresPurchase: true,
+    linkTo: '/dashboard/send-to-lawyer'
   }
 ];
 
 export function ProgressTrack({ contractId, contract, className }: ProgressTrackProps) {
   const pathname = usePathname();
+  const router = useRouter();
 
   const getCurrentStep = () => {
-    // Check which step matches current path
+    // Specific path-based detection (more reliable)
+    if (pathname === '/dashboard/get-started') return 0;
+    if (pathname === '/dashboard/edit-contract') return 1;
+    if (pathname.includes('/preview')) return 2;
+    if (pathname.includes('/download')) return 4;
+    if (pathname === '/dashboard/send-to-lawyer') return 5;
+    
+    // Check contract-specific routes with wildcard patterns
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i];
       const isMatch = step.paths.some(path => {
@@ -76,7 +90,7 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
           const regex = new RegExp(path.replace('*', '\\d+'));
           return regex.test(pathname);
         }
-        return pathname === path || pathname.startsWith(path);
+        return pathname === path;
       });
       
       if (isMatch) {
@@ -84,11 +98,10 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
       }
     }
     
-    // Default logic based on what exists
-    if (!contractId) return 0; // Get Started
-    if (!contract?.userFullName || !contract?.partnerFullName) return 1; // Edit
-    if (pathname.includes('/preview')) return 2; // Preview
-    return 1; // Default to edit
+    // Default logic based on contract state
+    if (!contractId && !contract) return 0; // Get Started
+    if (contractId || contract) return 1; // Edit - has contract
+    return 0;
   };
 
   const currentStepIndex = getCurrentStep();
@@ -97,7 +110,7 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
     const step = steps[index];
     
     // Check if step requirements are met
-    if (step.requiresContract && !contractId) return 'disabled';
+    if (step.requiresContract && !contractId && !contract) return 'disabled';
     if (step.requiresData && (!contract?.userFullName || !contract?.partnerFullName)) return 'disabled';
     if (step.requiresPurchase && !contract?.isPaid) return 'disabled';
     
@@ -106,6 +119,31 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
     if (index === currentStepIndex) return 'current';
     if (index === currentStepIndex + 1) return 'next';
     return 'upcoming';
+  };
+
+  const handleStepClick = (step: typeof steps[0], index: number, status: string) => {
+    if (status === 'disabled') return;
+    
+    let targetUrl = step.linkTo;
+    
+    // Handle dynamic URLs that depend on contract ID
+    if (!targetUrl && contractId) {
+      switch (step.id) {
+        case 'preview':
+          targetUrl = `/dashboard/contracts/${contractId}/preview`;
+          break;
+        case 'purchase':
+          targetUrl = `/dashboard/contracts/${contractId}/preview#purchase`;
+          break;
+        case 'download':
+          targetUrl = `/dashboard/contracts/${contractId}/download`;
+          break;
+      }
+    }
+    
+    if (targetUrl) {
+      router.push(targetUrl);
+    }
   };
 
   return (
@@ -162,7 +200,16 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
               </div>
               
               {/* Step content */}
-              <div className="flex-1 min-w-0 pb-4">
+              <div 
+                className={cn(
+                  "flex-1 min-w-0 pb-4 transition-colors",
+                  {
+                    'cursor-pointer hover:bg-gray-50 rounded-md p-2 -m-2': status !== 'disabled',
+                    'cursor-not-allowed': status === 'disabled'
+                  }
+                )}
+                onClick={() => handleStepClick(step, index, status)}
+              >
                 <div
                   className={cn(
                     "text-sm font-medium transition-colors",
