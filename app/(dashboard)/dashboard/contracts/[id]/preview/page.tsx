@@ -395,6 +395,7 @@ export default function ContractPreviewPage() {
           
           {/* Additional Options */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <PdfPreviewButton contractId={contractId} />
             <ProfessionalDocumentButton contractId={contractId} />
             <Link href={`/dashboard/contracts/${contractId}`}>
               <Button variant="outline">
@@ -478,6 +479,68 @@ function ProfessionalDocumentButton({ contractId }: { contractId: string }) {
           <>
             <FileText className="mr-2 h-4 w-4" />
             Download Professional Document
+          </>
+        )}
+      </Button>
+      {error && (
+        <p className="text-red-600 text-sm text-center">{error}</p>
+      )}
+    </div>
+  );
+}
+
+function PdfPreviewButton({ contractId }: { contractId: string }) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState('');
+
+  const handlePdfPreview = async () => {
+    setIsGenerating(true);
+    setError('');
+    
+    try {
+      const response = await fetch(`/api/contracts/${contractId}/pdf`, {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `contract-${contractId}-preview.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to generate PDF preview');
+      }
+    } catch (error) {
+      console.error('Error generating PDF preview:', error);
+      setError('Failed to generate PDF preview. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Button 
+        onClick={handlePdfPreview}
+        disabled={isGenerating}
+        variant="outline"
+        className="w-full"
+      >
+        {isGenerating ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Generating PDF Preview...
+          </>
+        ) : (
+          <>
+            <Download className="mr-2 h-4 w-4" />
+            Preview PDF
           </>
         )}
       </Button>

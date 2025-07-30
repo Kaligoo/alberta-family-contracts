@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Download, CheckCircle, ArrowLeft, FileText } from 'lucide-react';
+import { Download, CheckCircle, ArrowLeft, FileText, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 
@@ -21,6 +21,7 @@ export default function ContractDownloadPage() {
   const [paymentVerified, setPaymentVerified] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -51,6 +52,9 @@ export default function ContractDownloadPage() {
   }, [sessionId]);
 
   const handleDownload = async () => {
+    setIsDownloading(true);
+    setError('');
+    
     try {
       const response = await fetch(`/api/contracts/${contractId}/pdf`, {
         method: 'GET',
@@ -72,6 +76,8 @@ export default function ContractDownloadPage() {
     } catch (error) {
       console.error('Error downloading contract:', error);
       setError('Failed to download contract');
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -162,11 +168,21 @@ export default function ContractDownloadPage() {
 
               <Button 
                 onClick={handleDownload}
+                disabled={isDownloading}
                 size="lg"
                 className="bg-orange-500 hover:bg-orange-600 text-lg px-8 py-3"
               >
-                <Download className="mr-2 h-5 w-5" />
-                Download Your Contract
+                {isDownloading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-5 w-5" />
+                    Download Your Contract
+                  </>
+                )}
               </Button>
 
               <div className="text-sm text-gray-500">
