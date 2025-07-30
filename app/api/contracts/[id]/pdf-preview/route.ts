@@ -50,7 +50,10 @@ export async function GET(
     return new NextResponse(pdfBytes, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="cohabitation-agreement-preview-${contractId}.pdf"`
+        'Content-Disposition': 'inline',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       }
     });
 
@@ -154,9 +157,9 @@ async function limitPDFToFirstPages(pdfBuffer: Buffer, maxPages: number): Promis
   try {
     // Import PDF-lib dynamically
     const PDFLib = await import('pdf-lib');
-    const { PDFDocument } = PDFLib;
+    const { PDFDocument, rgb, degrees } = PDFLib;
     
-    console.log(`Limiting PDF to first ${maxPages} pages...`);
+    console.log(`Limiting PDF to first ${maxPages} pages and adding watermarks...`);
     
     // Load the PDF document
     const pdfDoc = await PDFDocument.load(pdfBuffer);
@@ -164,33 +167,102 @@ async function limitPDFToFirstPages(pdfBuffer: Buffer, maxPages: number): Promis
     
     console.log(`Original PDF has ${totalPages} pages, limiting to ${maxPages}`);
     
-    // If PDF has fewer pages than maxPages, return as-is
-    if (totalPages <= maxPages) {
-      return pdfBuffer;
-    }
-    
     // Create new PDF with only first pages
     const newPdfDoc = await PDFDocument.create();
     
     // Copy first maxPages pages
-    const pagesToCopy = Array.from({ length: maxPages }, (_, i) => i);
+    const pagesToCopy = Array.from({ length: Math.min(maxPages, totalPages) }, (_, i) => i);
     const copiedPages = await newPdfDoc.copyPages(pdfDoc, pagesToCopy);
     
-    // Add copied pages to new document
-    copiedPages.forEach((page) => {
-      newPdfDoc.addPage(page);
+    // Add copied pages to new document with watermarks
+    copiedPages.forEach((page, index) => {
+      const addedPage = newPdfDoc.addPage(page);
+      
+      // Add diagonal watermark to each page
+      const { width, height } = addedPage.getSize();
+      
+      // Main diagonal watermark
+      addedPage.drawText('PREVIEW ONLY', {
+        x: width / 2 - 100,
+        y: height / 2,
+        size: 48,
+        color: rgb(0.9, 0.5, 0.1), // Orange color
+        opacity: 0.3,
+        rotate: degrees(-45),
+      });
+      
+      // Additional smaller watermarks
+      addedPage.drawText('PREVIEW', {
+        x: width / 4,
+        y: height / 4,
+        size: 24,
+        color: rgb(0.9, 0.5, 0.1),
+        opacity: 0.2,
+        rotate: degrees(-45),
+      });
+      
+      addedPage.drawText('PREVIEW', {
+        x: (width * 3) / 4,
+        y: (height * 3) / 4,
+        size: 24,
+        color: rgb(0.9, 0.5, 0.1),
+        opacity: 0.2,
+        rotate: degrees(-45),
+      });
+      
+      // Header watermark
+      addedPage.drawText('• PREVIEW DOCUMENT • NOT FOR LEGAL USE •', {
+        x: 50,
+        y: height - 30,
+        size: 10,
+        color: rgb(0.8, 0.3, 0.1),
+        opacity: 0.8,
+      });
+      
+      // Footer watermark
+      addedPage.drawText(`Preview Page ${index + 1} of ${Math.min(maxPages, totalPages)} • Purchase full agreement at Alberta Family Contracts`, {
+        x: 50,
+        y: 20,
+        size: 8,
+        color: rgb(0.6, 0.6, 0.6),
+        opacity: 0.9,
+      });
     });
     
     // Serialize the new PDF
     const limitedPdfBytes = await newPdfDoc.save();
-    console.log(`Successfully limited PDF to ${maxPages} pages`);
+    console.log(`Successfully limited PDF to ${Math.min(maxPages, totalPages)} pages with watermarks`);
     
     return Buffer.from(limitedPdfBytes);
     
   } catch (error) {
-    console.error('Failed to limit PDF pages:', error);
-    // If page limiting fails, return original PDF (better than no preview)
-    return pdfBuffer;
+    console.error('Failed to limit PDF pages or add watermarks:', error);
+    // If watermarking fails, still try to limit pages
+    try {
+      const PDFLib = await import('pdf-lib');
+      const { PDFDocument } = PDFLib;
+      
+      const pdfDoc = await PDFDocument.load(pdfBuffer);
+      const totalPages = pdfDoc.getPageCount();
+      
+      if (totalPages <= maxPages) {
+        return pdfBuffer;
+      }
+      
+      const newPdfDoc = await PDFDocument.create();
+      const pagesToCopy = Array.from({ length: maxPages }, (_, i) => i);
+      const copiedPages = await newPdfDoc.copyPages(pdfDoc, pagesToCopy);
+      
+      copiedPages.forEach((page) => {
+        newPdfDoc.addPage(page);
+      });
+      
+      const limitedPdfBytes = await newPdfDoc.save();
+      return Buffer.from(limitedPdfBytes);
+    } catch (fallbackError) {
+      console.error('Fallback page limiting also failed:', fallbackError);
+      return pdfBuffer;
+    }
   }
 }
 
@@ -213,13 +285,10 @@ function prepareTemplateDataWithWatermark(contract: any, user: any) {
     return '[Partner First Name]';
   };
 
-  // Add watermark text to key fields
-  const watermarkText = " • PREVIEW ONLY • ";
-  
   return {
-    // Core party information with watermark hints
-    userFullName: (contract.userFullName || '[Your Name]') + watermarkText,
-    partnerFullName: (contract.partnerFullName || '[Partner Name]') + watermarkText,
+    // Core party information (clean data, watermarks added visually to PDF)
+    userFullName: contract.userFullName || '[Your Name]',
+    partnerFullName: contract.partnerFullName || '[Partner Name]',
     userFirstName: getUserFirstName(),
     partnerFirstName: getPartnerFirstName(),
     
@@ -248,8 +317,8 @@ function prepareTemplateDataWithWatermark(contract: any, user: any) {
     ...generateResidenceContent(contract),
     
     // Dates
-    currentDate: currentDate + watermarkText,
-    contractDate: currentDate + watermarkText,
+    currentDate: currentDate,
+    contractDate: currentDate,
     cohabDate: contract.cohabDate ? new Date(contract.cohabDate).toLocaleDateString('en-US', {
       year: 'numeric', 
       month: 'long', 
@@ -291,10 +360,8 @@ function prepareTemplateDataWithWatermark(contract: any, user: any) {
       }).join(', ')}.` : 
       'There are no children of the relationship as of the Effective Date of this Agreement. The parties may or may not have children together in the future, either biological or adopted.',
     
-    // Additional clauses with preview notice
-    additionalClauses: contract.additionalClauses ? 
-      contract.additionalClauses + '\n\n--- PREVIEW ONLY - Purchase full agreement to remove this notice ---' : 
-      '--- PREVIEW ONLY - Purchase full agreement to see additional clauses ---',
+    // Additional clauses (clean data, watermarks added visually to PDF)
+    additionalClauses: contract.additionalClauses || '',
     notes: contract.notes || '',
     
     // Schedule A data - format for display
