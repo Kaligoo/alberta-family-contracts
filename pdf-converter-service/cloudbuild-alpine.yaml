@@ -1,0 +1,29 @@
+# Alpine LibreOffice build - faster and smaller
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-f', 'Dockerfile.alpine', '-t', 'gcr.io/$PROJECT_ID/pdf-converter:alpine', '.']
+    timeout: '600s'
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/pdf-converter:alpine']
+  
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: 
+      - 'run'
+      - 'deploy'
+      - 'pdf-converter'
+      - '--image=gcr.io/$PROJECT_ID/pdf-converter:alpine'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--memory=2Gi'
+      - '--cpu=2'
+      - '--max-instances=10'
+      - '--timeout=300s'
+      - '--concurrency=80'
+
+images:
+  - 'gcr.io/$PROJECT_ID/pdf-converter:alpine'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

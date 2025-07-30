@@ -69,7 +69,7 @@ export async function GET(
 
 async function generateContractPDFFromTemplate(contract: any, user: any): Promise<Uint8Array> {
   try {
-    console.log('Starting PDF generation using direct Word to PDF conversion...');
+    console.log('Starting PDF generation using PDF Converter Microservice...');
     
     // Get active template from database
     const activeTemplate = await db
@@ -102,33 +102,64 @@ async function generateContractPDFFromTemplate(contract: any, user: any): Promis
     doc.render(templateData);
     const filledDocxBuffer = doc.getZip().generate({ type: 'nodebuffer' });
     
-    // Use ConvertAPI to convert Word document directly to PDF (preserves all formatting)
-    console.log('Converting Word document to PDF using ConvertAPI...');
-    
-    // Initialize ConvertAPI (you'll need to set CONVERTAPI_SECRET environment variable)
-    if (!process.env.CONVERTAPI_SECRET) {
-      console.log('CONVERTAPI_SECRET not configured, falling back to basic PDF generation...');
-      return await generateBasicPDF(contract, user);
+    // Try PDF Converter Microservice first
+    try {
+      console.log('Converting Word document to PDF using PDF Converter Microservice...');
+      const pdfBuffer = await convertUsingMicroservice(filledDocxBuffer);
+      console.log('Successfully generated PDF using PDF Converter Microservice');
+      return new Uint8Array(pdfBuffer);
+    } catch (microserviceError) {
+      console.error('Failed to generate PDF using microservice:', microserviceError);
+      
+      // Fallback to ConvertAPI if microservice fails
+      if (process.env.CONVERTAPI_SECRET) {
+        console.log('Falling back to ConvertAPI...');
+        const convertApiClient = convertapi(process.env.CONVERTAPI_SECRET);
+        const result = await convertApiClient.convert('pdf', {
+          File: filledDocxBuffer
+        }, 'docx');
+        const pdfBuffer = await result.file.save();
+        console.log('Successfully generated PDF using ConvertAPI fallback');
+        return new Uint8Array(pdfBuffer);
+      } else {
+        throw microserviceError;
+      }
     }
     
-    const convertApiClient = convertapi(process.env.CONVERTAPI_SECRET);
-    
-    // Convert DOCX buffer to PDF using ConvertAPI
-    const result = await convertApiClient.convert('pdf', {
-      File: filledDocxBuffer
-    }, 'docx');
-    
-    // Get the PDF buffer from the first result file
-    const pdfBuffer = await result.file.save();
-    
-    console.log('Successfully generated PDF using direct Word to PDF conversion');
-    return new Uint8Array(pdfBuffer);
-    
   } catch (error) {
-    console.error('Failed to generate PDF using ConvertAPI:', error);
+    console.error('Failed to generate PDF using all methods:', error);
     console.log('Falling back to basic PDF generation...');
     return await generateBasicPDF(contract, user);
   }
+}
+
+async function convertUsingMicroservice(docxBuffer: Buffer): Promise<Buffer> {
+  const MICROSERVICE_URL = 'https://pdf-converter-162295646145.us-central1.run.app';
+  
+  // Create form data
+  const formData = new FormData();
+  const blob = new Blob([docxBuffer], { 
+    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+  });
+  formData.append('file', blob, 'contract.docx');
+  
+  // Send request to microservice
+  const response = await fetch(`${MICROSERVICE_URL}/convert`, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      // Don't set Content-Type - let fetch set it with boundary for multipart
+    }
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Microservice returned ${response.status}: ${errorText}`);
+  }
+  
+  // Get PDF buffer
+  const arrayBuffer = await response.arrayBuffer();
+  return Buffer.from(arrayBuffer);
 }
 
 async function generateBasicPDF(contract: any, user: any): Promise<Uint8Array> {

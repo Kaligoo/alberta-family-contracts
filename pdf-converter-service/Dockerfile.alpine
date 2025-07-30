@@ -1,0 +1,34 @@
+# Use Alpine-based approach for smaller, faster builds
+FROM node:18-alpine
+
+# Install LibreOffice and dependencies
+RUN apk add --no-cache \
+    libreoffice \
+    ttf-liberation \
+    curl \
+    && rm -rf /var/cache/apk/*
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy and install dependencies
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy application code
+COPY server.js ./
+
+# Create directories and user
+RUN addgroup -g 1001 -S appuser && \
+    adduser -S appuser -u 1001 -G appuser && \
+    mkdir -p /tmp/uploads /tmp/output && \
+    chown -R appuser:appuser /tmp/uploads /tmp/output /usr/src/app
+
+USER appuser
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+CMD ["node", "server.js"]
