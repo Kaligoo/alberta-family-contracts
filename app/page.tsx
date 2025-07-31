@@ -52,17 +52,17 @@ export default function HomePage() {
                 <p className="text-sm text-gray-600 text-center">No credit card required • Get started in 2 minutes</p>
               </div>
             </div>
-            <div className="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-span-6 lg:flex lg:items-center">
-              <div className="relative mx-auto w-full">
+            <div className="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-span-6 lg:flex lg:justify-center">
+              <div className="relative">
                 <Image 
                   src="/family-hero.jpg"
-                  alt="Happy family representing legal protection and security"
+                  alt="Legal professionals representing professional family law services"
                   width={600}
-                  height={400}
-                  className="rounded-2xl shadow-2xl object-cover w-full h-96"
+                  height={200}
+                  className="rounded-2xl shadow-2xl object-contain"
                   priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/20 to-transparent rounded-2xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/10 to-transparent rounded-2xl"></div>
               </div>
             </div>
           </div>

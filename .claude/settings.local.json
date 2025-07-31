@@ -55,7 +55,9 @@
       "WebFetch(domain:www.lawdepot.com)",
       "WebFetch(domain:www.legalzoom.com)",
       "Bash(claude --version)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(copy:*)",
+      "Bash(powershell:*)"
     ],
     "deny": []
   }
