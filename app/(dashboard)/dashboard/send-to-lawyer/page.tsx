@@ -70,6 +70,7 @@ function SendToLawyerPageContent() {
   const lawyerOptions: LawyerOption[] = lawyersData?.lawyers || [];
 
   const contract = contractData?.contract;
+  const isPaid = contract?.isPaid === 'true' || contract?.isPaid === true;
 
   // Verify payment if session_id is present
   useEffect(() => {
@@ -77,7 +78,7 @@ function SendToLawyerPageContent() {
       if (!sessionId) {
         setPaymentLoading(false);
         // Check if contract is already paid
-        if (contract?.isPaid) {
+        if (isPaid) {
           setPaymentVerified(true);
         }
         return;
@@ -100,7 +101,7 @@ function SendToLawyerPageContent() {
     if (contractData) {
       verifyPayment();
     }
-  }, [sessionId, contract?.isPaid, contractData]);
+  }, [sessionId, isPaid, contractData]);
 
   const handleLawyerSelect = (party: 'user' | 'partner', lawyerId: number) => {
     setSelectedLawyers(prev => ({
@@ -172,7 +173,7 @@ function SendToLawyerPageContent() {
     }
 
     // Check payment status
-    if (!paymentVerified && !contract?.isPaid) {
+    if (!paymentVerified && !isPaid) {
       setSendStatus({
         success: false,
         message: 'Payment must be completed before sending to lawyers. Please complete your purchase first.'
@@ -348,7 +349,7 @@ function SendToLawyerPageContent() {
         )}
 
         {/* Payment Required Message */}
-        {!paymentLoading && !paymentVerified && !contract?.isPaid && (
+        {!paymentLoading && !paymentVerified && !isPaid && (
           <Card className="mb-6 border-yellow-200 bg-yellow-50">
             <CardContent className="pt-6">
               <div className="flex items-center">
@@ -671,7 +672,7 @@ function SendToLawyerPageContent() {
           </Link>
           <Button 
             onClick={handleSendToLawyers}
-            disabled={!selectedLawyers.user || !selectedLawyers.partner || isSending || (!paymentVerified && !contract?.isPaid) || areLawyersFromSameFirm}
+            disabled={!selectedLawyers.user || !selectedLawyers.partner || isSending || (!paymentVerified && !isPaid) || areLawyersFromSameFirm}
             className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isSending ? (
@@ -689,7 +690,7 @@ function SendToLawyerPageContent() {
         </div>
 
         {/* Payment required note under button */}
-        {!paymentVerified && !contract?.isPaid && (
+        {!paymentVerified && !isPaid && (
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-500">
               Complete payment to enable sending contract to lawyers
