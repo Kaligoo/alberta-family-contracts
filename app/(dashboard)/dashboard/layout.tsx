@@ -248,40 +248,6 @@ export default function DashboardLayout({
             />
             
             <div className="p-4">
-              {/* Contract Actions Section - Now at the top */}
-              {contractActions.length > 0 && (
-                <>
-                  <div className="mb-4">
-                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 mb-2">
-                      For Testing Purposes Only
-                    </h3>
-                    <div className="space-y-1">
-                      {contractActions.map((action) => (
-                        <Button
-                          key={action.id}
-                          variant="ghost"
-                          className="shadow-none w-full justify-start text-left"
-                          onClick={() => {
-                            action.onClick();
-                            setIsSidebarOpen(false);
-                          }}
-                          disabled={action.disabled || loadingAction === action.id}
-                        >
-                          {loadingAction === action.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <action.icon className="h-4 w-4" />
-                          )}
-                          {action.label}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="border-t border-gray-200 my-4"></div>
-                </>
-              )}
-
-
               {/* Contracts Section */}
               <div className="mb-4">
                 <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 mb-2">
