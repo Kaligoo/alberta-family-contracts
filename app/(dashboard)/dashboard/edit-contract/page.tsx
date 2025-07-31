@@ -1008,6 +1008,13 @@ export default function DashboardPage() {
   // Load saved contract data
   const { data: contractData, error: contractError } = useSWR('/api/contract', fetcher);
   
+  // Load first contract for testing purposes
+  const { data: allContractsData } = useSWR('/api/contracts', fetcher);
+  
+  // Get the first contract for testing when no current contract exists
+  const firstContract = allContractsData?.contracts?.[0];
+  const isUsingTestData = !contractData?.contract && firstContract;
+  
   // Check if current contract is paid and thus locked
   const isContractPaid = contractData?.contract?.isPaid === 'true';
 
@@ -1025,8 +1032,10 @@ export default function DashboardPage() {
 
   // Load saved data into form when component mounts or data changes
   useEffect(() => {
-    if (contractData?.contract) {
-      const contract = contractData.contract;
+    // Use current contract if it exists, otherwise use first contract for testing
+    const contract = contractData?.contract || firstContract;
+    
+    if (contract) {
       setFormData({
         userFullName: contract.userFullName || '',
         partnerFullName: contract.partnerFullName || '',
@@ -1077,7 +1086,7 @@ export default function DashboardPage() {
         scheduleDebtsOther: contract.scheduleDebtsOther || []
       });
     }
-  }, [contractData]);
+  }, [contractData, firstContract]);
 
   const handleSave = async () => {
     // Prevent saving if contract is paid
@@ -1153,12 +1162,12 @@ export default function DashboardPage() {
 
 
   // Show loading state while fetching contract data
-  if (!contractData && !contractError) {
+  if ((!contractData && !contractError) || (!allContractsData && !contractData)) {
     return (
       <section className="flex-1 p-4 lg:p-8">
         <div className="max-w-4xl">
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
             <span className="ml-2 text-gray-600">Loading your contract...</span>
           </div>
         </div>
@@ -1166,14 +1175,14 @@ export default function DashboardPage() {
     );
   }
 
-  // Redirect to get-started if no contract exists
-  if (contractData && !contractData.contract) {
+  // Redirect to get-started if no contract exists and no test data available
+  if (contractData && !contractData.contract && !firstContract) {
     router.push('/dashboard/get-started');
     return (
       <section className="flex-1 p-4 lg:p-8">
         <div className="max-w-4xl">
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
             <span className="ml-2 text-gray-600">Redirecting to get started...</span>
           </div>
         </div>
@@ -1189,6 +1198,16 @@ export default function DashboardPage() {
           <p className="text-gray-600">
             Let's gather some basic information to create your personalized family contract.
           </p>
+          {isUsingTestData && (
+            <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800 flex items-center">
+                <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <strong>Note: This is test data</strong> - The form has been pre-filled with data from your first contract for testing purposes.
+              </p>
+            </div>
+          )}
           {contractData?.contract && !isContractPaid && (contractData.contract.userFullName || contractData.contract.partnerFullName || contractData.contract.userEmail) && (
             <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-700 flex items-center">
