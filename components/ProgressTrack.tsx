@@ -143,15 +143,32 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
       }
     }
     
-    // If we still don't have a target URL but need to go to a contract-specific page,
-    // and we have contract data but no contractId (test data scenario),
-    // redirect to edit-contract to save first
-    if (!targetUrl && !contractId && contract && (step.id === 'preview' || step.id === 'purchase' || step.id === 'download' || step.id === 'send-lawyer')) {
-      // Store the intended step in sessionStorage so we can redirect after save
-      sessionStorage.setItem('pendingStepNavigation', step.id);
-      // Redirect to edit contract to save first (removed alert dialog)
-      router.push('/dashboard/edit-contract');
-      return;
+    // If we don't have a contractId but have contract data, 
+    // try to use the contract's ID if available, otherwise allow navigation anyway
+    if (!targetUrl && !contractId && contract) {
+      // Try to use contract.id if it exists
+      const useContractId = contract.id;
+      if (useContractId) {
+        switch (step.id) {
+          case 'preview':
+            targetUrl = `/dashboard/contracts/${useContractId}/preview`;
+            break;
+          case 'purchase':
+            targetUrl = `/dashboard/contracts/${useContractId}/purchase`;
+            break;
+          case 'download':
+            targetUrl = `/dashboard/contracts/${useContractId}/download`;
+            break;
+          case 'send-lawyer':
+            targetUrl = `/dashboard/send-to-lawyer?contractId=${useContractId}`;
+            break;
+        }
+      }
+      // If still no targetUrl, allow navigation to edit-contract without forcing save
+      if (!targetUrl && step.id === 'preview') {
+        // For preview, we can still show preview even without saving
+        targetUrl = '/dashboard/edit-contract'; // Will show preview inline
+      }
     }
     
     if (targetUrl) {
