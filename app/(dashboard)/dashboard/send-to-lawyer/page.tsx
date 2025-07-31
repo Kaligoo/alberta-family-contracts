@@ -12,6 +12,7 @@ import { ArrowLeft, Mail, Send, CheckCircle, Loader2, FileText, Plus, X } from '
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
+import { isContractPaid } from '@/lib/utils/payment';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -70,7 +71,7 @@ function SendToLawyerPageContent() {
   const lawyerOptions: LawyerOption[] = lawyersData?.lawyers || [];
 
   const contract = contractData?.contract;
-  const isPaid = contract?.isPaid === 'true' || contract?.isPaid === true;
+  const isPaid = isContractPaid(contract);
 
   // Verify payment if session_id is present
   useEffect(() => {
@@ -351,7 +352,7 @@ function SendToLawyerPageContent() {
         {/* Payment Required Message */}
         {!paymentLoading && !paymentVerified && !isPaid && (
           <Card className="mb-6 border-yellow-200 bg-yellow-50">
-            <CardContent className="pt-6">
+            <CardContent className="p-4">
               <div className="flex items-center">
                 <div className="h-5 w-5 text-yellow-600 mr-3">⚠</div>
                 <div>

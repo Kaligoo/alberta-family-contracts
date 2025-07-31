@@ -12,6 +12,7 @@ import { Download, CheckCircle, ArrowLeft, FileText, Loader2, CreditCard } from 
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
+import { isContractPaid } from '@/lib/utils/payment';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -31,7 +32,7 @@ export default function ContractDownloadPage() {
   );
 
   const contract = contractData?.contract;
-  const isPaid = contract?.isPaid === 'true' || contract?.isPaid === true;
+  const isPaid = isContractPaid(contract);
 
   const handleDownload = async () => {
     if (!isPaid) {
