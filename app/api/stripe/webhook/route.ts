@@ -1,6 +1,9 @@
 import Stripe from 'stripe';
 import { handleSubscriptionChange, stripe } from '@/lib/payments/stripe';
 import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db/drizzle';
+import { familyContracts } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -34,9 +37,49 @@ export async function POST(request: NextRequest) {
       const subscription = event.data.object as Stripe.Subscription;
       await handleSubscriptionChange(subscription);
       break;
+    
+    case 'checkout.session.completed':
+      const session = event.data.object as Stripe.Checkout.Session;
+      await handlePaymentComplete(session);
+      break;
+      
     default:
       console.log(`Unhandled event type ${event.type}`);
   }
 
   return NextResponse.json({ received: true });
+}
+
+async function handlePaymentComplete(session: Stripe.Checkout.Session) {
+  try {
+    console.log('Processing payment completion for session:', session.id);
+    
+    // Get contract ID from metadata
+    const contractId = session.metadata?.contractId || session.client_reference_id;
+    
+    if (!contractId) {
+      console.error('No contract ID found in session metadata');
+      return;
+    }
+
+    // Update contract as paid
+    const [updatedContract] = await db
+      .update(familyContracts)
+      .set({
+        isPaid: 'true',
+        status: 'paid',
+        updatedAt: new Date()
+      })
+      .where(eq(familyContracts.id, parseInt(contractId)))
+      .returning();
+
+    if (updatedContract) {
+      console.log(`Successfully marked contract ${contractId} as paid`);
+    } else {
+      console.error(`Contract ${contractId} not found for payment update`);
+    }
+
+  } catch (error) {
+    console.error('Error handling payment completion:', error);
+  }
 }
