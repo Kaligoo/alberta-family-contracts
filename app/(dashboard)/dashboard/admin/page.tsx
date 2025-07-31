@@ -31,7 +31,7 @@ interface Lawyer {
   firm: string;
   phone?: string;
   address?: string;
-  specializations?: string;
+  website?: string;
   party: 'user' | 'partner' | 'both';
   isActive: string;
   createdAt: string;
@@ -58,7 +58,7 @@ export default function AdminDashboardPage() {
     firm: '',
     phone: '',
     address: '',
-    specializations: '',
+    website: '',
     party: 'user' as 'user' | 'partner' | 'both',
     isActive: 'true'
   });
@@ -233,7 +233,7 @@ export default function AdminDashboardPage() {
       firm: '',
       phone: '',
       address: '',
-      specializations: '',
+      website: '',
       party: 'user',
       isActive: 'true'
     });
@@ -255,7 +255,7 @@ export default function AdminDashboardPage() {
       firm: lawyer.firm,
       phone: lawyer.phone || '',
       address: lawyer.address || '',
-      specializations: lawyer.specializations || '',
+      website: lawyer.website || '',
       party: lawyer.party,
       isActive: lawyer.isActive
     });
@@ -613,14 +613,14 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Specializations
+                      Law Firm Website
                     </label>
                     <input
-                      type="text"
-                      value={lawyerFormData.specializations}
-                      onChange={(e) => setLawyerFormData({...lawyerFormData, specializations: e.target.value})}
+                      type="url"
+                      value={lawyerFormData.website}
+                      onChange={(e) => setLawyerFormData({...lawyerFormData, website: e.target.value})}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      placeholder="Family Law, Contract Law, etc."
+                      placeholder="https://www.lawfirm.com"
                     />
                   </div>
                 </div>
@@ -699,9 +699,9 @@ export default function AdminDashboardPage() {
                             {lawyer.phone && <span>{lawyer.phone}</span>}
                           </div>
                         </div>
-                        {lawyer.specializations && (
+                        {lawyer.website && (
                           <div className="text-xs text-gray-500 mb-2">
-                            <strong>Specializations:</strong> {lawyer.specializations}
+                            <strong>Website:</strong> <a href={lawyer.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{lawyer.website}</a>
                           </div>
                         )}
                         {lawyer.address && (

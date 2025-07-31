@@ -21,7 +21,7 @@ interface LawyerOption {
   email: string;
   firm: string;
   phone?: string;
-  specializations?: string;
+  website?: string;
   party: 'user' | 'partner' | 'both';
 }
 
@@ -338,8 +338,12 @@ function SendToLawyerPageContent() {
                       {lawyer.phone && (
                         <div className="text-sm text-gray-500">{lawyer.phone}</div>
                       )}
-                      {lawyer.specializations && (
-                        <div className="text-xs text-gray-400 mt-1">{lawyer.specializations}</div>
+                      {lawyer.website && (
+                        <div className="text-xs text-blue-600 mt-1">
+                          <a href={lawyer.website} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                            {lawyer.website}
+                          </a>
+                        </div>
                       )}
                     </div>
                   </label>
@@ -383,8 +387,12 @@ function SendToLawyerPageContent() {
                       {lawyer.phone && (
                         <div className="text-sm text-gray-500">{lawyer.phone}</div>
                       )}
-                      {lawyer.specializations && (
-                        <div className="text-xs text-gray-400 mt-1">{lawyer.specializations}</div>
+                      {lawyer.website && (
+                        <div className="text-xs text-blue-600 mt-1">
+                          <a href={lawyer.website} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                            {lawyer.website}
+                          </a>
+                        </div>
                       )}
                     </div>
                   </label>

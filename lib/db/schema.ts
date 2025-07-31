@@ -235,7 +235,7 @@ export const lawyers = pgTable('lawyers', {
   firm: varchar('firm', { length: 255 }).notNull(),
   phone: varchar('phone', { length: 50 }),
   address: text('address'),
-  specializations: text('specializations'), // Areas of expertise
+  website: varchar('website', { length: 255 }), // Law firm website
   party: varchar('party', { length: 20 }).notNull(), // 'user', 'partner', or 'both'
   isActive: varchar('is_active', { length: 10 }).notNull().default('true'),
   createdAt: timestamp('created_at').notNull().defaultNow(),

@@ -20,7 +20,7 @@ export async function GET() {
         email: lawyers.email,
         firm: lawyers.firm,
         phone: lawyers.phone,
-        specializations: lawyers.specializations,
+        website: lawyers.website,
         party: lawyers.party
       })
       .from(lawyers)

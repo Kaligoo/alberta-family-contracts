@@ -63,7 +63,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, email, firm, phone, address, specializations, party, isActive } = body;
+    const { name, email, firm, phone, address, website, party, isActive } = body;
 
     if (!name || !email || !firm || !party) {
       return NextResponse.json(
@@ -87,7 +87,7 @@ export async function PUT(
         firm,
         phone: phone || null,
         address: address || null,
-        specializations: specializations || null,
+        website: website || null,
         party,
         isActive: isActive || 'true',
         updatedAt: new Date()
