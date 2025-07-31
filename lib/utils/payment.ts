@@ -3,8 +3,14 @@ export function isContractPaid(contract: any): boolean {
   if (!contract) return false;
   
   const isPaid = contract.isPaid;
+  const status = contract.status;
   
-  // Handle various possible values that could indicate "paid"
+  // Check status field first (might be the primary indicator)
+  if (status === 'paid' || status === 'completed') {
+    return true;
+  }
+  
+  // Then check isPaid field for various possible values
   return isPaid === true ||
          isPaid === 'true' ||
          isPaid === 1 ||

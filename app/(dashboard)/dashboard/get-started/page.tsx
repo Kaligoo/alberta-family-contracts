@@ -101,7 +101,7 @@ export default function GetStartedPage() {
           return (
             <Card 
               key={type.id}
-              className={`relative cursor-pointer transition-all duration-200 hover:shadow-lg ${
+              className={`relative cursor-pointer transition-all duration-200 hover:shadow-lg flex flex-col h-full ${
                 selectedType === type.id ? 'ring-2 ring-orange-500 bg-orange-50' : ''
               } ${
                 !type.available ? 'opacity-75' : ''
@@ -152,38 +152,40 @@ export default function GetStartedPage() {
                 </div>
               </CardHeader>
               
-              <CardContent className="pt-0">
+              <CardContent className="pt-0 flex-1 flex flex-col">
                 <p className="text-sm text-gray-600 mb-4">
                   {type.detailedDescription}
                 </p>
                 
-                <div className="space-y-2 text-xs text-gray-500">
+                <div className="space-y-2 text-xs text-gray-500 mb-4">
                   <p><strong>Best for:</strong> {type.bestFor}</p>
                   <p><strong>Timeline:</strong> {type.timeline}</p>
                 </div>
 
-                {type.available && (
-                  <Button
-                    className="w-full mt-4 bg-orange-500 hover:bg-orange-600"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSelectAgreement(type.id);
-                    }}
-                  >
-                    Get Started
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                )}
-                
-                {!type.available && (
-                  <Button
-                    variant="outline"
-                    className="w-full mt-4"
-                    disabled
-                  >
-                    Coming Soon
-                  </Button>
-                )}
+                <div className="mt-auto">
+                  {type.available && (
+                    <Button
+                      className="w-full bg-orange-500 hover:bg-orange-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectAgreement(type.id);
+                      }}
+                    >
+                      Get Started
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  )}
+                  
+                  {!type.available && (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      disabled
+                    >
+                      Coming Soon
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           );

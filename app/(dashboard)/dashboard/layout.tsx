@@ -154,8 +154,7 @@ export default function DashboardLayout({
   };
 
   const navItems = [
-    { href: '/dashboard/edit-contract', icon: FileText, label: 'Current Contract', section: 'contracts' },
-    { href: '/dashboard/contracts', icon: List, label: 'Other Contracts', section: 'contracts' },
+    { href: '/dashboard/contracts', icon: List, label: ' Other Contracts', section: 'contracts' },
     { href: '/dashboard/general', icon: Settings, label: 'General', section: 'settings' },
     { href: '/dashboard/activity', icon: Activity, label: 'Activity', section: 'settings' },
     { href: '/dashboard/security', icon: Shield, label: 'Security', section: 'settings' }
