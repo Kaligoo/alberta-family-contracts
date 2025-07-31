@@ -67,7 +67,7 @@ export async function POST(
         }
       ],
       mode: 'payment',
-      success_url: `${process.env.BASE_URL || 'https://www.agreeable.ca'}/purchase/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.BASE_URL || 'https://www.agreeable.ca'}/dashboard/send-to-lawyer?contractId=${contractId}&session_id={CHECKOUT_SESSION_ID}&payment_success=true`,
       cancel_url: `${process.env.BASE_URL || 'https://www.agreeable.ca'}/dashboard/contracts/${contractId}/preview`,
       customer_email: user.email,
       client_reference_id: contractId.toString(),

@@ -58,6 +58,8 @@ function SendToLawyerPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const contractId = searchParams.get('contractId');
+  const sessionId = searchParams.get('session_id');
+  const paymentSuccess = searchParams.get('payment_success') === 'true';
   
   const [selectedLawyers, setSelectedLawyers] = useState<{
     user: string | null;
@@ -72,6 +74,9 @@ function SendToLawyerPageContent() {
     success: boolean;
     message: string;
   } | null>(null);
+  
+  const [paymentVerified, setPaymentVerified] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(!!sessionId);
 
   const { data: contractData, error } = useSWR(
     contractId ? `/api/contracts/${contractId}` : null,
@@ -79,6 +84,37 @@ function SendToLawyerPageContent() {
   );
 
   const contract = contractData?.contract;
+
+  // Verify payment if session_id is present
+  useEffect(() => {
+    const verifyPayment = async () => {
+      if (!sessionId) {
+        setPaymentLoading(false);
+        // Check if contract is already paid
+        if (contract?.isPaid) {
+          setPaymentVerified(true);
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/stripe/verify-payment?session_id=${sessionId}`);
+        const data = await response.json();
+        
+        if (response.ok && data.paid) {
+          setPaymentVerified(true);
+        }
+      } catch (error) {
+        console.error('Error verifying payment:', error);
+      } finally {
+        setPaymentLoading(false);
+      }
+    };
+
+    if (contractData) {
+      verifyPayment();
+    }
+  }, [sessionId, contract?.isPaid, contractData]);
 
   const handleLawyerSelect = (party: 'user' | 'partner', lawyerId: string) => {
     setSelectedLawyers(prev => ({
@@ -89,6 +125,15 @@ function SendToLawyerPageContent() {
 
   const handleSendToLawyers = async () => {
     if (!selectedLawyers.user || !selectedLawyers.partner || !contractId) {
+      return;
+    }
+
+    // Check payment status
+    if (!paymentVerified && !contract?.isPaid) {
+      setSendStatus({
+        success: false,
+        message: 'Payment must be completed before sending to lawyers. Please complete your purchase first.'
+      });
       return;
     }
 
@@ -219,6 +264,48 @@ function SendToLawyerPageContent() {
           </p>
         </div>
 
+        {/* Payment Success Message */}
+        {paymentSuccess && (
+          <Card className="mb-6 border-green-200 bg-green-50">
+            <CardContent className="pt-6">
+              <div className="flex items-center">
+                <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                <div>
+                  <h3 className="font-semibold text-green-800">Purchase Successful!</h3>
+                  <p className="text-green-700 text-sm">
+                    Your payment has been processed and you will receive an email with the PDF of your contract. 
+                    Now please select which lawyers you want to send the contract to. They will get in touch with you 
+                    to book a meeting to provide independent legal advice and sign the agreement, in person or virtually.
+                  </p>
+                  <p className="text-green-700 text-sm mt-2 font-medium">
+                    Remember: Both lawyers must be from separate law firms.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Payment Required Message */}
+        {!paymentLoading && !paymentVerified && !contract?.isPaid && (
+          <Card className="mb-6 border-yellow-200 bg-yellow-50">
+            <CardContent className="pt-6">
+              <div className="flex items-center">
+                <div className="h-5 w-5 text-yellow-600 mr-3">⚠</div>
+                <div>
+                  <h3 className="font-semibold text-yellow-800">Payment Required</h3>
+                  <p className="text-yellow-700 text-sm">
+                    You must complete payment before you can send your contract to lawyers. 
+                    <Link href={`/dashboard/contracts/${contractId}/preview`} className="text-yellow-800 underline ml-1">
+                      Click here to purchase your agreement.
+                    </Link>
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {sendStatus && (
           <Card className={`mb-6 ${sendStatus.success ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
             <CardContent className="pt-6">
@@ -347,8 +434,8 @@ function SendToLawyerPageContent() {
           </Link>
           <Button 
             onClick={handleSendToLawyers}
-            disabled={!selectedLawyers.user || !selectedLawyers.partner || isSending}
-            className="flex-1 bg-orange-500 hover:bg-orange-600"
+            disabled={!selectedLawyers.user || !selectedLawyers.partner || isSending || (!paymentVerified && !contract?.isPaid)}
+            className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isSending ? (
               <>
@@ -363,6 +450,15 @@ function SendToLawyerPageContent() {
             )}
           </Button>
         </div>
+
+        {/* Payment required note under button */}
+        {!paymentVerified && !contract?.isPaid && (
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-500">
+              Complete payment to enable sending contract to lawyers
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );

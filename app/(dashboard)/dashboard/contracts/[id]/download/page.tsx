@@ -8,9 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Download, CheckCircle, ArrowLeft, FileText, Loader2 } from 'lucide-react';
+import { Download, CheckCircle, ArrowLeft, FileText, Loader2, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ContractDownloadPage() {
   const params = useParams();
@@ -18,42 +21,26 @@ export default function ContractDownloadPage() {
   const contractId = params.id as string;
   const sessionId = searchParams.get('session_id');
   
-  const [paymentVerified, setPaymentVerified] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState('');
 
-  useEffect(() => {
-    const verifyPayment = async () => {
-      if (!sessionId) {
-        setError('Payment session not found');
-        setLoading(false);
-        return;
-      }
+  // Fetch contract data to check payment status
+  const { data: contractData, error: contractError } = useSWR(
+    contractId ? `/api/contracts/${contractId}` : null,
+    fetcher
+  );
 
-      try {
-        const response = await fetch(`/api/stripe/verify-payment?session_id=${sessionId}`);
-        const data = await response.json();
-        
-        if (response.ok && data.paid) {
-          setPaymentVerified(true);
-        } else {
-          setError(data.error || 'Payment verification failed');
-        }
-      } catch (error) {
-        console.error('Error verifying payment:', error);
-        setError('Failed to verify payment');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    verifyPayment();
-  }, [sessionId]);
+  const contract = contractData?.contract;
+  const isPaid = contract?.isPaid || false;
 
   const handleDownload = async () => {
+    if (!isPaid) {
+      setDownloadError('Payment must be completed before downloading');
+      return;
+    }
+
     setIsDownloading(true);
-    setError('');
+    setDownloadError('');
     
     try {
       const response = await fetch(`/api/contracts/${contractId}/pdf`, {
@@ -71,17 +58,18 @@ export default function ContractDownloadPage() {
         a.click();
         window.URL.revokeObjectURL(url);
       } else {
-        setError('Failed to download contract');
+        setDownloadError('Failed to download contract');
       }
     } catch (error) {
       console.error('Error downloading contract:', error);
-      setError('Failed to download contract');
+      setDownloadError('Failed to download contract');
     } finally {
       setIsDownloading(false);
     }
   };
 
-  if (loading) {
+  // Loading state
+  if (!contractData && !contractError) {
     return (
       <section className="flex-1 p-4 lg:p-8">
         <div className="max-w-2xl mx-auto">
@@ -89,7 +77,7 @@ export default function ContractDownloadPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-                <span className="ml-2 text-gray-600">Verifying payment...</span>
+                <span className="ml-2 text-gray-600">Loading contract...</span>
               </div>
             </CardContent>
           </Card>
@@ -98,7 +86,8 @@ export default function ContractDownloadPage() {
     );
   }
 
-  if (error || !paymentVerified) {
+  // Error loading contract
+  if (contractError || !contract) {
     return (
       <section className="flex-1 p-4 lg:p-8">
         <div className="max-w-2xl mx-auto">
@@ -110,15 +99,15 @@ export default function ContractDownloadPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Payment Issue</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Contract Not Found</h3>
                 <p className="text-gray-600 mb-6">
-                  {error || 'Payment could not be verified. Please contact support.'}
+                  Unable to load contract information. Please try again.
                 </p>
                 <div className="flex gap-4 justify-center">
-                  <Link href={`/dashboard/contracts/${contractId}/preview`}>
+                  <Link href="/dashboard">
                     <Button variant="outline">
                       <ArrowLeft className="mr-2 h-4 w-4" />
-                      Back to Preview
+                      Back to Dashboard
                     </Button>
                   </Link>
                   <Link href="/contact">
@@ -136,20 +125,22 @@ export default function ContractDownloadPage() {
   return (
     <section className="flex-1 p-4 lg:p-8">
       <div className="max-w-2xl mx-auto">
-        <Card>
-          <CardHeader>
-            <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                <CheckCircle className="h-8 w-8 text-green-600" />
+        {/* Payment Status Card */}
+        {isPaid ? (
+          <Card>
+            <CardHeader>
+              <div className="text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                </div>
+                <CardTitle className="text-2xl text-gray-900">Payment Complete!</CardTitle>
               </div>
-              <CardTitle className="text-2xl text-gray-900">Payment Successful!</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center space-y-6">
-              <p className="text-gray-600">
-                Your payment has been processed successfully. Your professional cohabitation agreement is now ready for download.
-              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center space-y-6">
+                <p className="text-gray-600">
+                  Your payment has been processed successfully. Your professional cohabitation agreement is now ready for download.
+                </p>
 
               <div className="bg-gray-50 rounded-lg p-6">
                 <div className="flex items-center justify-center mb-4">
@@ -166,75 +157,137 @@ export default function ContractDownloadPage() {
                 </div>
               </div>
 
-              <Button 
-                onClick={handleDownload}
-                disabled={isDownloading}
-                size="lg"
-                className="bg-orange-500 hover:bg-orange-600 text-lg px-8 py-3"
-              >
-                {isDownloading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Generating PDF...
-                  </>
-                ) : (
-                  <>
-                    <Download className="mr-2 h-5 w-5" />
-                    Download Your Contract
-                  </>
+                <Button 
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                  size="lg"
+                  className="bg-orange-500 hover:bg-orange-600 text-lg px-8 py-3"
+                >
+                  {isDownloading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Generating PDF...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-5 w-5" />
+                      Download Your Contract
+                    </>
+                  )}
+                </Button>
+
+                {downloadError && (
+                  <div className="text-red-600 text-sm">{downloadError}</div>
                 )}
-              </Button>
 
-              <div className="text-sm text-gray-500">
-                <p>
-                  Having issues? <Link href="/contact" className="text-orange-500 hover:underline">Contact our support team</Link>
-                </p>
+                <div className="text-sm text-gray-500">
+                  <p>
+                    Having issues? <Link href="/contact" className="text-orange-500 hover:underline">Contact our support team</Link>
+                  </p>
+                </div>
+
+                <div className="border-t pt-6">
+                  <Link href="/dashboard/contracts">
+                    <Button variant="outline">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back to Contracts
+                    </Button>
+                  </Link>
+                </div>
               </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader>
+              <div className="text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4">
+                  <CreditCard className="h-8 w-8 text-yellow-600" />
+                </div>
+                <CardTitle className="text-2xl text-gray-900">Payment Required</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center space-y-6">
+                <p className="text-gray-600">
+                  You must complete payment before you can download your contract.
+                </p>
 
-              <div className="border-t pt-6">
-                <Link href="/dashboard/contracts">
-                  <Button variant="outline">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Contracts
+                <div className="bg-yellow-50 rounded-lg p-6 border border-yellow-200">
+                  <div className="flex items-center justify-center mb-4">
+                    <FileText className="h-8 w-8 text-yellow-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Alberta Cohabitation Agreement</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Professional legal document customized for your situation
+                  </p>
+                  <div className="text-lg font-semibold text-gray-900 mb-2">$735.00 CAD</div>
+                  <div className="text-sm text-gray-500">Includes 5% GST</div>
+                </div>
+
+                <Link href={`/dashboard/contracts/${contractId}/preview`}>
+                  <Button 
+                    size="lg"
+                    className="bg-orange-500 hover:bg-orange-600 text-lg px-8 py-3"
+                  >
+                    <CreditCard className="mr-2 h-5 w-5" />
+                    Complete Payment
                   </Button>
                 </Link>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Payment Receipt */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-sm text-gray-600">Payment Receipt</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Item:</span>
-                <span>Alberta Cohabitation Agreement</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Amount:</span>
-                <span>$700.00 CAD</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Payment Method:</span>
-                <span>Credit Card</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Status:</span>
-                <span className="text-green-600 font-medium">Paid</span>
-              </div>
-              {sessionId && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Transaction ID:</span>
-                  <span className="font-mono text-xs">{sessionId.slice(0, 20)}...</span>
+                <div className="text-sm text-gray-500">
+                  <p>
+                    Questions? <Link href="/contact" className="text-orange-500 hover:underline">Contact our support team</Link>
+                  </p>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+
+                <div className="border-t pt-6">
+                  <Link href="/dashboard/contracts">
+                    <Button variant="outline">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back to Contracts
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Payment Receipt - only show if paid */}
+        {isPaid && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="text-sm text-gray-600">Payment Receipt</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Item:</span>
+                  <span>Alberta Cohabitation Agreement</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Amount:</span>
+                  <span>$735.00 CAD</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Payment Method:</span>
+                  <span>Credit Card</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Status:</span>
+                  <span className="text-green-600 font-medium">Paid</span>
+                </div>
+                {sessionId && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Transaction ID:</span>
+                    <span className="font-mono text-xs">{sessionId.slice(0, 20)}...</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </section>
   );
