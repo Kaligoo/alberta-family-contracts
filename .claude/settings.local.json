@@ -53,7 +53,9 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:gotenberg.dev)",
       "WebFetch(domain:www.lawdepot.com)",
-      "WebFetch(domain:www.legalzoom.com)"
+      "WebFetch(domain:www.legalzoom.com)",
+      "Bash(claude --version)",
+      "WebFetch(domain:docs.anthropic.com)"
     ],
     "deny": []
   }

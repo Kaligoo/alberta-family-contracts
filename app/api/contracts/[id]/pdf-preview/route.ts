@@ -103,8 +103,8 @@ async function generateWatermarkedPDFPreview(contract: any, user: any): Promise<
     // Convert to PDF using Gotenberg (same as PDF v2) for consistency
     const pdfBuffer = await convertWatermarkedWordToPDF(watermarkedDocxBuffer);
     
-    // Limit to first 3 pages for preview
-    const previewPdfBuffer = await limitPDFToFirstPages(pdfBuffer, 3);
+    // Limit to first page only for preview
+    const previewPdfBuffer = await limitPDFToFirstPages(pdfBuffer, 1);
     
     console.log('Successfully generated watermarked PDF preview');
     return new Uint8Array(previewPdfBuffer);
@@ -220,7 +220,7 @@ async function limitPDFToFirstPages(pdfBuffer: Buffer, maxPages: number): Promis
       });
       
       // Footer watermark
-      addedPage.drawText(`Preview Page ${index + 1} of ${Math.min(maxPages, totalPages)} • Purchase full agreement at Alberta Family Contracts`, {
+      addedPage.drawText(`Preview Page ${index + 1} of ${Math.min(maxPages, totalPages)} • Purchase full agreement at Agreeable.ca`, {
         x: 50,
         y: 20,
         size: 8,
