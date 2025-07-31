@@ -53,28 +53,9 @@ export default function ContractPreviewPage() {
   // Direct URL to the PDF endpoint
   const pdfUrl = contractId ? `/api/contracts/${contractId}/pdf-preview` : null;
 
-  const handlePurchase = async () => {
-    try {
-      const response = await fetch(`/api/contracts/${contractId}/payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.url) {
-          window.location.href = data.url;
-        }
-      } else {
-        const errorData = await response.json();
-        alert(errorData.error || 'Failed to initiate payment');
-      }
-    } catch (error) {
-      console.error('Payment error:', error);
-      alert('Failed to initiate payment. Please try again.');
-    }
+  const handlePurchase = () => {
+    // Navigate to the embedded purchase page instead of directly to Stripe
+    window.location.href = `/dashboard/contracts/${contractId}/purchase`;
   };
 
   if (isLoading) {

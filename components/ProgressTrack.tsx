@@ -43,7 +43,7 @@ const steps = [
     title: 'Purchase',
     description: 'Complete payment',
     icon: ShoppingCart,
-    paths: [],
+    paths: ['/dashboard/contracts/*/purchase'],
     requiresContract: true,
     requiresData: true,
     linkTo: null // Will be dynamic based on contract ID
@@ -79,6 +79,7 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
     if (pathname === '/dashboard/get-started') return 0;
     if (pathname === '/dashboard/edit-contract') return 1;
     if (pathname.includes('/preview')) return 2;
+    if (pathname.includes('/purchase')) return 3;
     if (pathname.includes('/download')) return 4;
     if (pathname === '/dashboard/send-to-lawyer') return 5;
     
@@ -133,7 +134,7 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
           targetUrl = `/dashboard/contracts/${contractId}/preview`;
           break;
         case 'purchase':
-          targetUrl = `/dashboard/contracts/${contractId}/preview#purchase`;
+          targetUrl = `/dashboard/contracts/${contractId}/purchase`;
           break;
         case 'download':
           targetUrl = `/dashboard/contracts/${contractId}/download`;
