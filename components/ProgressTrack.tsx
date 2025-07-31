@@ -35,7 +35,6 @@ const steps = [
     icon: Eye,
     paths: ['/dashboard/contracts/*/preview'],
     requiresContract: true,
-    requiresData: true,
     linkTo: null // Will be dynamic based on contract ID
   },
   {
@@ -45,7 +44,6 @@ const steps = [
     icon: ShoppingCart,
     paths: ['/dashboard/contracts/*/purchase'],
     requiresContract: true,
-    requiresData: true,
     linkTo: null // Will be dynamic based on contract ID
   },
   {
@@ -112,7 +110,7 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
     
     // Check if step requirements are met
     if (step.requiresContract && !contractId && !contract) return 'disabled';
-    if (step.requiresData && (!contract?.userFullName || !contract?.partnerFullName)) return 'disabled';
+    // Removed requiresData check - users can now preview even with incomplete data
     if (step.requiresPurchase && !contract?.isPaid) return 'disabled';
     
     // Determine status based on current position
