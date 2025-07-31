@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowLeft, Mail, Send, CheckCircle, Loader2, FileText } from 'lucide-react';
+import { ArrowLeft, Mail, Send, CheckCircle, Loader2, FileText, Plus, X } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
@@ -49,6 +49,12 @@ function SendToLawyerPageContent() {
   const [paymentVerified, setPaymentVerified] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(!!sessionId);
 
+  // Add lawyer form state
+  const [showAddLawyerForm, setShowAddLawyerForm] = useState<'user' | 'partner' | null>(null);
+  const [addLawyerData, setAddLawyerData] = useState({ name: '', email: '', firm: '' });
+  const [isAddingLawyer, setIsAddingLawyer] = useState(false);
+  const [addLawyerError, setAddLawyerError] = useState('');
+
   // Fetch contract data
   const { data: contractData, error } = useSWR(
     contractId ? `/api/contracts/${contractId}` : null,
@@ -56,7 +62,7 @@ function SendToLawyerPageContent() {
   );
 
   // Fetch lawyers data
-  const { data: lawyersData, error: lawyersError } = useSWR(
+  const { data: lawyersData, error: lawyersError, mutate } = useSWR(
     '/api/lawyers',
     fetcher
   );
@@ -103,9 +109,62 @@ function SendToLawyerPageContent() {
     }));
   };
 
-  // Filter lawyers based on party
-  const getUserLawyers = () => lawyerOptions.filter(l => l.party === 'user' || l.party === 'both');
-  const getPartnerLawyers = () => lawyerOptions.filter(l => l.party === 'partner' || l.party === 'both');
+  const handleAddLawyer = async () => {
+    if (!addLawyerData.name || !addLawyerData.email || !addLawyerData.firm) {
+      setAddLawyerError('Name, email, and firm are required');
+      return;
+    }
+
+    setIsAddingLawyer(true);
+    setAddLawyerError('');
+
+    try {
+      const response = await fetch('/api/lawyers/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...addLawyerData,
+          party: showAddLawyerForm === 'user' ? 'user' : 'partner'
+        })
+      });
+
+      if (response.ok) {
+        mutate(); // Refresh lawyers list
+        setAddLawyerData({ name: '', email: '', firm: '' });
+        setShowAddLawyerForm(null);
+      } else {
+        const error = await response.json();
+        setAddLawyerError(error.error || 'Failed to add lawyer');
+      }
+    } catch (error) {
+      setAddLawyerError('Network error occurred');
+    } finally {
+      setIsAddingLawyer(false);
+    }
+  };
+
+  // Get selected lawyer details
+  const selectedUserLawyer = lawyerOptions.find(l => l.id === selectedLawyers.user);
+  const selectedPartnerLawyer = lawyerOptions.find(l => l.id === selectedLawyers.partner);
+
+  // Check if lawyers are from same firm
+  const areLawyersFromSameFirm = selectedUserLawyer && selectedPartnerLawyer && 
+    selectedUserLawyer.firm.toLowerCase() === selectedPartnerLawyer.firm.toLowerCase();
+
+  // Filter lawyers based on party and same-firm prevention
+  const getUserLawyers = () => {
+    const baseLawyers = lawyerOptions.filter(l => l.party === 'user' || l.party === 'both');
+    if (!selectedPartnerLawyer) return baseLawyers;
+    // Filter out lawyers from same firm as selected partner lawyer
+    return baseLawyers.filter(l => l.firm.toLowerCase() !== selectedPartnerLawyer.firm.toLowerCase());
+  };
+
+  const getPartnerLawyers = () => {
+    const baseLawyers = lawyerOptions.filter(l => l.party === 'partner' || l.party === 'both');
+    if (!selectedUserLawyer) return baseLawyers;
+    // Filter out lawyers from same firm as selected user lawyer
+    return baseLawyers.filter(l => l.firm.toLowerCase() !== selectedUserLawyer.firm.toLowerCase());
+  };
 
   const handleSendToLawyers = async () => {
     if (!selectedLawyers.user || !selectedLawyers.partner || !contractId) {
@@ -270,6 +329,24 @@ function SendToLawyerPageContent() {
           </Card>
         )}
 
+        {/* Same Firm Warning */}
+        {areLawyersFromSameFirm && (
+          <Card className="mb-6 border-red-200 bg-red-50">
+            <CardContent className="pt-6">
+              <div className="flex items-center">
+                <div className="h-5 w-5 text-red-600 mr-3">⚠</div>
+                <div>
+                  <h3 className="font-semibold text-red-800">Same Law Firm Selected</h3>
+                  <p className="text-red-700 text-sm">
+                    Both lawyers are from the same firm ({selectedUserLawyer?.firm}). For proper legal representation, 
+                    each party must have independent counsel from different law firms. Please select lawyers from different firms.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Payment Required Message */}
         {!paymentLoading && !paymentVerified && !contract?.isPaid && (
           <Card className="mb-6 border-yellow-200 bg-yellow-50">
@@ -354,6 +431,79 @@ function SendToLawyerPageContent() {
                   No lawyers available for user representation
                 </div>
               )}
+              
+              {/* Add Lawyer Button */}
+              {showAddLawyerForm !== 'user' && (
+                <Button
+                  onClick={() => setShowAddLawyerForm('user')}
+                  variant="outline"
+                  className="w-full mt-4"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add New Lawyer
+                </Button>
+              )}
+
+              {/* Add Lawyer Form */}
+              {showAddLawyerForm === 'user' && (
+                <div className="mt-4 p-4 border rounded-lg bg-gray-50">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium">Add New Lawyer</h4>
+                    <Button
+                      onClick={() => {
+                        setShowAddLawyerForm(null);
+                        setAddLawyerData({ name: '', email: '', firm: '' });
+                        setAddLawyerError('');
+                      }}
+                      variant="ghost"
+                      size="sm"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      placeholder="Lawyer Name"
+                      value={addLawyerData.name}
+                      onChange={(e) => setAddLawyerData(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email Address"
+                      value={addLawyerData.email}
+                      onChange={(e) => setAddLawyerData(prev => ({ ...prev, email: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Law Firm Name"
+                      value={addLawyerData.firm}
+                      onChange={(e) => setAddLawyerData(prev => ({ ...prev, firm: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    />
+                    <Button
+                      onClick={handleAddLawyer}
+                      disabled={isAddingLawyer}
+                      className="w-full"
+                      size="sm"
+                    >
+                      {isAddingLawyer ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Adding...
+                        </>
+                      ) : (
+                        'Add Lawyer'
+                      )}
+                    </Button>
+                    {addLawyerError && (
+                      <p className="text-red-600 text-xs">{addLawyerError}</p>
+                    )}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -403,6 +553,79 @@ function SendToLawyerPageContent() {
                   No lawyers available for partner representation
                 </div>
               )}
+              
+              {/* Add Lawyer Button */}
+              {showAddLawyerForm !== 'partner' && (
+                <Button
+                  onClick={() => setShowAddLawyerForm('partner')}
+                  variant="outline"
+                  className="w-full mt-4"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add New Lawyer
+                </Button>
+              )}
+
+              {/* Add Lawyer Form */}
+              {showAddLawyerForm === 'partner' && (
+                <div className="mt-4 p-4 border rounded-lg bg-gray-50">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium">Add New Lawyer</h4>
+                    <Button
+                      onClick={() => {
+                        setShowAddLawyerForm(null);
+                        setAddLawyerData({ name: '', email: '', firm: '' });
+                        setAddLawyerError('');
+                      }}
+                      variant="ghost"
+                      size="sm"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      placeholder="Lawyer Name"
+                      value={addLawyerData.name}
+                      onChange={(e) => setAddLawyerData(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email Address"
+                      value={addLawyerData.email}
+                      onChange={(e) => setAddLawyerData(prev => ({ ...prev, email: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Law Firm Name"
+                      value={addLawyerData.firm}
+                      onChange={(e) => setAddLawyerData(prev => ({ ...prev, firm: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    />
+                    <Button
+                      onClick={handleAddLawyer}
+                      disabled={isAddingLawyer}
+                      className="w-full"
+                      size="sm"
+                    >
+                      {isAddingLawyer ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Adding...
+                        </>
+                      ) : (
+                        'Add Lawyer'
+                      )}
+                    </Button>
+                    {addLawyerError && (
+                      <p className="text-red-600 text-xs">{addLawyerError}</p>
+                    )}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -448,7 +671,7 @@ function SendToLawyerPageContent() {
           </Link>
           <Button 
             onClick={handleSendToLawyers}
-            disabled={!selectedLawyers.user || !selectedLawyers.partner || isSending || (!paymentVerified && !contract?.isPaid)}
+            disabled={!selectedLawyers.user || !selectedLawyers.partner || isSending || (!paymentVerified && !contract?.isPaid) || areLawyersFromSameFirm}
             className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isSending ? (
@@ -470,6 +693,15 @@ function SendToLawyerPageContent() {
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-500">
               Complete payment to enable sending contract to lawyers
+            </p>
+          </div>
+        )}
+
+        {/* Same firm prevention note */}
+        {areLawyersFromSameFirm && (
+          <div className="mt-4 text-center">
+            <p className="text-sm text-red-600">
+              Cannot send to lawyers from the same firm. Please select lawyers from different firms.
             </p>
           </div>
         )}

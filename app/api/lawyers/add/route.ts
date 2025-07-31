@@ -4,41 +4,17 @@ import { db } from '@/lib/db/drizzle';
 import { lawyers } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
-// GET - Fetch all lawyers
-export async function GET() {
-  try {
-    const user = await getUser();
-    
-    if (!user || user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const allLawyers = await db
-      .select()
-      .from(lawyers)
-      .orderBy(lawyers.name);
-
-    return NextResponse.json({ lawyers: allLawyers });
-  } catch (error) {
-    console.error('Error fetching lawyers:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch lawyers' },
-      { status: 500 }
-    );
-  }
-}
-
-// POST - Create a new lawyer
+// POST - Add a new lawyer (accessible to regular users)
 export async function POST(request: NextRequest) {
   try {
     const user = await getUser();
     
-    if (!user || user.role !== 'admin') {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-    const { name, email, firm, phone, address, website, party, isActive } = body;
+    const { name, email, firm, party } = body;
 
     if (!name || !email || !firm || !party) {
       return NextResponse.json(
@@ -74,19 +50,16 @@ export async function POST(request: NextRequest) {
         name,
         email,
         firm,
-        phone: phone || null,
-        address: address || null,
-        website: website || null,
         party,
-        isActive: isActive || 'true'
+        isActive: 'true'
       })
       .returning();
 
     return NextResponse.json({ lawyer: newLawyer }, { status: 201 });
   } catch (error) {
-    console.error('Error creating lawyer:', error);
+    console.error('Error adding lawyer:', error);
     return NextResponse.json(
-      { error: 'Failed to create lawyer' },
+      { error: 'Failed to add lawyer' },
       { status: 500 }
     );
   }
