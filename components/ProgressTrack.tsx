@@ -251,7 +251,7 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
                     }
                   )}
                 >
-                  {step.id === 'purchase' && contract?.isPaid ? (
+                  {step.id === 'purchase' && (contract?.isPaid === 'true' || contract?.isPaid === true) ? (
                     <span className="flex items-center">
                       {step.title} <span className="ml-2 text-xs font-bold text-green-600">(PAID)</span>
                     </span>
@@ -270,7 +270,7 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
                     }
                   )}
                 >
-                  {step.id === 'purchase' && contract?.isPaid ? 'Already paid' : step.description}
+                  {step.id === 'purchase' && (contract?.isPaid === 'true' || contract?.isPaid === true) ? 'Already paid' : step.description}
                 </div>
               </div>
             </div>

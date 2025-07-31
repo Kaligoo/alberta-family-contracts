@@ -38,8 +38,8 @@ export default function ContractsPage() {
       });
 
       if (response.ok) {
-        // Redirect to dashboard to edit the now-current contract
-        window.location.href = '/dashboard';
+        // Redirect to edit-contract page to edit the now-current contract
+        window.location.href = '/dashboard/edit-contract';
       } else {
         alert('Failed to set current contract. Please try again.');
       }
