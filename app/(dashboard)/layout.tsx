@@ -100,26 +100,26 @@ function Header() {
     <header className="border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <Link href="/" className="flex items-center">
-          <Scale className="h-6 w-6 text-orange-500" />
-          <span className="ml-2 text-xl font-semibold text-gray-900">Alberta Family Contracts</span>
+          <Scale className="h-6 w-6 text-blue-600" />
+          <span className="ml-2 text-xl font-semibold text-gray-900">Agreeable.ca</span>
         </Link>
         <div className="flex items-center space-x-6">
           <div className="hidden md:flex items-center space-x-4">
             <Link
               href="/about"
-              className="text-gray-600 hover:text-orange-500 px-3 py-2 text-sm font-medium transition-colors"
+              className="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
             >
               About
             </Link>
             <Link
               href="/faq"
-              className="text-gray-600 hover:text-orange-500 px-3 py-2 text-sm font-medium transition-colors"
+              className="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
             >
               FAQ
             </Link>
             <Link
               href="/contact"
-              className="text-gray-600 hover:text-orange-500 px-3 py-2 text-sm font-medium transition-colors"
+              className="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
             >
               Contact
             </Link>

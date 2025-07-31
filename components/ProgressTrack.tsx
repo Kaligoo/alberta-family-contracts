@@ -171,8 +171,8 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
                     "flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors",
                     {
                       'bg-green-500 border-green-500 text-white': status === 'completed',
-                      'bg-orange-500 border-orange-500 text-white': status === 'current',
-                      'bg-orange-100 border-orange-300 text-orange-600': status === 'next',
+                      'bg-blue-600 border-blue-600 text-white': status === 'current',
+                      'bg-blue-100 border-blue-300 text-blue-600': status === 'next',
                       'bg-gray-100 border-gray-300 text-gray-400': status === 'upcoming' || status === 'disabled'
                     }
                   )}
@@ -191,7 +191,7 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
                       "w-0.5 h-6 mt-2 transition-colors",
                       {
                         'bg-green-300': index < currentStepIndex,
-                        'bg-orange-300': index === currentStepIndex,
+                        'bg-blue-300': index === currentStepIndex,
                         'bg-gray-200': index > currentStepIndex
                       }
                     )}
@@ -215,7 +215,7 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
                     "text-sm font-medium transition-colors",
                     {
                       'text-green-600': status === 'completed',
-                      'text-orange-600': status === 'current',
+                      'text-blue-600': status === 'current',
                       'text-gray-900': status === 'next',
                       'text-gray-400': status === 'upcoming' || status === 'disabled'
                     }
@@ -228,7 +228,7 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
                     "text-xs transition-colors",
                     {
                       'text-green-500': status === 'completed',
-                      'text-orange-500': status === 'current',
+                      'text-blue-500': status === 'current',
                       'text-gray-600': status === 'next',
                       'text-gray-400': status === 'upcoming' || status === 'disabled'
                     }
@@ -250,7 +250,7 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div
-            className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${((currentStepIndex + 1) / steps.length) * 100}%` }}
           />
         </div>
