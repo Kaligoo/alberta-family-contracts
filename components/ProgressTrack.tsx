@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Check, Circle, Eye, Edit, ShoppingCart, Download, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -68,9 +69,37 @@ const steps = [
   }
 ];
 
+// Helper function to check if contract is paid - handles various possible values
+function isPaidCheck(contract: any): boolean {
+  if (!contract) return false;
+  
+  const isPaid = contract.isPaid;
+  
+  // Handle various possible values that could indicate "paid"
+  return isPaid === true ||
+         isPaid === 'true' ||
+         isPaid === 1 ||
+         isPaid === '1' ||
+         isPaid === 'paid' ||
+         (typeof isPaid === 'string' && isPaid.toLowerCase() === 'true');
+}
+
 export function ProgressTrack({ contractId, contract, className }: ProgressTrackProps) {
   const pathname = usePathname();
   const router = useRouter();
+
+  // Debug logging for payment status
+  React.useEffect(() => {
+    if (contract) {
+      console.log('ProgressTrack Debug:', {
+        contractId: contract.id,
+        isPaid: contract.isPaid,
+        isPaidType: typeof contract.isPaid,
+        isPaidValue: JSON.stringify(contract.isPaid),
+        currentLogicResult: contract.isPaid === 'true' || contract.isPaid === true
+      });
+    }
+  }, [contract]);
 
   const getCurrentStep = () => {
     // Specific path-based detection (more reliable)
@@ -251,7 +280,7 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
                     }
                   )}
                 >
-                  {step.id === 'purchase' && (contract?.isPaid === 'true' || contract?.isPaid === true) ? (
+                  {step.id === 'purchase' && isPaidCheck(contract) ? (
                     <span className="flex items-center">
                       {step.title} <span className="ml-2 text-xs font-bold text-green-600">(PAID)</span>
                     </span>
@@ -270,7 +299,7 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
                     }
                   )}
                 >
-                  {step.id === 'purchase' && (contract?.isPaid === 'true' || contract?.isPaid === true) ? 'Already paid' : step.description}
+                  {step.id === 'purchase' && isPaidCheck(contract) ? 'Already paid' : step.description}
                 </div>
               </div>
             </div>
