@@ -151,8 +151,7 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
     if (!targetUrl && !contractId && contract && (step.id === 'preview' || step.id === 'purchase' || step.id === 'download' || step.id === 'send-lawyer')) {
       // Store the intended step in sessionStorage so we can redirect after save
       sessionStorage.setItem('pendingStepNavigation', step.id);
-      // Show alert and redirect to edit contract to save first
-      alert('Please save your contract first to access this step.');
+      // Redirect to edit contract to save first (removed alert dialog)
       router.push('/dashboard/edit-contract');
       return;
     }
