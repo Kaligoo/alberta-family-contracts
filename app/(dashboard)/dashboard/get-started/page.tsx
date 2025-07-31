@@ -67,7 +67,7 @@ export default function GetStartedPage() {
           body: JSON.stringify({
             userFullName: '',
             partnerFullName: '',
-            agreementType: agreementId, // Track the agreement type
+            contractType: agreementId, // Track the agreement type - use contractType to match API
             // Add other default fields as needed
           }),
         });

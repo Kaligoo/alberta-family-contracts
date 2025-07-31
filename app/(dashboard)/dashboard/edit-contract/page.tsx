@@ -808,7 +808,7 @@ function ScheduleACard({ formData, updateFormData }: {
           )}
         </button>
         <p className="text-sm text-gray-600">
-          Complete financial disclosure required for your cohabitation agreement
+          Complete financial disclosure required for your {formData.contractType} agreement
         </p>
       </CardHeader>
       
@@ -950,9 +950,23 @@ function ScheduleACard({ formData, updateFormData }: {
   );
 }
 
+const formatContractTypeName = (contractType: string) => {
+  switch (contractType) {
+    case 'cohabitation':
+      return 'Cohabitation Agreement';
+    case 'prenuptial':
+      return 'Prenuptial Agreement';
+    case 'postnuptial':
+      return 'Postnuptial Agreement';
+    default:
+      return 'Family Agreement';
+  }
+};
+
 export default function DashboardPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
+    contractType: 'cohabitation',
     userFullName: '',
     partnerFullName: '',
     userFirstName: '',
@@ -1037,6 +1051,7 @@ export default function DashboardPage() {
     
     if (contract) {
       setFormData({
+        contractType: contract.contractType || 'cohabitation',
         userFullName: contract.userFullName || '',
         partnerFullName: contract.partnerFullName || '',
         userFirstName: contract.userFirstName || '',
@@ -1236,7 +1251,7 @@ export default function DashboardPage() {
     <section className="flex-1 p-4 lg:p-8">
       <div className="max-w-4xl">
         <div className="mb-8">
-          <h1 className="text-2xl lg:text-3xl font-bold mb-2">Create Your Cohabitation Agreement</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold mb-2">Create Your {formatContractTypeName(formData.contractType)}</h1>
           <p className="text-gray-600">
             Let's gather some basic information to create your personalized family contract.
           </p>
