@@ -97,6 +97,19 @@ export default function ContractsPage() {
     });
   };
 
+  const formatContractType = (contractType: string) => {
+    switch (contractType) {
+      case 'cohabitation':
+        return 'Cohabitation Agreement';
+      case 'prenuptial':
+        return 'Prenuptial Agreement';
+      case 'postnuptial':
+        return 'Postnuptial Agreement';
+      default:
+        return 'Family Agreement';
+    }
+  };
+
   return (
     <section className="flex-1 p-4 lg:p-8">
       <div className="max-w-6xl">
@@ -104,7 +117,7 @@ export default function ContractsPage() {
           <div>
             <h1 className="text-2xl lg:text-3xl font-bold mb-2">Your Contracts</h1>
             <p className="text-gray-600">
-              Manage all your family contracts and cohabitation agreements.
+              Manage all your family agreements including cohabitation, prenuptial, and postnuptial contracts.
             </p>
           </div>
           <Link href="/dashboard/contracts/new">
@@ -141,7 +154,7 @@ export default function ContractsPage() {
                 <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No contracts yet</h3>
                 <p className="text-gray-600 mb-6">
-                  Get started by creating your first cohabitation agreement.
+                  Get started by creating your first family agreement.
                 </p>
                 <Link href="/dashboard/contracts/new">
                   <Button className="bg-orange-500 hover:bg-orange-600">
@@ -179,7 +192,7 @@ export default function ContractsPage() {
                 <CardContent>
                   <div className="space-y-3">
                     <div className="text-sm text-gray-600">
-                      <p><strong>Type:</strong> {contract.contractType}</p>
+                      <p><strong>Type:</strong> {formatContractType(contract.contractType)}</p>
                       <p><strong>Created:</strong> {formatDate(contract.createdAt)}</p>
                       <p><strong>Updated:</strong> {formatDate(contract.updatedAt)}</p>
                     </div>

@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
         scheduleDebtsUnsecured: body.scheduleDebtsUnsecured || [],
         scheduleDebtsOther: body.scheduleDebtsOther || [],
         status: 'draft',
-        contractType: 'cohabitation',
+        contractType: body.contractType || 'cohabitation',
       })
       .returning();
 
