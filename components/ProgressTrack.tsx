@@ -141,6 +141,18 @@ export function ProgressTrack({ contractId, contract, className }: ProgressTrack
       }
     }
     
+    // If we still don't have a target URL but need to go to a contract-specific page,
+    // and we have contract data but no contractId (test data scenario),
+    // redirect to edit-contract to save first
+    if (!targetUrl && !contractId && contract && (step.id === 'preview' || step.id === 'purchase' || step.id === 'download')) {
+      // Store the intended step in sessionStorage so we can redirect after save
+      sessionStorage.setItem('pendingStepNavigation', step.id);
+      // Show alert and redirect to edit contract to save first
+      alert('Please save your contract first to access this step.');
+      router.push('/dashboard/edit-contract');
+      return;
+    }
+    
     if (targetUrl) {
       router.push(targetUrl);
     }

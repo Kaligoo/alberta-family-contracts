@@ -1114,8 +1114,29 @@ export default function DashboardPage() {
 
         if (response.ok) {
           setSaveState({ success: 'Contract saved successfully!' });
-          // Refresh the contract data
-          window.location.reload();
+          
+          // Check if there's a pending step navigation
+          const pendingStep = sessionStorage.getItem('pendingStepNavigation');
+          if (pendingStep) {
+            sessionStorage.removeItem('pendingStepNavigation');
+            // Redirect to the intended step after a short delay
+            setTimeout(() => {
+              switch (pendingStep) {
+                case 'preview':
+                  router.push(`/dashboard/contracts/${contractId}/preview`);
+                  break;
+                case 'purchase':
+                  router.push(`/dashboard/contracts/${contractId}/preview#purchase`);
+                  break;
+                case 'download':
+                  router.push(`/dashboard/contracts/${contractId}/download`);
+                  break;
+              }
+            }, 1000);
+          } else {
+            // Refresh the contract data
+            window.location.reload();
+          }
         } else {
           const errorData = await response.json();
           setSaveState({ error: errorData.error || 'Failed to save contract' });
@@ -1140,8 +1161,29 @@ export default function DashboardPage() {
             method: 'POST',
           });
           setSaveState({ success: 'Contract created and saved successfully!' });
-          // Refresh the page to load the new contract
-          window.location.reload();
+          
+          // Check if there's a pending step navigation
+          const pendingStep = sessionStorage.getItem('pendingStepNavigation');
+          if (pendingStep) {
+            sessionStorage.removeItem('pendingStepNavigation');
+            // Redirect to the intended step after a short delay
+            setTimeout(() => {
+              switch (pendingStep) {
+                case 'preview':
+                  router.push(`/dashboard/contracts/${contract.id}/preview`);
+                  break;
+                case 'purchase':
+                  router.push(`/dashboard/contracts/${contract.id}/preview#purchase`);
+                  break;
+                case 'download':
+                  router.push(`/dashboard/contracts/${contract.id}/download`);
+                  break;
+              }
+            }, 1000);
+          } else {
+            // Refresh the page to load the new contract
+            window.location.reload();
+          }
         } else {
           const errorData = await response.json();
           setSaveState({ error: errorData.error || 'Failed to create contract' });
