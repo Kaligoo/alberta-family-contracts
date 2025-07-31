@@ -8,6 +8,19 @@ import { useParams } from 'next/navigation';
 import useSWR from 'swr';
 import { isContractPaid } from '@/lib/utils/payment';
 
+const formatContractTypeName = (contractType: string) => {
+  switch (contractType) {
+    case 'cohabitation':
+      return 'cohabitation agreement';
+    case 'prenuptial':
+      return 'prenuptial agreement';
+    case 'postnuptial':
+      return 'postnuptial agreement';
+    default:
+      return 'family agreement';
+  }
+};
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ContractPreviewPage() {
@@ -126,7 +139,7 @@ export default function ContractPreviewPage() {
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold mb-2">Preview & Review</h1>
               <p className="text-gray-600">
-                Review the first page of your cohabitation agreement
+                Review the first page of your {formatContractTypeName(contract?.contractType || 'cohabitation')}
               </p>
             </div>
             

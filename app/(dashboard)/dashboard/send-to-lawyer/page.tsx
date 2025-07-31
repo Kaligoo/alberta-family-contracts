@@ -14,6 +14,19 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { isContractPaid } from '@/lib/utils/payment';
 
+const formatContractTypeName = (contractType: string) => {
+  switch (contractType) {
+    case 'cohabitation':
+      return 'Alberta Cohabitation Agreement';
+    case 'prenuptial':
+      return 'Alberta Prenuptial Agreement';
+    case 'postnuptial':
+      return 'Alberta Postnuptial Agreement';
+    default:
+      return 'Alberta Family Agreement';
+  }
+};
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 interface LawyerOption {
@@ -649,7 +662,7 @@ function SendToLawyerPageContent() {
                 </div>
                 <div>
                   <span className="font-medium">Document Type:</span>
-                  <div>Alberta Cohabitation Agreement</div>
+                  <div>{formatContractTypeName(contract?.contractType || 'cohabitation')}</div>
                 </div>
                 <div>
                   <span className="font-medium">Format:</span>

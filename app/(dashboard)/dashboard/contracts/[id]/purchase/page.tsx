@@ -9,6 +9,19 @@ import { useParams } from 'next/navigation';
 import useSWR from 'swr';
 import { isContractPaid } from '@/lib/utils/payment';
 
+const formatContractTypeName = (contractType: string) => {
+  switch (contractType) {
+    case 'cohabitation':
+      return 'cohabitation agreement';
+    case 'prenuptial':
+      return 'prenuptial agreement';
+    case 'postnuptial':
+      return 'postnuptial agreement';
+    default:
+      return 'family agreement';
+  }
+};
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ContractPurchasePage() {
@@ -123,7 +136,7 @@ export default function ContractPurchasePage() {
             <p className="text-gray-600">
               {isPaid 
                 ? 'Your agreement is ready! Follow these steps to complete the legal process'
-                : 'Complete your purchase to download your personalized cohabitation agreement'
+                : `Complete your purchase to download your personalized ${formatContractTypeName(contract?.contractType || 'cohabitation')}`
               }
             </p>
           </div>
@@ -143,7 +156,7 @@ export default function ContractPurchasePage() {
                 <div className="text-center">
                   <h3 className="text-lg font-semibold text-green-800 mb-2">Payment Complete!</h3>
                   <p className="text-green-700">
-                    Your cohabitation agreement has been successfully purchased and is ready for the next steps.
+                    Your {formatContractTypeName(contract?.contractType || 'cohabitation')} has been successfully purchased and is ready for the next steps.
                   </p>
                 </div>
               </CardContent>
@@ -164,7 +177,7 @@ export default function ContractPurchasePage() {
                   <div className="flex-1">
                     <h4 className="font-semibold text-blue-900 mb-2">Step 1: Download Your Agreement</h4>
                     <p className="text-blue-800 mb-3">
-                      Download the PDF version of your personalized cohabitation agreement. This document contains all the information you provided.
+                      Download the PDF version of your personalized {formatContractTypeName(contract?.contractType || 'cohabitation')}. This document contains all the information you provided.
                     </p>
                     <Link href={`/dashboard/contracts/${contractId}/download`}>
                       <Button className="bg-blue-600 hover:bg-blue-700">
@@ -212,7 +225,7 @@ export default function ContractPurchasePage() {
                     </ul>
                     <div className="bg-purple-100 rounded-lg p-3">
                       <p className="text-sm text-purple-800">
-                        <strong>Important:</strong> Each partner must use a different lawyer to ensure independent legal advice. This is a legal requirement for cohabitation agreements in Alberta.
+                        <strong>Important:</strong> Each partner must use a different lawyer to ensure independent legal advice. This is a legal requirement for {formatContractTypeName(contract?.contractType || 'cohabitation')}s in Alberta.
                       </p>
                     </div>
                   </div>

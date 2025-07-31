@@ -14,6 +14,32 @@ import { useParams, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { isContractPaid } from '@/lib/utils/payment';
 
+const formatContractTypeName = (contractType: string) => {
+  switch (contractType) {
+    case 'cohabitation':
+      return 'Cohabitation Agreement';
+    case 'prenuptial':
+      return 'Prenuptial Agreement';
+    case 'postnuptial':
+      return 'Postnuptial Agreement';
+    default:
+      return 'Family Agreement';
+  }
+};
+
+const formatContractTypeForFilename = (contractType: string) => {
+  switch (contractType) {
+    case 'cohabitation':
+      return 'cohabitation-agreement';
+    case 'prenuptial':
+      return 'prenuptial-agreement';
+    case 'postnuptial':
+      return 'postnuptial-agreement';
+    default:
+      return 'family-agreement';
+  }
+};
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ContractDownloadPage() {
@@ -54,7 +80,7 @@ export default function ContractDownloadPage() {
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        a.download = `cohabitation-agreement-${contractId}.pdf`;
+        a.download = `${formatContractTypeForFilename(contract?.contractType || 'cohabitation')}-${contractId}.pdf`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -140,14 +166,14 @@ export default function ContractDownloadPage() {
             <CardContent>
               <div className="text-center space-y-6">
                 <p className="text-gray-600">
-                  Your payment has been processed successfully. Your professional cohabitation agreement is now ready for download.
+                  Your payment has been processed successfully. Your professional {formatContractTypeName(contract?.contractType || 'cohabitation').toLowerCase()} is now ready for download.
                 </p>
 
               <div className="bg-gray-50 rounded-lg p-6">
                 <div className="flex items-center justify-center mb-4">
                   <FileText className="h-8 w-8 text-orange-500" />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">Alberta Cohabitation Agreement</h3>
+                <h3 className="font-semibold text-gray-900 mb-2">Alberta {formatContractTypeName(contract?.contractType || 'cohabitation')}</h3>
                 <p className="text-sm text-gray-600 mb-4">
                   Professional legal document customized for your situation
                 </p>
@@ -218,7 +244,7 @@ export default function ContractDownloadPage() {
                   <div className="flex items-center justify-center mb-4">
                     <FileText className="h-8 w-8 text-yellow-600" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Alberta Cohabitation Agreement</h3>
+                  <h3 className="font-semibold text-gray-900 mb-2">Alberta {formatContractTypeName(contract?.contractType || 'cohabitation')}</h3>
                   <p className="text-sm text-gray-600 mb-4">
                     Professional legal document customized for your situation
                   </p>
@@ -265,7 +291,7 @@ export default function ContractDownloadPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Item:</span>
-                  <span>Alberta Cohabitation Agreement</span>
+                  <span>Alberta {formatContractTypeName(contract?.contractType || 'cohabitation')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Amount:</span>
