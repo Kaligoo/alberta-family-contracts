@@ -6,6 +6,7 @@ import { ArrowLeft, Download, Edit, Loader2, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import useSWR from 'swr';
+import { isContractPaid } from '@/lib/utils/payment';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -16,13 +17,38 @@ export default function ContractPreviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [pdfReady, setPdfReady] = useState(false);
   
-  const { data: contractData } = useSWR(
+  const { data: contractData, mutate } = useSWR(
     `/api/contracts/${contractId}`,
-    fetcher
+    fetcher,
+    {
+      refreshInterval: 0,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true
+    }
   );
 
   const contract = contractData?.contract;
-  const isPaid = contract?.isPaid === 'true' || contract?.isPaid === true;
+  const isPaid = isContractPaid(contract);
+  
+  // Debug logging
+  console.log('Contract data (Preview):', {
+    contractId,
+    contract: contract ? {
+      id: contract.id,
+      isPaid: contract.isPaid,
+      isPaidType: typeof contract.isPaid,
+      status: contract.status
+    } : null,
+    isPaidCalculated: isPaid,
+    usingUtilityFunction: true
+  });
+
+  // Force data refresh on mount to ensure we have latest payment status
+  useEffect(() => {
+    if (contractId) {
+      mutate();
+    }
+  }, [contractId, mutate]);
 
   useEffect(() => {
     const checkPdfAvailability = async () => {
