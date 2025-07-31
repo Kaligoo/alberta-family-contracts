@@ -43,7 +43,7 @@ export default function ContractDownloadPage() {
     setDownloadError('');
     
     try {
-      const response = await fetch(`/api/contracts/${contractId}/pdf`, {
+      const response = await fetch(`/api/contracts/${contractId}/pdf-v2`, {
         method: 'GET',
       });
 
@@ -166,7 +166,7 @@ export default function ContractDownloadPage() {
                   {isDownloading ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Generating PDF...
+                      Preparing Document...
                     </>
                   ) : (
                     <>
