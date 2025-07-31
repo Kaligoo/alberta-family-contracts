@@ -52,72 +52,48 @@ export default function HomePage() {
                 <p className="text-sm text-gray-600 text-center">No credit card required • Get started in 2 minutes</p>
               </div>
             </div>
-            <div className="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-span-6 lg:flex lg:justify-center">
-              <div className="relative">
-                <Image 
-                  src="/family-hero.jpg"
-                  alt="Legal professionals representing professional family law services"
-                  width={600}
-                  height={200}
-                  className="rounded-2xl shadow-2xl object-contain"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/10 to-transparent rounded-2xl"></div>
+            <div className="mt-12 lg:mt-0 lg:col-span-6">
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">How It Works</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mx-auto mb-3">
+                      <span className="text-lg font-bold">1</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Choose Agreement</h3>
+                    <p className="text-gray-600 text-sm">Select the type of family agreement that fits your situation</p>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mx-auto mb-3">
+                      <FileText className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Fill Details</h3>
+                    <p className="text-gray-600 text-sm">Complete your information using our guided questionnaire</p>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mx-auto mb-3">
+                      <Shield className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Review & Purchase</h3>
+                    <p className="text-gray-600 text-sm">Preview your agreement and complete secure payment</p>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mx-auto mb-3">
+                      <Users className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Legal Consultation</h3>
+                    <p className="text-gray-600 text-sm">Each partner meets with a qualified lawyer for advice and signing</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-16 bg-white w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">How It Works</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">Simple steps to create your professional legal agreement</p>
-          </div>
-          <div className="lg:grid lg:grid-cols-4 lg:gap-8">
-            <div className="text-center">
-              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 text-blue-600 mx-auto mb-4">
-                <span className="text-xl font-bold">1</span>
-              </div>
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Choose Agreement</h3>
-                <p className="text-gray-600">Select the type of family agreement that fits your situation</p>
-              </div>
-            </div>
-
-            <div className="mt-8 lg:mt-0 text-center">
-              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 text-blue-600 mx-auto mb-4">
-                <FileText className="h-8 w-8" />
-              </div>
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Fill Details</h3>
-                <p className="text-gray-600">Complete your information using our guided questionnaire</p>
-              </div>
-            </div>
-
-            <div className="mt-8 lg:mt-0 text-center">
-              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 text-blue-600 mx-auto mb-4">
-                <Shield className="h-8 w-8" />
-              </div>
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Review & Purchase</h3>
-                <p className="text-gray-600">Preview your agreement and complete secure payment</p>
-              </div>
-            </div>
-
-            <div className="mt-8 lg:mt-0 text-center">
-              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 text-blue-600 mx-auto mb-4">
-                <Users className="h-8 w-8" />
-              </div>
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Legal Consultation</h3>
-                <p className="text-gray-600">Each partner meets with a qualified lawyer for advice and signing</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section className="py-16 bg-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

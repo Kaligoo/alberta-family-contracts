@@ -817,6 +817,20 @@ export default function AdminDashboardPage() {
                 >
                   {isRunningMigration ? 'Running Migration...' : 'Apply Schema Changes'}
                 </Button>
+                <Button 
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/admin/create-lawyers-table', { method: 'POST' });
+                      const result = await response.json();
+                      setMigrationStatus(result.success ? `Success: ${result.message}. Lawyers: ${result.lawyerCount}` : `Error: ${result.message}`);
+                    } catch (error) {
+                      setMigrationStatus('Error: Failed to create lawyers table');
+                    }
+                  }}
+                  className="bg-blue-500 hover:bg-blue-600"
+                >
+                  Create Lawyers Table
+                </Button>
               </div>
 
               {migrationStatus && (
