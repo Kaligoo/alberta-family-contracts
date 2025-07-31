@@ -7,6 +7,7 @@ import { ArrowLeft, ShoppingCart, Loader2, CreditCard, Shield, Lock, CheckCircle
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import useSWR from 'swr';
+import { isContractPaid } from '@/lib/utils/payment';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -22,7 +23,7 @@ export default function ContractPurchasePage() {
   );
 
   const contract = contractData?.contract;
-  const isPaid = contract?.isPaid === 'true' || contract?.isPaid === true;
+  const isPaid = isContractPaid(contract);
 
   const handlePurchase = async () => {
     // Don't initiate payment if contract is already paid
