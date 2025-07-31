@@ -24,7 +24,7 @@ const agreementTypes = [
     title: 'Prenuptial Agreement',
     description: 'For engaged couples before marriage',
     icon: Gem,
-    available: false,
+    available: true,
     detailedDescription: 'A prenuptial agreement is created before marriage to establish how assets, debts, and other financial matters will be handled during the marriage and in the event of divorce.',
     bestFor: 'Engaged couples who want to plan their financial future',
     timeline: 'Must be signed before your wedding ceremony'
@@ -56,8 +56,8 @@ export default function GetStartedPage() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
 
   const handleSelectAgreement = async (agreementId: string) => {
-    if (agreementId === 'cohabitation') {
-      // Create a new cohabitation contract and redirect to editing
+    if (agreementId === 'cohabitation' || agreementId === 'prenuptial') {
+      // Create a new contract and redirect to editing
       try {
         const response = await fetch('/api/contracts', {
           method: 'POST',
@@ -67,6 +67,7 @@ export default function GetStartedPage() {
           body: JSON.stringify({
             userFullName: '',
             partnerFullName: '',
+            agreementType: agreementId, // Track the agreement type
             // Add other default fields as needed
           }),
         });
@@ -90,8 +91,7 @@ export default function GetStartedPage() {
           Get Started with Your Legal Agreement
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Choose the type of agreement that best fits your situation. We'll guide you through 
-          creating a professional legal document tailored to your needs.
+          Choose the type of agreement that best fits your situation.
         </p>
       </div>
 

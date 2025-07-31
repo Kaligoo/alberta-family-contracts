@@ -25,6 +25,9 @@ export default function ContractPurchasePage() {
   const isPaid = contract?.isPaid === 'true' || contract?.isPaid === true;
 
   const handlePurchase = async () => {
+    // Don't initiate payment if contract is already paid
+    if (isPaid) return;
+    
     setIsLoading(true);
     setError(null);
     
@@ -313,11 +316,20 @@ export default function ContractPurchasePage() {
 
                   <Button 
                     onClick={handlePurchase}
-                    disabled={isLoading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-3"
+                    disabled={isLoading || isPaid}
+                    className={`w-full text-lg py-3 ${
+                      isPaid 
+                        ? "bg-gray-400 cursor-not-allowed" 
+                        : "bg-blue-600 hover:bg-blue-700"
+                    }`}
                     size="lg"
                   >
-                    {isLoading ? (
+                    {isPaid ? (
+                      <>
+                        <ShoppingCart className="mr-2 h-5 w-5" />
+                        Already Purchased
+                      </>
+                    ) : isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                         Processing...

@@ -57,6 +57,9 @@ export default function ContractPreviewPage() {
   const pdfUrl = contractId ? `/api/contracts/${contractId}/pdf-preview` : null;
 
   const handlePurchase = () => {
+    // Don't navigate if contract is already paid
+    if (isPaid) return;
+    
     // Navigate to the embedded purchase page instead of directly to Stripe
     window.location.href = `/dashboard/contracts/${contractId}/purchase`;
   };
