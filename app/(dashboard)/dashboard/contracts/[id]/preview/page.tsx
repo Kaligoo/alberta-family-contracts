@@ -21,6 +21,9 @@ export default function ContractPreviewPage() {
     fetcher
   );
 
+  const contract = contractData?.contract;
+  const isPaid = contract?.isPaid === 'true' || contract?.isPaid === true;
+
   useEffect(() => {
     const checkPdfAvailability = async () => {
       if (!contractId) return;
@@ -116,10 +119,11 @@ export default function ContractPreviewPage() {
               </Link>
               <Button 
                 onClick={handlePurchase}
-                className="bg-blue-600 hover:bg-blue-700"
+                disabled={isPaid}
+                className={isPaid ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
-                Purchase - $735 CAD
+                {isPaid ? "Already Purchased" : "Purchase - $735 CAD"}
               </Button>
             </div>
           </div>
@@ -192,11 +196,12 @@ export default function ContractPreviewPage() {
             </Link>
             <Button 
               onClick={handlePurchase}
+              disabled={isPaid}
               size="lg"
-              className="bg-blue-600 hover:bg-blue-700"
+              className={isPaid ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}
             >
               <ShoppingCart className="mr-2 h-4 w-4" />
-              Purchase Complete Agreement - $735 CAD
+              {isPaid ? "Complete Agreement Already Purchased" : "Purchase Complete Agreement - $735 CAD"}
             </Button>
           </div>
         </div>
