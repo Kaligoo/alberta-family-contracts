@@ -12,9 +12,9 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 export default function ContractPreviewPage() {
   const params = useParams();
   const contractId = params.id as string;
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pdfReady, setPdfReady] = useState(false);
   
   const { data: contractData } = useSWR(
     `/api/contracts/${contractId}`,
@@ -22,39 +22,36 @@ export default function ContractPreviewPage() {
   );
 
   useEffect(() => {
-    const generatePdfPreview = async () => {
+    const checkPdfAvailability = async () => {
       if (!contractId) return;
       
       setIsLoading(true);
       setError(null);
       
       try {
-        const response = await fetch(`/api/contracts/${contractId}/pdf-preview`);
+        // Test if the PDF endpoint is working
+        const response = await fetch(`/api/contracts/${contractId}/pdf-preview`, {
+          method: 'HEAD' // Just check if endpoint is available
+        });
         
         if (response.ok) {
-          const blob = await response.blob();
-          const url = URL.createObjectURL(blob);
-          setPdfUrl(url);
+          setPdfReady(true);
         } else {
           setError('Failed to generate PDF preview');
         }
       } catch (err) {
-        console.error('Error generating PDF preview:', err);
+        console.error('Error checking PDF availability:', err);
         setError('Failed to load PDF preview');
       } finally {
         setIsLoading(false);
       }
     };
 
-    generatePdfPreview();
-
-    // Cleanup URL when component unmounts
-    return () => {
-      if (pdfUrl) {
-        URL.revokeObjectURL(pdfUrl);
-      }
-    };
+    checkPdfAvailability();
   }, [contractId]);
+
+  // Direct URL to the PDF endpoint
+  const pdfUrl = contractId ? `/api/contracts/${contractId}/pdf-preview` : null;
 
   const handlePurchase = async () => {
     try {
@@ -148,15 +145,53 @@ export default function ContractPreviewPage() {
         </div>
 
         {/* PDF Preview */}
-        <div className="bg-white rounded-lg shadow-lg border border-gray-200">
-          {pdfUrl ? (
-            <iframe
-              src={pdfUrl}
-              className="w-full h-[800px] rounded-lg"
-              title="Contract Preview"
-            />
+        <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4">
+          {pdfReady && pdfUrl ? (
+            <div className="space-y-4">
+              {/* Primary PDF viewer - iframe */}
+              <div className="w-full h-[700px] border border-gray-200 rounded">
+                <iframe
+                  src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&page=1&zoom=FitH`}
+                  className="w-full h-full rounded"
+                  title="Contract Preview"
+                  style={{ border: 'none' }}
+                />
+              </div>
+              
+              {/* Fallback PDF viewer - embed */}
+              <div className="w-full h-[700px] border border-gray-200 rounded hidden" id="pdf-embed-fallback">
+                <embed
+                  src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                  type="application/pdf"
+                  className="w-full h-full rounded"
+                />
+              </div>
+              
+              <div className="text-center border-t pt-4">
+                <p className="text-sm text-gray-600 mb-3">
+                  Having trouble viewing the PDF? Try these options:
+                </p>
+                <div className="flex justify-center gap-4">
+                  <a 
+                    href={pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline text-sm"
+                  >
+                    Open in new tab
+                  </a>
+                  <a 
+                    href={pdfUrl}
+                    download="contract-preview.pdf"
+                    className="text-blue-600 hover:text-blue-800 underline text-sm"
+                  >
+                    Download PDF
+                  </a>
+                </div>
+              </div>
+            </div>
           ) : (
-            <div className="flex items-center justify-center h-[800px]">
+            <div className="flex items-center justify-center h-[700px]">
               <p className="text-gray-400">Unable to load PDF preview</p>
             </div>
           )}
