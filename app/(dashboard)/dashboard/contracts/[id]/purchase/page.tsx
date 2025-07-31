@@ -22,6 +22,19 @@ const formatContractTypeName = (contractType: string) => {
   }
 };
 
+const formatContractTypeTitle = (contractType: string) => {
+  switch (contractType) {
+    case 'cohabitation':
+      return 'Cohabitation Agreement';
+    case 'prenuptial':
+      return 'Prenuptial Agreement';
+    case 'postnuptial':
+      return 'Postnuptial Agreement';
+    default:
+      return 'Family Agreement';
+  }
+};
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ContractPurchasePage() {
@@ -259,90 +272,9 @@ export default function ContractPurchasePage() {
         ) : (
           /* Original Purchase Content for Unpaid Contracts */
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Purchase Details */}
+            {/* Secure Payment Section - Main Column */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Contract Summary */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ShoppingCart className="h-5 w-5" />
-                    Order Summary
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="border-b pb-4">
-                    <h3 className="font-semibold text-lg">Cohabitation Agreement</h3>
-                    <p className="text-gray-600">
-                      Professional legal agreement for {contract?.userFullName || '[Your Name]'} and {contract?.partnerFullName || '[Partner Name]'}
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Agreement Document</span>
-                      <span className="font-semibold">$700.00 CAD</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>GST (5%)</span>
-                      <span className="font-semibold">$35.00 CAD</span>
-                    </div>
-                    <div className="border-t pt-3 flex justify-between text-lg font-bold">
-                      <span>Total</span>
-                      <span>$735.00 CAD</span>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
-                    <p className="text-sm text-red-800">
-                      <strong>Note:</strong> This price excludes individual lawyer consultation fees for each partner.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* What's Included */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>What's Included</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3">
-                    <li className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                      <div>
-                        <p className="font-medium">Personalized Legal Agreement</p>
-                        <p className="text-sm text-gray-600">Customized with your specific information and preferences</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                      <div>
-                        <p className="font-medium">Professional Word Document</p>
-                        <p className="text-sm text-gray-600">Editable format for final review and printing</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                      <div>
-                        <p className="font-medium">Schedule A Financial Disclosure</p>
-                        <p className="text-sm text-gray-600">Complete financial statement templates</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                      <div>
-                        <p className="font-medium">Legal Consultation Guidance</p>
-                        <p className="text-sm text-gray-600">Instructions for meeting with lawyers</p>
-                      </div>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Payment Section */}
-            <div className="lg:col-span-1">
-              <Card className="sticky top-6">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <CreditCard className="h-5 w-5" />
@@ -459,6 +391,47 @@ export default function ContractPurchasePage() {
                     <Link href="/contact" className="text-blue-600 hover:text-blue-800 text-sm">
                       Get in touch →
                     </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Order Summary - Right Column */}
+            <div className="lg:col-span-1">
+              <Card className="sticky top-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShoppingCart className="h-5 w-5" />
+                    Order Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="border-b pb-4">
+                    <h3 className="font-semibold text-lg">{formatContractTypeTitle(contract?.contractType || 'cohabitation')}</h3>
+                    <p className="text-gray-600">
+                      Professional legal agreement for {contract?.userFullName || '[Your Name]'} and {contract?.partnerFullName || '[Partner Name]'}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span>Agreement Document</span>
+                      <span className="font-semibold">$700.00 CAD</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>GST (5%)</span>
+                      <span className="font-semibold">$35.00 CAD</span>
+                    </div>
+                    <div className="border-t pt-3 flex justify-between text-lg font-bold">
+                      <span>Total</span>
+                      <span>$735.00 CAD</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
+                    <p className="text-sm text-red-800">
+                      <strong>Note:</strong> This price excludes individual lawyer consultation fees for each partner.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
