@@ -16,43 +16,14 @@ import useSWR from 'swr';
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 interface LawyerOption {
-  id: string;
+  id: number;
   name: string;
   email: string;
   firm: string;
-  party: 'user' | 'partner';
+  phone?: string;
+  specializations?: string;
+  party: 'user' | 'partner' | 'both';
 }
-
-const lawyerOptions: LawyerOption[] = [
-  {
-    id: 'user-lawyer-1',
-    name: 'Garrett Horvath',
-    email: 'ghorvath@kahanelaw.com',
-    firm: 'Kahane Law',
-    party: 'user'
-  },
-  {
-    id: 'user-lawyer-2', 
-    name: 'Garrett Horvath',
-    email: 'garrett.horvath@gmail.com',
-    firm: 'Alternative Contact',
-    party: 'user'
-  },
-  {
-    id: 'partner-lawyer-1',
-    name: 'Garrett Horvath',
-    email: 'ghorvath@kahanelaw.com', 
-    firm: 'Kahane Law',
-    party: 'partner'
-  },
-  {
-    id: 'partner-lawyer-2',
-    name: 'Garrett Horvath',
-    email: 'garrett.horvath@gmail.com',
-    firm: 'Alternative Contact', 
-    party: 'partner'
-  }
-];
 
 function SendToLawyerPageContent() {
   const searchParams = useSearchParams();
@@ -62,8 +33,8 @@ function SendToLawyerPageContent() {
   const paymentSuccess = searchParams.get('payment_success') === 'true';
   
   const [selectedLawyers, setSelectedLawyers] = useState<{
-    user: string | null;
-    partner: string | null;
+    user: number | null;
+    partner: number | null;
   }>({
     user: null,
     partner: null
@@ -78,10 +49,19 @@ function SendToLawyerPageContent() {
   const [paymentVerified, setPaymentVerified] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(!!sessionId);
 
+  // Fetch contract data
   const { data: contractData, error } = useSWR(
     contractId ? `/api/contracts/${contractId}` : null,
     fetcher
   );
+
+  // Fetch lawyers data
+  const { data: lawyersData, error: lawyersError } = useSWR(
+    '/api/lawyers',
+    fetcher
+  );
+
+  const lawyerOptions: LawyerOption[] = lawyersData?.lawyers || [];
 
   const contract = contractData?.contract;
 
@@ -116,12 +96,16 @@ function SendToLawyerPageContent() {
     }
   }, [sessionId, contract?.isPaid, contractData]);
 
-  const handleLawyerSelect = (party: 'user' | 'partner', lawyerId: string) => {
+  const handleLawyerSelect = (party: 'user' | 'partner', lawyerId: number) => {
     setSelectedLawyers(prev => ({
       ...prev,
       [party]: lawyerId
     }));
   };
+
+  // Filter lawyers based on party
+  const getUserLawyers = () => lawyerOptions.filter(l => l.party === 'user' || l.party === 'both');
+  const getPartnerLawyers = () => lawyerOptions.filter(l => l.party === 'partner' || l.party === 'both');
 
   const handleSendToLawyers = async () => {
     if (!selectedLawyers.user || !selectedLawyers.partner || !contractId) {
@@ -336,7 +320,7 @@ function SendToLawyerPageContent() {
               </p>
             </CardHeader>
             <CardContent className="space-y-3">
-              {lawyerOptions.filter(l => l.party === 'user').map((lawyer) => (
+              {getUserLawyers().map((lawyer) => (
                 <div key={lawyer.id} className="border rounded-lg p-3">
                   <label className="flex items-start cursor-pointer">
                     <input
@@ -351,10 +335,21 @@ function SendToLawyerPageContent() {
                       <div className="font-medium text-gray-900">{lawyer.name}</div>
                       <div className="text-sm text-gray-600">{lawyer.firm}</div>
                       <div className="text-sm text-gray-500">{lawyer.email}</div>
+                      {lawyer.phone && (
+                        <div className="text-sm text-gray-500">{lawyer.phone}</div>
+                      )}
+                      {lawyer.specializations && (
+                        <div className="text-xs text-gray-400 mt-1">{lawyer.specializations}</div>
+                      )}
                     </div>
                   </label>
                 </div>
               ))}
+              {getUserLawyers().length === 0 && (
+                <div className="text-center py-4 text-gray-500">
+                  No lawyers available for user representation
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -370,7 +365,7 @@ function SendToLawyerPageContent() {
               </p>
             </CardHeader>
             <CardContent className="space-y-3">
-              {lawyerOptions.filter(l => l.party === 'partner').map((lawyer) => (
+              {getPartnerLawyers().map((lawyer) => (
                 <div key={lawyer.id} className="border rounded-lg p-3">
                   <label className="flex items-start cursor-pointer">
                     <input
@@ -385,10 +380,21 @@ function SendToLawyerPageContent() {
                       <div className="font-medium text-gray-900">{lawyer.name}</div>
                       <div className="text-sm text-gray-600">{lawyer.firm}</div>
                       <div className="text-sm text-gray-500">{lawyer.email}</div>
+                      {lawyer.phone && (
+                        <div className="text-sm text-gray-500">{lawyer.phone}</div>
+                      )}
+                      {lawyer.specializations && (
+                        <div className="text-xs text-gray-400 mt-1">{lawyer.specializations}</div>
+                      )}
                     </div>
                   </label>
                 </div>
               ))}
+              {getPartnerLawyers().length === 0 && (
+                <div className="text-center py-4 text-gray-500">
+                  No lawyers available for partner representation
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

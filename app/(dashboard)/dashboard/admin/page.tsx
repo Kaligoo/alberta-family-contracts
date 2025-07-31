@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Upload, FileText, Settings, Trash2, Download, Eye, Plus } from 'lucide-react';
+import { Upload, FileText, Settings, Trash2, Download, Eye, Plus, Users, Edit, Mail } from 'lucide-react';
 import Link from 'next/link';
 import useSWR from 'swr';
 
@@ -24,6 +24,20 @@ interface Template {
   isActive: boolean;
 }
 
+interface Lawyer {
+  id: number;
+  name: string;
+  email: string;
+  firm: string;
+  phone?: string;
+  address?: string;
+  specializations?: string;
+  party: 'user' | 'partner' | 'both';
+  isActive: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function AdminDashboardPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState('');
@@ -34,9 +48,29 @@ export default function AdminDashboardPage() {
   const [isPopulatingSampleData, setIsPopulatingSampleData] = useState(false);
   const [migrationStatus, setMigrationStatus] = useState('');
   const [isRunningMigration, setIsRunningMigration] = useState(false);
+  
+  // Lawyer management state
+  const [showLawyerForm, setShowLawyerForm] = useState(false);
+  const [editingLawyer, setEditingLawyer] = useState<Lawyer | null>(null);
+  const [lawyerFormData, setLawyerFormData] = useState({
+    name: '',
+    email: '',
+    firm: '',
+    phone: '',
+    address: '',
+    specializations: '',
+    party: 'user' as 'user' | 'partner' | 'both',
+    isActive: 'true'
+  });
+  const [lawyerError, setLawyerError] = useState('');
+  const [lawyerSuccess, setLawyerSuccess] = useState('');
+  const [isSavingLawyer, setIsSavingLawyer] = useState(false);
 
   const { data: templatesData, error, mutate } = useSWR('/api/admin/templates', fetcher);
+  const { data: lawyersData, error: lawyersError, mutate: mutateLawyers } = useSWR('/api/admin/lawyers', fetcher);
+  
   const templates: Template[] = templatesData?.templates || [];
+  const lawyers: Lawyer[] = lawyersData?.lawyers || [];
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -188,6 +222,109 @@ export default function AdminDashboardPage() {
       setSampleDataStatus('Network error occurred while populating sample data');
     } finally {
       setIsPopulatingSampleData(false);
+    }
+  };
+
+  // Lawyer management functions
+  const resetLawyerForm = () => {
+    setLawyerFormData({
+      name: '',
+      email: '',
+      firm: '',
+      phone: '',
+      address: '',
+      specializations: '',
+      party: 'user',
+      isActive: 'true'
+    });
+    setEditingLawyer(null);
+    setShowLawyerForm(false);
+    setLawyerError('');
+    setLawyerSuccess('');
+  };
+
+  const handleAddLawyer = () => {
+    resetLawyerForm();
+    setShowLawyerForm(true);
+  };
+
+  const handleEditLawyer = (lawyer: Lawyer) => {
+    setLawyerFormData({
+      name: lawyer.name,
+      email: lawyer.email,
+      firm: lawyer.firm,
+      phone: lawyer.phone || '',
+      address: lawyer.address || '',
+      specializations: lawyer.specializations || '',
+      party: lawyer.party,
+      isActive: lawyer.isActive
+    });
+    setEditingLawyer(lawyer);
+    setShowLawyerForm(true);
+    setLawyerError('');
+    setLawyerSuccess('');
+  };
+
+  const handleSaveLawyer = async () => {
+    if (!lawyerFormData.name || !lawyerFormData.email || !lawyerFormData.firm) {
+      setLawyerError('Name, email, and firm are required');
+      return;
+    }
+
+    setIsSavingLawyer(true);
+    setLawyerError('');
+    setLawyerSuccess('');
+
+    try {
+      const url = editingLawyer 
+        ? `/api/admin/lawyers/${editingLawyer.id}`
+        : '/api/admin/lawyers';
+      
+      const method = editingLawyer ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(lawyerFormData),
+      });
+
+      if (response.ok) {
+        setLawyerSuccess(editingLawyer ? 'Lawyer updated successfully!' : 'Lawyer created successfully!');
+        mutateLawyers(); // Refresh the lawyers list
+        setTimeout(() => {
+          resetLawyerForm();
+        }, 1500);
+      } else {
+        const error = await response.json();
+        setLawyerError(error.error || 'Failed to save lawyer');
+      }
+    } catch (error) {
+      setLawyerError('Network error occurred while saving lawyer');
+    } finally {
+      setIsSavingLawyer(false);
+    }
+  };
+
+  const handleDeleteLawyer = async (lawyerId: number) => {
+    if (!confirm('Are you sure you want to delete this lawyer?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/lawyers/${lawyerId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setLawyerSuccess('Lawyer deleted successfully!');
+        mutateLawyers(); // Refresh the lawyers list
+        setTimeout(() => setLawyerSuccess(''), 3000);
+      } else {
+        const error = await response.json();
+        setLawyerError(error.error || 'Failed to delete lawyer');
+      }
+    } catch (error) {
+      setLawyerError('Network error occurred while deleting lawyer');
     }
   };
 
@@ -357,6 +494,259 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Lawyer Management */}
+        <Card className="mt-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center">
+                <Users className="mr-2 h-5 w-5" />
+                Lawyer Management
+              </CardTitle>
+              <Button
+                onClick={handleAddLawyer}
+                className="bg-orange-500 hover:bg-orange-600"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Lawyer
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Lawyer Form */}
+            {showLawyerForm && (
+              <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <h3 className="text-lg font-medium mb-4">
+                  {editingLawyer ? 'Edit Lawyer' : 'Add New Lawyer'}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={lawyerFormData.name}
+                      onChange={(e) => setLawyerFormData({...lawyerFormData, name: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="Lawyer's full name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      value={lawyerFormData.email}
+                      onChange={(e) => setLawyerFormData({...lawyerFormData, email: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="lawyer@firm.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Law Firm *
+                    </label>
+                    <input
+                      type="text"
+                      value={lawyerFormData.firm}
+                      onChange={(e) => setLawyerFormData({...lawyerFormData, firm: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="Law firm name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone
+                    </label>
+                    <input
+                      type="tel"
+                      value={lawyerFormData.phone}
+                      onChange={(e) => setLawyerFormData({...lawyerFormData, phone: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="(555) 123-4567"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Party Type *
+                    </label>
+                    <select
+                      value={lawyerFormData.party}
+                      onChange={(e) => setLawyerFormData({...lawyerFormData, party: e.target.value as 'user' | 'partner' | 'both'})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    >
+                      <option value="user">User Only</option>
+                      <option value="partner">Partner Only</option>
+                      <option value="both">Both Parties</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Status
+                    </label>
+                    <select
+                      value={lawyerFormData.isActive}
+                      onChange={(e) => setLawyerFormData({...lawyerFormData, isActive: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    >
+                      <option value="true">Active</option>
+                      <option value="false">Inactive</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Address
+                    </label>
+                    <textarea
+                      value={lawyerFormData.address}
+                      onChange={(e) => setLawyerFormData({...lawyerFormData, address: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      rows={2}
+                      placeholder="Office address"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Specializations
+                    </label>
+                    <input
+                      type="text"
+                      value={lawyerFormData.specializations}
+                      onChange={(e) => setLawyerFormData({...lawyerFormData, specializations: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="Family Law, Contract Law, etc."
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex gap-4 mt-4">
+                  <Button
+                    onClick={handleSaveLawyer}
+                    disabled={isSavingLawyer}
+                    className="bg-orange-500 hover:bg-orange-600"
+                  >
+                    {isSavingLawyer ? 'Saving...' : (editingLawyer ? 'Update Lawyer' : 'Add Lawyer')}
+                  </Button>
+                  <Button
+                    onClick={resetLawyerForm}
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+
+                {lawyerError && (
+                  <div className="mt-4 p-3 rounded-md text-sm bg-red-50 text-red-700 border border-red-200">
+                    {lawyerError}
+                  </div>
+                )}
+                {lawyerSuccess && (
+                  <div className="mt-4 p-3 rounded-md text-sm bg-green-50 text-green-700 border border-green-200">
+                    {lawyerSuccess}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Lawyers List */}
+            {!lawyersData ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                <span className="ml-2 text-gray-600">Loading lawyers...</span>
+              </div>
+            ) : lawyers.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-600">No lawyers added yet.</p>
+                <p className="text-sm text-gray-500 mt-2">Add your first lawyer using the button above.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {lawyers.map((lawyer) => (
+                  <div key={lawyer.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-medium text-gray-900">{lawyer.name}</h3>
+                          <span className={`px-2 py-1 text-xs font-medium rounded ${
+                            lawyer.isActive === 'true' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {lawyer.isActive === 'true' ? 'Active' : 'Inactive'}
+                          </span>
+                          <span className={`px-2 py-1 text-xs font-medium rounded ${
+                            lawyer.party === 'user' ? 'bg-blue-100 text-blue-800' :
+                            lawyer.party === 'partner' ? 'bg-purple-100 text-purple-800' :
+                            'bg-orange-100 text-orange-800'
+                          }`}>
+                            {lawyer.party === 'user' ? 'User' : lawyer.party === 'partner' ? 'Partner' : 'Both'}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-600 mb-2">
+                          <div className="flex items-center gap-4">
+                            <span className="flex items-center">
+                              <Mail className="h-4 w-4 mr-1" />
+                              {lawyer.email}
+                            </span>
+                            <span>{lawyer.firm}</span>
+                            {lawyer.phone && <span>{lawyer.phone}</span>}
+                          </div>
+                        </div>
+                        {lawyer.specializations && (
+                          <div className="text-xs text-gray-500 mb-2">
+                            <strong>Specializations:</strong> {lawyer.specializations}
+                          </div>
+                        )}
+                        {lawyer.address && (
+                          <div className="text-xs text-gray-500">
+                            <strong>Address:</strong> {lawyer.address}
+                          </div>
+                        )}
+                        <div className="text-xs text-gray-400 mt-2">
+                          Added: {formatDate(lawyer.createdAt)}
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleEditLawyer(lawyer)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        
+                        <Button
+                          onClick={() => handleDeleteLawyer(lawyer.id)}
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Global success/error messages for lawyers */}
+            {!showLawyerForm && lawyerError && (
+              <div className="mt-4 p-3 rounded-md text-sm bg-red-50 text-red-700 border border-red-200">
+                {lawyerError}
+              </div>
+            )}
+            {!showLawyerForm && lawyerSuccess && (
+              <div className="mt-4 p-3 rounded-md text-sm bg-green-50 text-green-700 border border-green-200">
+                {lawyerSuccess}
               </div>
             )}
           </CardContent>

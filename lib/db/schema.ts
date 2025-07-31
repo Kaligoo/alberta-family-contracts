@@ -228,6 +228,20 @@ export const templates = pgTable('templates', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
+export const lawyers = pgTable('lawyers', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull(),
+  firm: varchar('firm', { length: 255 }).notNull(),
+  phone: varchar('phone', { length: 50 }),
+  address: text('address'),
+  specializations: text('specializations'), // Areas of expertise
+  party: varchar('party', { length: 20 }).notNull(), // 'user', 'partner', or 'both'
+  isActive: varchar('is_active', { length: 10 }).notNull().default('true'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 export const teamsRelations = relations(teams, ({ many }) => ({
   teamMembers: many(teamMembers),
   activityLogs: many(activityLogs),
@@ -299,6 +313,8 @@ export type FamilyContract = typeof familyContracts.$inferSelect;
 export type NewFamilyContract = typeof familyContracts.$inferInsert;
 export type Template = typeof templates.$inferSelect;
 export type NewTemplate = typeof templates.$inferInsert;
+export type Lawyer = typeof lawyers.$inferSelect;
+export type NewLawyer = typeof lawyers.$inferInsert;
 export type TeamDataWithMembers = Team & {
   teamMembers: (TeamMember & {
     user: Pick<User, 'id' | 'name' | 'email'>;
