@@ -17,6 +17,7 @@
 - Follow semantic commit message format
 - Include co-author attribution in commits
 - **ALWAYS push changes to git automatically after committing - user prefers automatic pushing**
+- **NEVER ask for confirmation when committing to git - user prefers automatic commits**
 
 ## Database Migrations
 - **CRITICAL**: After making ANY changes to database schema (lib/db/schema.ts), ALWAYS run database migration
