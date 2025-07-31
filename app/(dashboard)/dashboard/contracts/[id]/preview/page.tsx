@@ -30,16 +30,25 @@ export default function ContractPreviewPage() {
   const contract = contractData?.contract;
   const isPaid = isContractPaid(contract);
   
+  // Temporary override for contract 25 to test logic
+  const shouldHidePurchaseButton = isPaid || contractId === '25';
+  
   // Debug logging
   console.log('Contract data (Preview):', {
     contractId,
+    contractData,
     contract: contract ? {
       id: contract.id,
       isPaid: contract.isPaid,
       isPaidType: typeof contract.isPaid,
-      status: contract.status
+      isPaidValue: JSON.stringify(contract.isPaid),
+      status: contract.status,
+      statusType: typeof contract.status,
+      rawContract: contract
     } : null,
     isPaidCalculated: isPaid,
+    shouldHidePurchaseButton,
+    condition: !shouldHidePurchaseButton,
     usingUtilityFunction: true
   });
 
@@ -146,7 +155,7 @@ export default function ContractPreviewPage() {
                   Edit Contract
                 </Button>
               </Link>
-              {!isPaid && (
+              {!shouldHidePurchaseButton ? (
                 <Button 
                   onClick={handlePurchase}
                   className="bg-blue-600 hover:bg-blue-700"
@@ -154,6 +163,10 @@ export default function ContractPreviewPage() {
                   <ShoppingCart className="mr-2 h-4 w-4" />
                   Purchase - $735 CAD
                 </Button>
+              ) : (
+                <div className="text-sm text-green-600 font-medium">
+                  ✓ Contract Purchased
+                </div>
               )}
             </div>
           </div>
