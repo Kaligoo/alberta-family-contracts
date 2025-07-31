@@ -17,6 +17,7 @@ import { StepIndicator } from '@/components/ui/step-indicator';
 
 export default function NewContractPage() {
   const [formData, setFormData] = useState({
+    contractType: 'cohabitation',
     userFullName: '',
     partnerFullName: '',
     userFirstName: '',
@@ -92,18 +93,38 @@ export default function NewContractPage() {
             completedSteps={[]}
           />
           
-          <h1 className="text-2xl lg:text-3xl font-bold mb-2">Step 1: Create New Contract</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold mb-2">Step 1: Create New Agreement</h1>
           <p className="text-gray-600">
-            Start a new cohabitation agreement by providing basic information.
+            Start a new family agreement by selecting the type and providing basic information.
           </p>
         </div>
 
         <form onSubmit={handleSubmit}>
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
+              <CardTitle>Contract Type & Basic Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="mb-6">
+                <Label htmlFor="contractType">Agreement Type *</Label>
+                <select
+                  id="contractType"
+                  value={formData.contractType}
+                  onChange={(e) => updateFormData('contractType', e.target.value)}
+                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="cohabitation">Cohabitation Agreement</option>
+                  <option value="prenuptial">Prenuptial Agreement</option>
+                  <option value="postnuptial">Postnuptial Agreement</option>
+                </select>
+                <p className="text-sm text-gray-600 mt-1">
+                  {formData.contractType === 'cohabitation' && 'Legal agreement for unmarried couples living together'}
+                  {formData.contractType === 'prenuptial' && 'Legal agreement made before marriage'}
+                  {formData.contractType === 'postnuptial' && 'Legal agreement made after marriage'}
+                </p>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="userFullName">Your Full Name *</Label>
@@ -233,12 +254,21 @@ export default function NewContractPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="cohabDate">Date Started Living Together</Label>
+                <Label htmlFor="cohabDate">
+                  {formData.contractType === 'cohabitation' && 'Date Started Living Together'}
+                  {formData.contractType === 'prenuptial' && 'Proposed Marriage Date'}
+                  {formData.contractType === 'postnuptial' && 'Marriage Date'}
+                </Label>
                 <Input
                   id="cohabDate"
                   type="date"
                   value={formData.cohabDate}
                   onChange={(e) => updateFormData('cohabDate', e.target.value)}
+                  placeholder={
+                    formData.contractType === 'cohabitation' ? 'When did you start living together?' :
+                    formData.contractType === 'prenuptial' ? 'When do you plan to marry?' :
+                    'When did you get married?'
+                  }
                 />
               </div>
             </CardContent>
@@ -268,7 +298,7 @@ export default function NewContractPage() {
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-500">
-          <p>You can add more details like children and specific clauses after creating the contract.</p>
+          <p>You can add more details like children and specific clauses after creating the agreement.</p>
         </div>
       </div>
     </section>

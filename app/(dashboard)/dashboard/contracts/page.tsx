@@ -70,16 +70,23 @@ export default function ContractsPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string, isPaid: string) => {
+    if (isPaid === 'true') {
+      return 'bg-green-100 text-green-800';
+    }
     switch (status) {
-      case 'paid':
-      case 'completed':
-        return 'bg-green-100 text-green-800';
       case 'preview':
         return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getStatusLabel = (status: string, isPaid: string) => {
+    if (isPaid === 'true') {
+      return 'Paid';
+    }
+    return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   const formatDate = (dateString: string) => {
@@ -164,8 +171,8 @@ export default function ContractsPage() {
                         </span>
                       )}
                     </CardTitle>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(contract.status)}`}>
-                      {contract.status.charAt(0).toUpperCase() + contract.status.slice(1)}
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(contract.status, contract.isPaid || 'false')}`}>
+                      {getStatusLabel(contract.status, contract.isPaid || 'false')}
                     </span>
                   </div>
                 </CardHeader>
@@ -200,7 +207,9 @@ export default function ContractsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDeleteContract(contract.id)}
-                        className="text-red-600 hover:text-red-700 hover:border-red-300"
+                        disabled={contract.isPaid === 'true'}
+                        className={`${contract.isPaid === 'true' ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-700 hover:border-red-300'}`}
+                        title={contract.isPaid === 'true' ? 'Cannot delete paid contracts' : 'Delete contract'}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>

@@ -16,6 +16,8 @@ export default function ContractPurchasePage() {
   const contractId = params.id as string;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [isAcceptingTerms, setIsAcceptingTerms] = useState(false);
   
   const { data: contractData } = useSWR(
     `/api/contracts/${contractId}`,
@@ -24,6 +26,37 @@ export default function ContractPurchasePage() {
 
   const contract = contractData?.contract;
   const isPaid = isContractPaid(contract);
+  const contractTermsAccepted = contract?.termsAccepted === 'true' || contract?.termsAccepted === true;
+
+  const handleTermsAcceptance = async (accepted: boolean) => {
+    if (!accepted) {
+      setTermsAccepted(false);
+      return;
+    }
+
+    setIsAcceptingTerms(true);
+    try {
+      const response = await fetch(`/api/contracts/${contractId}/accept-terms`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        setTermsAccepted(true);
+      } else {
+        setError('Failed to accept terms. Please try again.');
+        setTermsAccepted(false);
+      }
+    } catch (err) {
+      console.error('Terms acceptance error:', err);
+      setError('Failed to accept terms. Please try again.');
+      setTermsAccepted(false);
+    } finally {
+      setIsAcceptingTerms(false);
+    }
+  };
 
   const handlePurchase = async () => {
     // Don't initiate payment if contract is already paid
@@ -315,12 +348,59 @@ export default function ContractPurchasePage() {
                     </div>
                   )}
 
+                  {!contractTermsAccepted && !isPaid && (
+                    <div className="space-y-4 p-4 bg-gray-50 rounded-lg border">
+                      <h4 className="font-medium text-gray-900">Terms and Conditions</h4>
+                      <div className="text-sm text-gray-600 space-y-3">
+                        <p>By purchasing this agreement, you acknowledge and agree that:</p>
+                        <ul className="list-disc ml-5 space-y-1">
+                          <li>This document provides legal information, not legal advice</li>
+                          <li>Independent legal advice is required for both parties</li>
+                          <li>Agreeable.ca is not responsible for the legal validity or enforcement of the agreement</li>
+                          <li>The agreement must be reviewed and signed with qualified lawyers</li>
+                          <li>Consultation fees with lawyers are separate and not included</li>
+                        </ul>
+                        <p>
+                          By checking the box below, you agree to our{' '}
+                          <Link href="/terms" className="text-blue-600 hover:text-blue-800 underline">
+                            Terms of Service
+                          </Link>
+                          {' '}and acknowledge that you understand the requirements for making this agreement legally binding.
+                        </p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <input
+                          type="checkbox"
+                          id="terms-acceptance"
+                          checked={termsAccepted}
+                          onChange={(e) => handleTermsAcceptance(e.target.checked)}
+                          disabled={isAcceptingTerms}
+                          className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <label 
+                          htmlFor="terms-acceptance" 
+                          className="text-sm text-gray-700 cursor-pointer leading-5"
+                        >
+                          I have read and agree to the terms and conditions above, and I understand that independent legal advice is required to make this agreement legally binding.
+                        </label>
+                      </div>
+                      {isAcceptingTerms && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Recording your acceptance...
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <Button 
                     onClick={handlePurchase}
-                    disabled={isLoading || isPaid}
+                    disabled={isLoading || isPaid || (!contractTermsAccepted && !termsAccepted)}
                     className={`w-full text-lg py-3 ${
                       isPaid 
                         ? "bg-gray-400 cursor-not-allowed" 
+                        : (!contractTermsAccepted && !termsAccepted)
+                        ? "bg-gray-400 cursor-not-allowed"
                         : "bg-blue-600 hover:bg-blue-700"
                     }`}
                     size="lg"

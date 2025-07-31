@@ -30,13 +30,16 @@ export default function HomePage() {
                 <div className="bg-white border border-blue-200 rounded-xl p-6 shadow-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Cohabitation Agreement</h3>
-                      <p className="text-sm text-gray-600">Professional legal document</p>
+                      <h3 className="text-lg font-semibold text-gray-900">Professional Legal Agreements</h3>
+                      <p className="text-sm text-gray-600">Cohabitation, Prenuptial & Postnuptial</p>
                       <p className="text-xs text-red-600 mt-1">*Excludes individual lawyer consultation fees</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-blue-600">$735</div>
-                      <div className="text-sm text-gray-500">inc. 5% GST</div>
+                      <div className="flex items-center justify-end space-x-2">
+                        <span className="text-lg text-gray-400 line-through">$999</span>
+                        <div className="text-2xl font-bold text-blue-600">$700</div>
+                      </div>
+                      <div className="text-sm text-gray-500">+ 5% GST</div>
                     </div>
                   </div>
                 </div>

@@ -120,14 +120,15 @@ export default function ContractPreviewPage() {
                   Edit Contract
                 </Button>
               </Link>
-              <Button 
-                onClick={handlePurchase}
-                disabled={isPaid}
-                className={isPaid ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}
-              >
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                {isPaid ? "Already Purchased" : "Purchase - $735 CAD"}
-              </Button>
+              {!isPaid && (
+                <Button 
+                  onClick={handlePurchase}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Purchase - $735 CAD
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -188,7 +189,10 @@ export default function ContractPreviewPage() {
         {/* Footer Actions */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500 mb-4">
-            This preview shows the first page of your contract. Purchase to download the complete document.
+            {isPaid 
+              ? "This preview shows the first page of your contract. Your complete agreement is available for download."
+              : "This preview shows the first page of your contract. Purchase to download the complete document."
+            }
           </p>
           <div className="flex justify-center gap-4">
             <Link href="/dashboard/edit-contract">
@@ -197,15 +201,16 @@ export default function ContractPreviewPage() {
                 Make Changes
               </Button>
             </Link>
-            <Button 
-              onClick={handlePurchase}
-              disabled={isPaid}
-              size="lg"
-              className={isPaid ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}
-            >
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              {isPaid ? "Complete Agreement Already Purchased" : "Purchase Complete Agreement - $735 CAD"}
-            </Button>
+            {!isPaid && (
+              <Button 
+                onClick={handlePurchase}
+                size="lg"
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                Purchase Complete Agreement - $735 CAD
+              </Button>
+            )}
           </div>
         </div>
       </div>
