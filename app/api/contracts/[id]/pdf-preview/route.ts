@@ -103,8 +103,8 @@ async function generateWatermarkedPDFPreview(contract: any, user: any): Promise<
     // Convert to PDF using Gotenberg (same as PDF v2) for consistency
     const pdfBuffer = await convertWatermarkedWordToPDF(watermarkedDocxBuffer);
     
-    // Limit to first page only for preview
-    const previewPdfBuffer = await limitPDFToFirstPages(pdfBuffer, 1);
+    // Limit to first 3 pages for preview
+    const previewPdfBuffer = await limitPDFToFirstPages(pdfBuffer, 3);
     
     console.log('Successfully generated watermarked PDF preview');
     return new Uint8Array(previewPdfBuffer);
