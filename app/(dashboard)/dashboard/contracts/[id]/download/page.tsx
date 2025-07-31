@@ -31,7 +31,7 @@ export default function ContractDownloadPage() {
   );
 
   const contract = contractData?.contract;
-  const isPaid = contract?.isPaid || false;
+  const isPaid = contract?.isPaid === 'true' || contract?.isPaid === true;
 
   const handleDownload = async () => {
     if (!isPaid) {
