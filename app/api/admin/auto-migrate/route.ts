@@ -115,6 +115,102 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ Terms acceptance fields migration already applied or failed');
     }
 
+    // Apply migration 0009_affiliate_coupon_tables.sql (affiliate links and coupon codes) if needed
+    try {
+      // Create affiliate_links table
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS "affiliate_links" (
+          "id" serial PRIMARY KEY NOT NULL,
+          "code" varchar(50) NOT NULL,
+          "name" varchar(255) NOT NULL,
+          "description" text,
+          "commission_rate" numeric(5, 2) DEFAULT '0.00' NOT NULL,
+          "total_clicks" integer DEFAULT 0 NOT NULL,
+          "total_signups" integer DEFAULT 0 NOT NULL,
+          "total_purchases" integer DEFAULT 0 NOT NULL,
+          "total_commission" numeric(12, 2) DEFAULT '0.00' NOT NULL,
+          "is_active" varchar(10) DEFAULT 'true' NOT NULL,
+          "created_by" integer NOT NULL,
+          "created_at" timestamp DEFAULT now() NOT NULL,
+          "updated_at" timestamp DEFAULT now() NOT NULL,
+          CONSTRAINT "affiliate_links_code_unique" UNIQUE("code")
+        );
+      `);
+
+      // Create coupon_codes table
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS "coupon_codes" (
+          "id" serial PRIMARY KEY NOT NULL,
+          "code" varchar(50) NOT NULL,
+          "name" varchar(255) NOT NULL,
+          "description" text,
+          "discount_type" varchar(20) NOT NULL,
+          "discount_value" numeric(10, 2) NOT NULL,
+          "minimum_amount" numeric(10, 2),
+          "usage_limit" integer,
+          "usage_count" integer DEFAULT 0 NOT NULL,
+          "valid_from" timestamp DEFAULT now() NOT NULL,
+          "valid_to" timestamp,
+          "is_active" varchar(10) DEFAULT 'true' NOT NULL,
+          "created_by" integer NOT NULL,
+          "created_at" timestamp DEFAULT now() NOT NULL,
+          "updated_at" timestamp DEFAULT now() NOT NULL,
+          CONSTRAINT "coupon_codes_code_unique" UNIQUE("code")
+        );
+      `);
+
+      // Create affiliate_tracking table
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS "affiliate_tracking" (
+          "id" serial PRIMARY KEY NOT NULL,
+          "affiliate_link_id" integer NOT NULL,
+          "user_id" integer,
+          "team_id" integer,
+          "contract_id" integer,
+          "action" varchar(20) NOT NULL,
+          "ip_address" varchar(45),
+          "user_agent" text,
+          "referrer" text,
+          "commission_amount" numeric(10, 2),
+          "created_at" timestamp DEFAULT now() NOT NULL
+        );
+      `);
+
+      // Create coupon_usage table
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS "coupon_usage" (
+          "id" serial PRIMARY KEY NOT NULL,
+          "coupon_code_id" integer NOT NULL,
+          "user_id" integer NOT NULL,
+          "contract_id" integer NOT NULL,
+          "discount_amount" numeric(10, 2) NOT NULL,
+          "original_amount" numeric(10, 2) NOT NULL,
+          "final_amount" numeric(10, 2) NOT NULL,
+          "created_at" timestamp DEFAULT now() NOT NULL
+        );
+      `);
+
+      // Add foreign key constraints (these will be skipped if already exist)
+      try {
+        await db.execute(sql`
+          ALTER TABLE "affiliate_links" ADD CONSTRAINT IF NOT EXISTS "affiliate_links_created_by_users_id_fk" 
+          FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+        `);
+      } catch (e) { /* FK already exists */ }
+
+      try {
+        await db.execute(sql`
+          ALTER TABLE "coupon_codes" ADD CONSTRAINT IF NOT EXISTS "coupon_codes_created_by_users_id_fk" 
+          FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+        `);
+      } catch (e) { /* FK already exists */ }
+
+      appliedMigrations.push('0009_affiliate_coupon_tables');
+      console.log('✅ Affiliate links and coupon codes tables migration applied');
+    } catch (error) {
+      console.log('⚠️ Affiliate and coupon tables migration already applied or failed:', error);
+    }
+
     // Update the migration journal
     for (const migration of appliedMigrations) {
       try {
