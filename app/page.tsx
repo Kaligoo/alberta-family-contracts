@@ -17,7 +17,7 @@ export default function HomePage() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               {/* Left Column - Content */}
               <div className="max-w-xl">
-                <h1 className="text-5xl lg:text-7xl font-black text-gray-900 leading-tight mb-8">
+                <h1 className="text-4xl lg:text-5xl font-black text-gray-900 leading-tight mb-8">
                   Create Your
                   <span className="block text-blue-600">Family Agreement</span>
                   <span className="block">in Minutes</span>
