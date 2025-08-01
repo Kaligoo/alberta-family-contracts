@@ -11,8 +11,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    let tablesCreated = [];
-    let errors = [];
+    let tablesCreated: string[] = [];
+    let errors: string[] = [];
 
     // Try to create each table
     const tables = [
