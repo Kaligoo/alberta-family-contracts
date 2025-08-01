@@ -230,18 +230,18 @@ function prepareTemplateData(contract: any, user: any) {
       day: 'numeric' 
     }) : '',
     
-    // Boolean flags for conditional logic in templates
-    hasProposedMarriageDate: !!(contract.proposedMarriageDate),
-    hasCohabDate: !!(contract.cohabDate),
-    hasUserLawyer: !!(contract.userLawyer),
-    hasPartnerLawyer: !!(contract.partnerLawyer),
-    hasResidenceAddress: !!(contract.residenceAddress),
-    hasAdditionalClauses: !!(contract.additionalClauses),
+    // Boolean flags for conditional logic in templates (temporarily commented for debugging)
+    // hasProposedMarriageDate: !!(contract.proposedMarriageDate),
+    // hasCohabDate: !!(contract.cohabDate),
+    // hasUserLawyer: !!(contract.userLawyer),
+    // hasPartnerLawyer: !!(contract.partnerLawyer),
+    // hasResidenceAddress: !!(contract.residenceAddress),
+    // hasAdditionalClauses: !!(contract.additionalClauses),
     
-    // Contract type flags for conditional logic
-    isCohabitation: (contract.contractType === 'cohabitation'),
-    isPrenuptial: (contract.contractType === 'prenuptial'), 
-    isPostnuptial: (contract.contractType === 'postnuptial'),
+    // Contract type flags for conditional logic (temporarily commented for debugging)
+    // isCohabitation: (contract.contractType === 'cohabitation'),
+    // isPrenuptial: (contract.contractType === 'prenuptial'), 
+    // isPostnuptial: (contract.contractType === 'postnuptial'),
     contractType: contract.contractType || 'cohabitation',
     
     // Ages - using correct field names
