@@ -111,6 +111,7 @@ export async function POST(request: NextRequest) {
         scheduleDebtsOther: body.scheduleDebtsOther || [],
         status: 'draft',
         contractType: body.contractType || 'cohabitation',
+        propertySeparationType: body.propertySeparationType || null,
       })
       .returning();
 

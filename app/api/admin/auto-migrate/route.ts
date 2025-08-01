@@ -262,6 +262,18 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ Schedule A and affiliate/coupon fields migration already applied or failed:', error);
     }
 
+    // Apply migration 0011_property_separation_type.sql (property separation options) if needed
+    try {
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        ADD COLUMN IF NOT EXISTS property_separation_type varchar(50);
+      `);
+      appliedMigrations.push('0011_property_separation_type');
+      console.log('✅ Property separation type field migration applied');
+    } catch (error) {
+      console.log('⚠️ Property separation type field migration already applied or failed:', error);
+    }
+
     // Update the migration journal
     for (const migration of appliedMigrations) {
       try {
