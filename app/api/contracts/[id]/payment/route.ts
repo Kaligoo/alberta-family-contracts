@@ -56,10 +56,10 @@ export async function POST(
 
     // Calculate pricing with GST
     const gstAmount = finalPrice * 0.05;
-    const totalAmount = finalPrice + gstAmount;
-    const totalAmountCents = Math.round(totalAmount * 100); // Convert to cents for Stripe
+    const finalPriceCents = Math.round(finalPrice * 100); // Convert to cents for Stripe
+    const gstAmountCents = Math.round(gstAmount * 100); // Convert to cents for Stripe
 
-    // Create Stripe checkout session
+    // Create Stripe checkout session with separate line items for contract and GST
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -69,10 +69,21 @@ export async function POST(
             product_data: {
               name: 'Agreeable.ca Cohabitation Agreement',
               description: coupon 
-                ? `Professional cohabitation agreement for ${contract.userFullName || user.name || 'Customer'} (${coupon.code} discount applied)`
-                : `Professional cohabitation agreement for ${contract.userFullName || user.name || 'Customer'}`,
+                ? `Professional cohabitation agreement (${coupon.code} discount applied)`
+                : `Professional cohabitation agreement`,
             },
-            unit_amount: totalAmountCents
+            unit_amount: finalPriceCents
+          },
+          quantity: 1
+        },
+        {
+          price_data: {
+            currency: 'cad',
+            product_data: {
+              name: 'GST (5%)',
+              description: 'Goods and Services Tax',
+            },
+            unit_amount: gstAmountCents
           },
           quantity: 1
         }
