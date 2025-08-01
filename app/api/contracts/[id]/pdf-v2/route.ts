@@ -81,6 +81,14 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
     const template = activeTemplate[0];
     const templateData = prepareTemplateData(contract, user);
     
+    // Debug template data
+    console.log('Template data prepared:', {
+      hasProposedMarriageDate: templateData.hasProposedMarriageDate,
+      proposedMarriageDate: templateData.proposedMarriageDate,
+      contractType: templateData.contractType,
+      userFullName: templateData.userFullName
+    });
+    
     // Generate filled Word document (same as PDF v1)
     const templateBuffer = Buffer.from(template.content, 'base64');
     const zip = new PizZip(templateBuffer);
@@ -94,7 +102,14 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
       }
     });
 
-    doc.render(templateData);
+    try {
+      doc.render(templateData);
+      console.log('Successfully rendered template with data');
+    } catch (renderError) {
+      console.error('Template rendering error:', renderError);
+      throw new Error(`Template rendering failed: ${renderError.message}`);
+    }
+    
     const filledDocxBuffer = doc.getZip().generate({ type: 'nodebuffer' });
     
     // Convert Word document to PDF using Gotenberg
