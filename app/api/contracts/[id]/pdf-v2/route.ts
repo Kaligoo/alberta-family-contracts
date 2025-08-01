@@ -86,9 +86,14 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
       proposedMarriageDate: templateData.proposedMarriageDate,
       contractType: templateData.contractType,
       userFullName: templateData.userFullName,
-      cohabDate: templateData.cohabDate
-      // Conditional flags temporarily disabled for debugging
+      cohabDate: templateData.cohabDate,
+      hasProposedMarriageDate: templateData.hasProposedMarriageDate,
+      isPrenuptial: templateData.isPrenuptial
     });
+    
+    console.log('Template conditional syntax guide:');
+    console.log('Use: {#hasProposedMarriageDate}...{/hasProposedMarriageDate}');
+    console.log('NOT: {#if proposed_marriage_date}...{/if}');
     
     // Generate filled Word document (same as PDF v1)
     const templateBuffer = Buffer.from(template.content, 'base64');
@@ -239,18 +244,18 @@ function prepareTemplateData(contract: any, user: any) {
       day: 'numeric' 
     }) : '',
     
-    // Boolean flags for conditional logic in templates (temporarily disabled for debugging)
-    // hasProposedMarriageDate: !!(contract.proposedMarriageDate),
-    // hasCohabDate: !!(contract.cohabDate),
-    // hasUserLawyer: !!(contract.userLawyer),
-    // hasPartnerLawyer: !!(contract.partnerLawyer),
-    // hasResidenceAddress: !!(contract.residenceAddress),
-    // hasAdditionalClauses: !!(contract.additionalClauses),
+    // Boolean flags for conditional logic in templates
+    hasProposedMarriageDate: !!(contract.proposedMarriageDate),
+    hasCohabDate: !!(contract.cohabDate),
+    hasUserLawyer: !!(contract.userLawyer),
+    hasPartnerLawyer: !!(contract.partnerLawyer),
+    hasResidenceAddress: !!(contract.residenceAddress),
+    hasAdditionalClauses: !!(contract.additionalClauses),
     
-    // Contract type flags for conditional logic (temporarily disabled for debugging)
-    // isCohabitation: (contract.contractType === 'cohabitation'),
-    // isPrenuptial: (contract.contractType === 'prenuptial'), 
-    // isPostnuptial: (contract.contractType === 'postnuptial'),
+    // Contract type flags for conditional logic
+    isCohabitation: (contract.contractType === 'cohabitation'),
+    isPrenuptial: (contract.contractType === 'prenuptial'), 
+    isPostnuptial: (contract.contractType === 'postnuptial'),
     contractType: contract.contractType || 'cohabitation',
     
     // Ages - using correct field names
