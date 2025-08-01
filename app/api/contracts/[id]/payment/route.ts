@@ -94,7 +94,6 @@ export async function POST(
           couponCode: coupon.code
         })
       },
-      allow_promotion_codes: true,
       billing_address_collection: 'required',
       shipping_address_collection: {
         allowed_countries: ['CA']
