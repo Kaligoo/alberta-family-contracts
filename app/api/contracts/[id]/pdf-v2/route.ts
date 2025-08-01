@@ -261,9 +261,9 @@ function prepareTemplateData(contract: any, user: any) {
     additional_clauses: contract.additionalClauses || null,
     
     // Pronoun conditionals for user
-    user_is_she: contract.userPronouns === 'she/her/hers' ? 'she' : null,
-    user_is_he: contract.userPronouns === 'he/him/his' ? 'he' : null,
-    user_is_they: contract.userPronouns === 'they/them/theirs' ? 'they' : null,
+    user_is_she: contract.userPronouns === 'she/her/hers',
+    user_is_he: contract.userPronouns === 'he/him/his',
+    user_is_they: contract.userPronouns === 'they/them/theirs',
     user_her: contract.userPronouns === 'she/her/hers' ? 'her' : null,
     user_his: contract.userPronouns === 'he/him/his' ? 'his' : null,
     user_their: contract.userPronouns === 'they/them/theirs' ? 'their' : null,

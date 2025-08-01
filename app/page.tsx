@@ -1,154 +1,181 @@
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Shield, FileText, Users, CheckCircle, Lock } from 'lucide-react';
+import { ArrowRight, Shield, FileText, Users, CheckCircle, Lock, Mail, User } from 'lucide-react';
 import { Navigation } from '@/components/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-white">
       <Navigation />
       <main>
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-12 lg:gap-12 items-center">
-            <div className="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left">
-              <div className="mb-4">
-                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                  <Lock className="w-4 h-4 mr-2" />
-                  Secure & Professional
-                </div>
-              </div>
-              <h1 className="text-4xl font-bold text-gray-900 tracking-tight sm:text-5xl md:text-6xl">
-                Protect Your Family
-                <span className="block text-blue-600">With Legal Clarity</span>
-              </h1>
-              <p className="mt-6 text-xl text-gray-600 leading-relaxed">
-                Create professional cohabitation agreements and family contracts in minutes. 
-                Secure your relationship with legally sound documents that protect both partners.
-              </p>
-              <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0 space-y-6">
-                <div className="bg-white border border-blue-200 rounded-xl p-6 shadow-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Professional Legal Agreements</h3>
-                      <p className="text-sm text-gray-600">Cohabitation, Prenuptial & Postnuptial</p>
-                      <p className="text-xs text-red-600 mt-1">*Excludes individual lawyer consultation fees</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center justify-end space-x-2">
-                        <span className="text-lg text-gray-400 line-through">$999</span>
-                        <div className="text-2xl font-bold text-blue-600">$700</div>
+        {/* Hero Section */}
+        <section className="relative overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Left Column - Content */}
+              <div className="max-w-xl">
+                <h1 className="text-5xl lg:text-7xl font-black text-gray-900 leading-tight mb-8">
+                  Create Your
+                  <span className="block text-blue-600">Family Agreement</span>
+                  <span className="block">in Minutes</span>
+                </h1>
+                
+                <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+                  Professional cohabitation, prenuptial, and postnuptial agreements. 
+                  Secure your relationship with legally sound documents.
+                </p>
+
+                {/* Login Form */}
+                <div className="bg-gray-50 rounded-2xl p-8 mb-8">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-6">Start Your Agreement</h2>
+                  
+                  <div className="space-y-4">
+                    <Link href="/sign-up">
+                      <Button size="lg" className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-4">
+                        <User className="mr-3 h-5 w-5" />
+                        Create Account
+                      </Button>
+                    </Link>
+                    
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-gray-300" />
                       </div>
-                      <div className="text-sm text-gray-500">+ 5% GST</div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="px-2 bg-gray-50 text-gray-500">or</span>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <a href="/sign-up">
-                  <Button
-                    size="lg"
-                    className="w-full text-lg bg-blue-600 hover:bg-blue-700 shadow-lg"
-                  >
-                    Start Your Free Preview
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </a>
-                <p className="text-sm text-gray-600 text-center">No credit card required • Get started in 2 minutes</p>
-              </div>
-            </div>
-            <div className="mt-12 lg:mt-0 lg:col-span-6">
-              <div className="bg-white rounded-2xl shadow-xl p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">How It Works</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mx-auto mb-3">
-                      <span className="text-lg font-bold">1</span>
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Choose Agreement</h3>
-                    <p className="text-gray-600 text-sm">Select the type of family agreement that fits your situation</p>
-                  </div>
 
-                  <div className="text-center">
-                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mx-auto mb-3">
-                      <FileText className="h-6 w-6" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Fill Details</h3>
-                    <p className="text-gray-600 text-sm">Complete your information using our guided questionnaire</p>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mx-auto mb-3">
-                      <Shield className="h-6 w-6" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Review & Purchase</h3>
-                    <p className="text-gray-600 text-sm">Preview your agreement and complete secure payment</p>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mx-auto mb-3">
-                      <Users className="h-6 w-6" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Legal Consultation</h3>
-                    <p className="text-gray-600 text-sm">Each partner meets with a qualified lawyer for advice and signing</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      <section className="py-16 bg-blue-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-                Ready to protect your family?
-              </h2>
-              <p className="mt-3 max-w-3xl text-lg text-gray-600">
-                Join thousands of couples who have secured their relationships with 
-                professional cohabitation agreements. Start your free preview today 
-                and see exactly what your personalized document will include.
-              </p>
-              <div className="mt-6 space-y-3">
-                <div className="flex items-start space-x-3">
-                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">SSL encrypted and secure payment processing</span>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">No hidden fees or subscription required</span>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">Instant preview of your agreement</span>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">Professional legal consultation included</span>
-                </div>
-              </div>
-            </div>
-            <div className="mt-8 lg:mt-0 flex justify-center lg:justify-end">
-              <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-                <div className="text-center">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Start Your Agreement</h3>
-                  <a href="/sign-up">
-                    <Button
-                      size="lg"
-                      className="w-full text-lg bg-blue-600 hover:bg-blue-700 mb-4"
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 text-lg py-4"
                     >
-                      Get Your Free Preview
-                      <ArrowRight className="ml-3 h-6 w-6" />
+                      <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                      </svg>
+                      Continue with Google
                     </Button>
-                  </a>
-                  <p className="text-sm text-gray-500">No credit card required</p>
+
+                    <div className="text-center">
+                      <Link href="/sign-in" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        Already have an account? Sign in
+                      </Link>
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-gray-500 text-center mt-4">
+                    Free preview • No credit card required
+                  </p>
+                </div>
+
+                {/* Pricing */}
+                <div className="flex items-center space-x-4 text-center">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xl text-gray-400 line-through">$999</span>
+                    <span className="text-4xl font-bold text-blue-600">$700</span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <div>+ 5% GST</div>
+                    <div className="text-xs">*Excludes lawyer fees</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column - Image */}
+              <div className="relative">
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                  <Image
+                    src="/hero-image.png"
+                    alt="Happy couple signing agreement"
+                    width={600}
+                    height={400}
+                    className="w-full h-auto"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                Why Choose Agreeable.ca
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Professional legal agreements with the support you need to make them legally binding
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div className="text-center">
+                <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <FileText className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Three Agreement Types</h3>
+                <p className="text-gray-600">Cohabitation, prenuptial, and postnuptial agreements tailored to your needs</p>
+              </div>
+
+              <div className="text-center">
+                <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Shield className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Free Preview</h3>
+                <p className="text-gray-600">See exactly what your personalized agreement will look like before you buy</p>
+              </div>
+
+              <div className="text-center">
+                <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Users className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Legal Support</h3>
+                <p className="text-gray-600">Connect with qualified lawyers for independent legal advice and signing</p>
+              </div>
+
+              <div className="text-center">
+                <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Lock className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Secure Process</h3>
+                <p className="text-gray-600">SSL encrypted data and secure payment processing with no hidden fees</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 bg-blue-600">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-4xl font-bold text-white mb-6">
+              Ready to Protect Your Relationship?
+            </h2>
+            <p className="text-xl text-blue-100 mb-8">
+              Join hundreds of couples who have secured their future with professional family agreements
+            </p>
+            <div className="space-y-4 sm:space-y-0 sm:flex sm:justify-center sm:space-x-4">
+              <Link href="/sign-up">
+                <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-50 text-lg px-8 py-4">
+                  Start Your Free Preview
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/contact">
+                <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-4">
+                  Ask Questions
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );

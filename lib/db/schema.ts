@@ -148,6 +148,13 @@ export const familyContracts = pgTable('family_contracts', {
   termsAccepted: varchar('terms_accepted', { length: 10 }).default('false'),
   termsAcceptedAt: timestamp('terms_accepted_at'),
   
+  // Affiliate and Coupon Tracking
+  affiliateLinkId: integer('affiliate_link_id').references(() => affiliateLinks.id),
+  couponCodeId: integer('coupon_code_id').references(() => couponCodes.id),
+  originalPrice: decimal('original_price', { precision: 10, scale: 2 }),
+  discountAmount: decimal('discount_amount', { precision: 10, scale: 2 }),
+  finalPrice: decimal('final_price', { precision: 10, scale: 2 }),
+  
   // Schedule A - Statement of Income, Assets and Liabilities
   // A. INCOME section
   scheduleIncomeEmployment: decimal('schedule_income_employment', { precision: 12, scale: 2 }),
@@ -242,6 +249,65 @@ export const lawyers = pgTable('lawyers', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
+export const affiliateLinks = pgTable('affiliate_links', {
+  id: serial('id').primaryKey(),
+  code: varchar('code', { length: 50 }).notNull().unique(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  commissionRate: decimal('commission_rate', { precision: 5, scale: 2 }).notNull().default('0.00'), // Percentage (e.g., 10.50% = 10.50)
+  totalClicks: integer('total_clicks').notNull().default(0),
+  totalSignups: integer('total_signups').notNull().default(0),
+  totalPurchases: integer('total_purchases').notNull().default(0),
+  totalCommission: decimal('total_commission', { precision: 12, scale: 2 }).notNull().default('0.00'),
+  isActive: varchar('is_active', { length: 10 }).notNull().default('true'),
+  createdBy: integer('created_by').notNull().references(() => users.id),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const couponCodes = pgTable('coupon_codes', {
+  id: serial('id').primaryKey(),
+  code: varchar('code', { length: 50 }).notNull().unique(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  discountType: varchar('discount_type', { length: 20 }).notNull(), // 'percentage' or 'fixed'
+  discountValue: decimal('discount_value', { precision: 10, scale: 2 }).notNull(), // Amount or percentage
+  minimumAmount: decimal('minimum_amount', { precision: 10, scale: 2 }), // Minimum purchase amount
+  usageLimit: integer('usage_limit'), // null = unlimited
+  usageCount: integer('usage_count').notNull().default(0),
+  validFrom: timestamp('valid_from').notNull().defaultNow(),
+  validTo: timestamp('valid_to'),
+  isActive: varchar('is_active', { length: 10 }).notNull().default('true'),
+  createdBy: integer('created_by').notNull().references(() => users.id),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const affiliateTracking = pgTable('affiliate_tracking', {
+  id: serial('id').primaryKey(),
+  affiliateLinkId: integer('affiliate_link_id').notNull().references(() => affiliateLinks.id),
+  userId: integer('user_id').references(() => users.id), // null for anonymous clicks
+  teamId: integer('team_id').references(() => teams.id),
+  contractId: integer('contract_id').references(() => familyContracts.id), // null until purchase
+  action: varchar('action', { length: 20 }).notNull(), // 'click', 'signup', 'purchase'
+  ipAddress: varchar('ip_address', { length: 45 }),
+  userAgent: text('user_agent'),
+  referrer: text('referrer'),
+  commissionAmount: decimal('commission_amount', { precision: 10, scale: 2 }), // null for clicks/signups
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const couponUsage = pgTable('coupon_usage', {
+  id: serial('id').primaryKey(),
+  couponCodeId: integer('coupon_code_id').notNull().references(() => couponCodes.id),
+  userId: integer('user_id').notNull().references(() => users.id),
+  contractId: integer('contract_id').notNull().references(() => familyContracts.id),
+  discountAmount: decimal('discount_amount', { precision: 10, scale: 2 }).notNull(),
+  originalAmount: decimal('original_amount', { precision: 10, scale: 2 }).notNull(),
+  finalAmount: decimal('final_amount', { precision: 10, scale: 2 }).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
 export const teamsRelations = relations(teams, ({ many }) => ({
   teamMembers: many(teamMembers),
   activityLogs: many(activityLogs),
@@ -288,7 +354,7 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   }),
 }));
 
-export const familyContractsRelations = relations(familyContracts, ({ one }) => ({
+export const familyContractsRelations = relations(familyContracts, ({ one, many }) => ({
   user: one(users, {
     fields: [familyContracts.userId],
     references: [users.id],
@@ -296,6 +362,58 @@ export const familyContractsRelations = relations(familyContracts, ({ one }) => 
   team: one(teams, {
     fields: [familyContracts.teamId],
     references: [teams.id],
+  }),
+  affiliateTracking: many(affiliateTracking),
+  couponUsage: many(couponUsage),
+}));
+
+export const affiliateLinksRelations = relations(affiliateLinks, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [affiliateLinks.createdBy],
+    references: [users.id],
+  }),
+  tracking: many(affiliateTracking),
+}));
+
+export const couponCodesRelations = relations(couponCodes, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [couponCodes.createdBy],
+    references: [users.id],
+  }),
+  usage: many(couponUsage),
+}));
+
+export const affiliateTrackingRelations = relations(affiliateTracking, ({ one }) => ({
+  affiliateLink: one(affiliateLinks, {
+    fields: [affiliateTracking.affiliateLinkId],
+    references: [affiliateLinks.id],
+  }),
+  user: one(users, {
+    fields: [affiliateTracking.userId],
+    references: [users.id],
+  }),
+  team: one(teams, {
+    fields: [affiliateTracking.teamId],
+    references: [teams.id],
+  }),
+  contract: one(familyContracts, {
+    fields: [affiliateTracking.contractId],
+    references: [familyContracts.id],
+  }),
+}));
+
+export const couponUsageRelations = relations(couponUsage, ({ one }) => ({
+  couponCode: one(couponCodes, {
+    fields: [couponUsage.couponCodeId],
+    references: [couponCodes.id],
+  }),
+  user: one(users, {
+    fields: [couponUsage.userId],
+    references: [users.id],
+  }),
+  contract: one(familyContracts, {
+    fields: [couponUsage.contractId],
+    references: [familyContracts.id],
   }),
 }));
 
@@ -315,6 +433,14 @@ export type Template = typeof templates.$inferSelect;
 export type NewTemplate = typeof templates.$inferInsert;
 export type Lawyer = typeof lawyers.$inferSelect;
 export type NewLawyer = typeof lawyers.$inferInsert;
+export type AffiliateLink = typeof affiliateLinks.$inferSelect;
+export type NewAffiliateLink = typeof affiliateLinks.$inferInsert;
+export type CouponCode = typeof couponCodes.$inferSelect;
+export type NewCouponCode = typeof couponCodes.$inferInsert;
+export type AffiliateTracking = typeof affiliateTracking.$inferSelect;
+export type NewAffiliateTracking = typeof affiliateTracking.$inferInsert;
+export type CouponUsage = typeof couponUsage.$inferSelect;
+export type NewCouponUsage = typeof couponUsage.$inferInsert;
 export type TeamDataWithMembers = Team & {
   teamMembers: (TeamMember & {
     user: Pick<User, 'id' | 'name' | 'email'>;
