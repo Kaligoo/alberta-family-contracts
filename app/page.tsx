@@ -3,10 +3,12 @@ import { ArrowRight, Shield, FileText, Users, CheckCircle, Lock, Mail, User } fr
 import { Navigation } from '@/components/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import AffiliateTracker from '@/components/affiliate-tracker';
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
+      <AffiliateTracker />
       <Navigation />
       <main>
         {/* Hero Section */}

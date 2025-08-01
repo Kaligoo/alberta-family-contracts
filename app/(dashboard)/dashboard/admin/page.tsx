@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Upload, FileText, Settings, Trash2, Download, Eye, Plus, Users, Edit, Mail } from 'lucide-react';
+import { Upload, FileText, Settings, Trash2, Download, Eye, Plus, Users, Edit, Mail, Link as LinkIcon, Tag, ExternalLink, Copy } from 'lucide-react';
 import Link from 'next/link';
 import useSWR from 'swr';
 
@@ -34,6 +34,40 @@ interface Lawyer {
   website?: string;
   party: 'user' | 'partner' | 'both';
   isActive: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface AffiliateLink {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  commissionRate: string;
+  totalClicks: number;
+  totalSignups: number;
+  totalPurchases: number;
+  totalCommission: string;
+  isActive: string;
+  createdBy: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface CouponCode {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: string;
+  minimumAmount?: string;
+  usageLimit?: number;
+  usageCount: number;
+  validFrom: string;
+  validTo?: string;
+  isActive: string;
+  createdBy: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -66,11 +100,46 @@ export default function AdminDashboardPage() {
   const [lawyerSuccess, setLawyerSuccess] = useState('');
   const [isSavingLawyer, setIsSavingLawyer] = useState(false);
 
+  // Affiliate link management state
+  const [showAffiliateForm, setShowAffiliateForm] = useState(false);
+  const [editingAffiliate, setEditingAffiliate] = useState<AffiliateLink | null>(null);
+  const [affiliateFormData, setAffiliateFormData] = useState({
+    code: '',
+    name: '',
+    description: '',
+    commissionRate: '10.00'
+  });
+  const [affiliateError, setAffiliateError] = useState('');
+  const [affiliateSuccess, setAffiliateSuccess] = useState('');
+  const [isSavingAffiliate, setIsSavingAffiliate] = useState(false);
+
+  // Coupon code management state
+  const [showCouponForm, setShowCouponForm] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState<CouponCode | null>(null);
+  const [couponFormData, setCouponFormData] = useState({
+    code: '',
+    name: '',
+    description: '',
+    discountType: 'percentage' as 'percentage' | 'fixed',
+    discountValue: '10.00',
+    minimumAmount: '',
+    usageLimit: '',
+    validFrom: new Date().toISOString().split('T')[0],
+    validTo: ''
+  });
+  const [couponError, setCouponError] = useState('');
+  const [couponSuccess, setCouponSuccess] = useState('');
+  const [isSavingCoupon, setIsSavingCoupon] = useState(false);
+
   const { data: templatesData, error, mutate } = useSWR('/api/admin/templates', fetcher);
   const { data: lawyersData, error: lawyersError, mutate: mutateLawyers } = useSWR('/api/admin/lawyers', fetcher);
+  const { data: affiliatesData, error: affiliatesError, mutate: mutateAffiliates } = useSWR('/api/admin/affiliate-links', fetcher);
+  const { data: couponsData, error: couponsError, mutate: mutateCoupons } = useSWR('/api/admin/coupon-codes', fetcher);
   
   const templates: Template[] = templatesData?.templates || [];
   const lawyers: Lawyer[] = lawyersData?.lawyers || [];
+  const affiliateLinks: AffiliateLink[] = affiliatesData?.affiliateLinks || [];
+  const couponCodes: CouponCode[] = couponsData?.couponCodes || [];
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -325,6 +394,215 @@ export default function AdminDashboardPage() {
       }
     } catch (error) {
       setLawyerError('Network error occurred while deleting lawyer');
+    }
+  };
+
+  // Affiliate link management functions
+  const resetAffiliateForm = () => {
+    setAffiliateFormData({
+      code: '',
+      name: '',
+      description: '',
+      commissionRate: '10.00'
+    });
+    setEditingAffiliate(null);
+    setShowAffiliateForm(false);
+    setAffiliateError('');
+    setAffiliateSuccess('');
+  };
+
+  const handleAddAffiliate = () => {
+    resetAffiliateForm();
+    setShowAffiliateForm(true);
+  };
+
+  const handleEditAffiliate = (affiliate: AffiliateLink) => {
+    setAffiliateFormData({
+      code: affiliate.code,
+      name: affiliate.name,
+      description: affiliate.description || '',
+      commissionRate: affiliate.commissionRate
+    });
+    setEditingAffiliate(affiliate);
+    setShowAffiliateForm(true);
+    setAffiliateError('');
+    setAffiliateSuccess('');
+  };
+
+  const handleSaveAffiliate = async () => {
+    if (!affiliateFormData.code || !affiliateFormData.name || !affiliateFormData.commissionRate) {
+      setAffiliateError('Code, name, and commission rate are required');
+      return;
+    }
+
+    setIsSavingAffiliate(true);
+    setAffiliateError('');
+    setAffiliateSuccess('');
+
+    try {
+      const url = editingAffiliate 
+        ? `/api/admin/affiliate-links/${editingAffiliate.id}`
+        : '/api/admin/affiliate-links';
+      
+      const method = editingAffiliate ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(affiliateFormData),
+      });
+
+      if (response.ok) {
+        setAffiliateSuccess(editingAffiliate ? 'Affiliate link updated successfully!' : 'Affiliate link created successfully!');
+        mutateAffiliates(); // Refresh the affiliate links list
+        setTimeout(() => {
+          resetAffiliateForm();
+        }, 1500);
+      } else {
+        const error = await response.json();
+        setAffiliateError(error.error || 'Failed to save affiliate link');
+      }
+    } catch (error) {
+      setAffiliateError('Network error occurred while saving affiliate link');
+    } finally {
+      setIsSavingAffiliate(false);
+    }
+  };
+
+  const handleDeleteAffiliate = async (affiliateId: number) => {
+    if (!confirm('Are you sure you want to delete this affiliate link?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/affiliate-links/${affiliateId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setAffiliateSuccess('Affiliate link deleted successfully!');
+        mutateAffiliates(); // Refresh the affiliate links list
+        setTimeout(() => setAffiliateSuccess(''), 3000);
+      } else {
+        const error = await response.json();
+        setAffiliateError(error.error || 'Failed to delete affiliate link');
+      }
+    } catch (error) {
+      setAffiliateError('Network error occurred while deleting affiliate link');
+    }
+  };
+
+  // Coupon code management functions
+  const resetCouponForm = () => {
+    setCouponFormData({
+      code: '',
+      name: '',
+      description: '',
+      discountType: 'percentage',
+      discountValue: '10.00',
+      minimumAmount: '',
+      usageLimit: '',
+      validFrom: new Date().toISOString().split('T')[0],
+      validTo: ''
+    });
+    setEditingCoupon(null);
+    setShowCouponForm(false);
+    setCouponError('');
+    setCouponSuccess('');
+  };
+
+  const handleAddCoupon = () => {
+    resetCouponForm();
+    setShowCouponForm(true);
+  };
+
+  const handleEditCoupon = (coupon: CouponCode) => {
+    setCouponFormData({
+      code: coupon.code,
+      name: coupon.name,
+      description: coupon.description || '',
+      discountType: coupon.discountType,
+      discountValue: coupon.discountValue,
+      minimumAmount: coupon.minimumAmount || '',
+      usageLimit: coupon.usageLimit?.toString() || '',
+      validFrom: new Date(coupon.validFrom).toISOString().split('T')[0],
+      validTo: coupon.validTo ? new Date(coupon.validTo).toISOString().split('T')[0] : ''
+    });
+    setEditingCoupon(coupon);
+    setShowCouponForm(true);
+    setCouponError('');
+    setCouponSuccess('');
+  };
+
+  const handleSaveCoupon = async () => {
+    if (!couponFormData.code || !couponFormData.name || !couponFormData.discountValue) {
+      setCouponError('Code, name, and discount value are required');
+      return;
+    }
+
+    setIsSavingCoupon(true);
+    setCouponError('');
+    setCouponSuccess('');
+
+    try {
+      const url = editingCoupon 
+        ? `/api/admin/coupon-codes/${editingCoupon.id}`
+        : '/api/admin/coupon-codes';
+      
+      const method = editingCoupon ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(couponFormData),
+      });
+
+      if (response.ok) {
+        setCouponSuccess(editingCoupon ? 'Coupon code updated successfully!' : 'Coupon code created successfully!');
+        mutateCoupons(); // Refresh the coupon codes list
+        setTimeout(() => {
+          resetCouponForm();
+        }, 1500);
+      } else {
+        const error = await response.json();
+        setCouponError(error.error || 'Failed to save coupon code');
+      }
+    } catch (error) {
+      setCouponError('Network error occurred while saving coupon code');
+    } finally {
+      setIsSavingCoupon(false);
+    }
+  };
+
+  const handleDeleteCoupon = async (couponId: number) => {
+    if (!confirm('Are you sure you want to delete this coupon code?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/coupon-codes/${couponId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setCouponSuccess('Coupon code deleted successfully!');
+        mutateCoupons(); // Refresh the coupon codes list
+        setTimeout(() => setCouponSuccess(''), 3000);
+      } else {
+        const error = await response.json();
+        setCouponError(error.error || 'Failed to delete coupon code');
+      }
+    } catch (error) {
+      setCouponError('Network error occurred while deleting coupon code');
+    }
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (err) {
+      return false;
     }
   };
 
@@ -747,6 +1025,494 @@ export default function AdminDashboardPage() {
             {!showLawyerForm && lawyerSuccess && (
               <div className="mt-4 p-3 rounded-md text-sm bg-green-50 text-green-700 border border-green-200">
                 {lawyerSuccess}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Affiliate Links Management */}
+        <Card className="mt-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center">
+                <LinkIcon className="mr-2 h-5 w-5" />
+                Affiliate Links Management
+              </CardTitle>
+              <Button
+                onClick={handleAddAffiliate}
+                className="bg-orange-500 hover:bg-orange-600"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create Affiliate Link
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Affiliate Form */}
+            {showAffiliateForm && (
+              <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <h3 className="text-lg font-medium mb-4">
+                  {editingAffiliate ? 'Edit Affiliate Link' : 'Create New Affiliate Link'}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Affiliate Code *
+                    </label>
+                    <input
+                      type="text"
+                      value={affiliateFormData.code}
+                      onChange={(e) => setAffiliateFormData({...affiliateFormData, code: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="PARTNER2024"
+                      disabled={!!editingAffiliate}
+                    />
+                    {editingAffiliate && (
+                      <p className="text-xs text-gray-500 mt-1">Affiliate codes cannot be changed after creation</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Affiliate Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={affiliateFormData.name}
+                      onChange={(e) => setAffiliateFormData({...affiliateFormData, name: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="Partner Company"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Commission Rate (%) *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      value={affiliateFormData.commissionRate}
+                      onChange={(e) => setAffiliateFormData({...affiliateFormData, commissionRate: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="10.00"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      value={affiliateFormData.description}
+                      onChange={(e) => setAffiliateFormData({...affiliateFormData, description: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      rows={2}
+                      placeholder="Optional description of this affiliate partnership"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex gap-4 mt-4">
+                  <Button
+                    onClick={handleSaveAffiliate}
+                    disabled={isSavingAffiliate}
+                    className="bg-orange-500 hover:bg-orange-600"
+                  >
+                    {isSavingAffiliate ? 'Saving...' : (editingAffiliate ? 'Update Affiliate Link' : 'Create Affiliate Link')}
+                  </Button>
+                  <Button
+                    onClick={resetAffiliateForm}
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+
+                {affiliateError && (
+                  <div className="mt-4 p-3 rounded-md text-sm bg-red-50 text-red-700 border border-red-200">
+                    {affiliateError}
+                  </div>
+                )}
+                {affiliateSuccess && (
+                  <div className="mt-4 p-3 rounded-md text-sm bg-green-50 text-green-700 border border-green-200">
+                    {affiliateSuccess}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Affiliate Links List */}
+            {!affiliatesData ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                <span className="ml-2 text-gray-600">Loading affiliate links...</span>
+              </div>
+            ) : affiliateLinks.length === 0 ? (
+              <div className="text-center py-8">
+                <LinkIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-600">No affiliate links created yet.</p>
+                <p className="text-sm text-gray-500 mt-2">Create your first affiliate link using the button above.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {affiliateLinks.map((affiliate) => (
+                  <div key={affiliate.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-medium text-gray-900">{affiliate.name}</h3>
+                          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                            {affiliate.code}
+                          </span>
+                          <span className={`px-2 py-1 text-xs font-medium rounded ${
+                            affiliate.isActive === 'true' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {affiliate.isActive === 'true' ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                        {affiliate.description && (
+                          <p className="text-sm text-gray-600 mb-2">{affiliate.description}</p>
+                        )}
+                        <div className="text-sm text-gray-600 mb-2">
+                          <div className="flex items-center gap-4">
+                            <span>Commission: {affiliate.commissionRate}%</span>
+                            <span>Clicks: {affiliate.totalClicks}</span>
+                            <span>Signups: {affiliate.totalSignups}</span>
+                            <span>Purchases: {affiliate.totalPurchases}</span>
+                            <span>Earned: ${affiliate.totalCommission}</span>
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-500 mb-2">
+                          <strong>Affiliate URL:</strong> 
+                          <code className="bg-gray-100 px-2 py-1 rounded ml-1 text-xs">
+                            {typeof window !== 'undefined' ? window.location.origin : 'https://agreeable.ca'}/?ref={affiliate.code}
+                          </code>
+                          <Button
+                            onClick={async () => {
+                              const url = `${typeof window !== 'undefined' ? window.location.origin : 'https://agreeable.ca'}/?ref=${affiliate.code}`;
+                              const success = await copyToClipboard(url);
+                              if (success) {
+                                setAffiliateSuccess('Affiliate URL copied to clipboard!');
+                                setTimeout(() => setAffiliateSuccess(''), 2000);
+                              }
+                            }}
+                            variant="ghost"
+                            size="sm"
+                            className="ml-2 h-6 px-2"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          Created: {formatDate(affiliate.createdAt)}
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleEditAffiliate(affiliate)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        
+                        <Button
+                          onClick={() => handleDeleteAffiliate(affiliate.id)}
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Global success/error messages for affiliates */}
+            {!showAffiliateForm && affiliateError && (
+              <div className="mt-4 p-3 rounded-md text-sm bg-red-50 text-red-700 border border-red-200">
+                {affiliateError}
+              </div>
+            )}
+            {!showAffiliateForm && affiliateSuccess && (
+              <div className="mt-4 p-3 rounded-md text-sm bg-green-50 text-green-700 border border-green-200">
+                {affiliateSuccess}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Coupon Codes Management */}
+        <Card className="mt-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center">
+                <Tag className="mr-2 h-5 w-5" />
+                Coupon Codes Management
+              </CardTitle>
+              <Button
+                onClick={handleAddCoupon}
+                className="bg-orange-500 hover:bg-orange-600"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create Coupon Code
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Coupon Form */}
+            {showCouponForm && (
+              <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <h3 className="text-lg font-medium mb-4">
+                  {editingCoupon ? 'Edit Coupon Code' : 'Create New Coupon Code'}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Coupon Code *
+                    </label>
+                    <input
+                      type="text"
+                      value={couponFormData.code}
+                      onChange={(e) => setCouponFormData({...couponFormData, code: e.target.value.toUpperCase()})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="FAMILY20"
+                      style={{ textTransform: 'uppercase' }}
+                      disabled={!!editingCoupon}
+                    />
+                    {editingCoupon && (
+                      <p className="text-xs text-gray-500 mt-1">Coupon codes cannot be changed after creation</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Coupon Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={couponFormData.name}
+                      onChange={(e) => setCouponFormData({...couponFormData, name: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="Family & Friends 20%"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Discount Type *
+                    </label>
+                    <select
+                      value={couponFormData.discountType}
+                      onChange={(e) => setCouponFormData({...couponFormData, discountType: e.target.value as 'percentage' | 'fixed'})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    >
+                      <option value="percentage">Percentage (%)</option>
+                      <option value="fixed">Fixed Amount ($)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Discount Value *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={couponFormData.discountValue}
+                      onChange={(e) => setCouponFormData({...couponFormData, discountValue: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder={couponFormData.discountType === 'percentage' ? '20.00' : '100.00'}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {couponFormData.discountType === 'percentage' ? 'Percentage discount (0-100)' : 'Dollar amount discount'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Minimum Purchase Amount
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={couponFormData.minimumAmount}
+                      onChange={(e) => setCouponFormData({...couponFormData, minimumAmount: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="0.00"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Optional minimum purchase requirement</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Usage Limit
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={couponFormData.usageLimit}
+                      onChange={(e) => setCouponFormData({...couponFormData, usageLimit: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="Unlimited"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Leave empty for unlimited uses</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Valid From *
+                    </label>
+                    <input
+                      type="date"
+                      value={couponFormData.validFrom}
+                      onChange={(e) => setCouponFormData({...couponFormData, validFrom: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Valid Until
+                    </label>
+                    <input
+                      type="date"
+                      value={couponFormData.validTo}
+                      onChange={(e) => setCouponFormData({...couponFormData, validTo: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Leave empty for no expiration</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      value={couponFormData.description}
+                      onChange={(e) => setCouponFormData({...couponFormData, description: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      rows={2}
+                      placeholder="Optional description of this coupon code"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex gap-4 mt-4">
+                  <Button
+                    onClick={handleSaveCoupon}
+                    disabled={isSavingCoupon}
+                    className="bg-orange-500 hover:bg-orange-600"
+                  >
+                    {isSavingCoupon ? 'Saving...' : (editingCoupon ? 'Update Coupon Code' : 'Create Coupon Code')}
+                  </Button>
+                  <Button
+                    onClick={resetCouponForm}
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+
+                {couponError && (
+                  <div className="mt-4 p-3 rounded-md text-sm bg-red-50 text-red-700 border border-red-200">
+                    {couponError}
+                  </div>
+                )}
+                {couponSuccess && (
+                  <div className="mt-4 p-3 rounded-md text-sm bg-green-50 text-green-700 border border-green-200">
+                    {couponSuccess}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Coupon Codes List */}
+            {!couponsData ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                <span className="ml-2 text-gray-600">Loading coupon codes...</span>
+              </div>
+            ) : couponCodes.length === 0 ? (
+              <div className="text-center py-8">
+                <Tag className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-600">No coupon codes created yet.</p>
+                <p className="text-sm text-gray-500 mt-2">Create your first coupon code using the button above.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {couponCodes.map((coupon) => (
+                  <div key={coupon.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-medium text-gray-900">{coupon.name}</h3>
+                          <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded">
+                            {coupon.code}
+                          </span>
+                          <span className={`px-2 py-1 text-xs font-medium rounded ${
+                            coupon.isActive === 'true' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {coupon.isActive === 'true' ? 'Active' : 'Inactive'}
+                          </span>
+                          <span className={`px-2 py-1 text-xs font-medium rounded ${
+                            coupon.discountType === 'percentage' 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `$${coupon.discountValue}`}
+                          </span>
+                        </div>
+                        {coupon.description && (
+                          <p className="text-sm text-gray-600 mb-2">{coupon.description}</p>
+                        )}
+                        <div className="text-sm text-gray-600 mb-2">
+                          <div className="flex items-center gap-4">
+                            <span>Used: {coupon.usageCount}{coupon.usageLimit ? `/${coupon.usageLimit}` : ''}</span>
+                            {coupon.minimumAmount && <span>Min: ${coupon.minimumAmount}</span>}
+                            <span>Valid: {formatDate(coupon.validFrom)} - {coupon.validTo ? formatDate(coupon.validTo) : 'No expiry'}</span>
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          Created: {formatDate(coupon.createdAt)}
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleEditCoupon(coupon)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        
+                        <Button
+                          onClick={() => handleDeleteCoupon(coupon.id)}
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Global success/error messages for coupons */}
+            {!showCouponForm && couponError && (
+              <div className="mt-4 p-3 rounded-md text-sm bg-red-50 text-red-700 border border-red-200">
+                {couponError}
+              </div>
+            )}
+            {!showCouponForm && couponSuccess && (
+              <div className="mt-4 p-3 rounded-md text-sm bg-green-50 text-green-700 border border-green-200">
+                {couponSuccess}
               </div>
             )}
           </CardContent>
