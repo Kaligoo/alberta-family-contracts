@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
       "Bash(pnpm:*)",
@@ -58,9 +59,9 @@
       "WebFetch(domain:docs.anthropic.com)",
       "Bash(copy:*)",
       "Bash(powershell:*)",
-      "WebFetch(domain:wilful.co)"
+      "WebFetch(domain:wilful.co)",
+      "Bash(true)"
     ],
     "deny": []
-  },
-  "$schema": "https://json.schemastore.org/claude-code-settings.json"
+  }
 }

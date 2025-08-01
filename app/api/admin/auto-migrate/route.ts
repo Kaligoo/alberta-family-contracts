@@ -211,6 +211,57 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ Affiliate and coupon tables migration already applied or failed:', error);
     }
 
+    // Apply migration 0010_schedule_a.sql (Schedule A fields and affiliate/coupon links) if needed
+    try {
+      // Add affiliate and coupon fields to family_contracts
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        ADD COLUMN IF NOT EXISTS affiliate_link_id integer,
+        ADD COLUMN IF NOT EXISTS coupon_code_id integer,
+        ADD COLUMN IF NOT EXISTS original_price numeric(10, 2),
+        ADD COLUMN IF NOT EXISTS discount_amount numeric(10, 2),
+        ADD COLUMN IF NOT EXISTS final_price numeric(10, 2);
+      `);
+
+      // Add Schedule A income fields
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        ADD COLUMN IF NOT EXISTS schedule_income_employment numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_income_ei numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_income_workers_comp numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_income_investment numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_income_pension numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_income_government_assistance numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_income_self_employment numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_income_other numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_income_total_tax_return numeric(12, 2);
+      `);
+
+      // Add Schedule A assets fields (using jsonb for compatibility)
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        ADD COLUMN IF NOT EXISTS schedule_assets_real_estate jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_assets_vehicles jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_assets_financial jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_assets_pensions jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_assets_business jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_assets_other jsonb;
+      `);
+
+      // Add Schedule A debts fields
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        ADD COLUMN IF NOT EXISTS schedule_debts_secured jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_debts_unsecured jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_debts_other jsonb;
+      `);
+
+      appliedMigrations.push('0010_schedule_a');
+      console.log('✅ Schedule A and affiliate/coupon fields migration applied');
+    } catch (error) {
+      console.log('⚠️ Schedule A and affiliate/coupon fields migration already applied or failed:', error);
+    }
+
     // Update the migration journal
     for (const migration of appliedMigrations) {
       try {
