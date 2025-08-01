@@ -330,6 +330,22 @@ function prepareTemplateDataWithWatermark(contract: any, user: any) {
       day: 'numeric' 
     }) : '',
     
+    // Conditional logic fields (based on actual field values)
+    proposed_marriage_date: contract.proposedMarriageDate ? new Date(contract.proposedMarriageDate).toLocaleDateString('en-US', {
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }) : null,
+    cohab_date: contract.cohabDate ? new Date(contract.cohabDate).toLocaleDateString('en-US', {
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }) : null,
+    user_lawyer: contract.userLawyer || null,
+    partner_lawyer: contract.partnerLawyer || null,
+    residence_address: contract.residenceAddress || null,
+    additional_clauses: contract.additionalClauses || null,
+    
     // Ages - using correct field names
     userAge: contract.user_age || contract.userAge || '[Your Age]',
     partnerAge: contract.partner_age || contract.partnerAge || '[Partner Age]', 

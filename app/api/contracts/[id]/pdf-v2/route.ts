@@ -92,7 +92,7 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
     });
     
     console.log('Template conditional syntax guide:');
-    console.log('Use: {#proposed_marriage_date}They are engaged to be married and intend to be married on {proposed_marriage_date}.{/proposed_marriage_date}');
+    console.log('Use: {#proposed_marriage_date}...{/proposed_marriage_date}');
     console.log('Available conditional fields: proposed_marriage_date, cohab_date, user_lawyer, partner_lawyer');
     
     // Generate filled Word document (same as PDF v1)
