@@ -45,6 +45,12 @@ export default function ContractPurchasePage() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isAcceptingTerms, setIsAcceptingTerms] = useState(false);
   
+  // Coupon state
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponError, setCouponError] = useState('');
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  
   const { data: contractData } = useSWR(
     `/api/contracts/${contractId}`,
     fetcher
@@ -53,6 +59,59 @@ export default function ContractPurchasePage() {
   const contract = contractData?.contract;
   const isPaid = isContractPaid(contract);
   const contractTermsAccepted = contract?.termsAccepted === 'true' || contract?.termsAccepted === true;
+
+  // Pricing calculation
+  const basePrice = 700; // $700 CAD
+  const gstRate = 0.05; // 5% GST
+  const finalPrice = appliedCoupon 
+    ? Math.max(0, basePrice - parseFloat(appliedCoupon.discountAmount))
+    : basePrice;
+  const gstAmount = finalPrice * gstRate;
+  const totalPrice = finalPrice + gstAmount;
+
+  const handleCouponValidation = async () => {
+    if (!couponCode.trim()) {
+      setCouponError('Please enter a coupon code');
+      return;
+    }
+
+    setIsValidatingCoupon(true);
+    setCouponError('');
+
+    try {
+      const response = await fetch('/api/coupon/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: couponCode.toUpperCase(),
+          amount: basePrice
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.valid) {
+        setAppliedCoupon(result.coupon);
+        setCouponError('');
+      } else {
+        setCouponError(result.error || 'Invalid coupon code');
+        setAppliedCoupon(null);
+      }
+    } catch (error) {
+      setCouponError('Failed to validate coupon code');
+      setAppliedCoupon(null);
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError('');
+  };
 
   const handleTermsAcceptance = async (accepted: boolean) => {
     if (!accepted) {
@@ -97,6 +156,12 @@ export default function ContractPurchasePage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          coupon: appliedCoupon,
+          originalPrice: basePrice,
+          discountAmount: appliedCoupon ? parseFloat(appliedCoupon.discountAmount) : 0,
+          finalPrice: finalPrice
+        })
       });
 
       if (response.ok) {
@@ -283,8 +348,71 @@ export default function ContractPurchasePage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-600 mb-2">$735.00</div>
+                    <div className="text-3xl font-bold text-blue-600 mb-2">
+                      ${totalPrice.toFixed(2)}
+                    </div>
                     <div className="text-sm text-gray-600">CAD (includes 5% GST)</div>
+                    {appliedCoupon && (
+                      <div className="text-sm text-green-600 mt-1">
+                        Save ${appliedCoupon.discountAmount} with {appliedCoupon.code}!
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Coupon Code Section */}
+                  <div className="border-t pt-4">
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Have a coupon code?
+                      </label>
+                      {!appliedCoupon ? (
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={couponCode}
+                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                            placeholder="Enter coupon code"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            disabled={isValidatingCoupon}
+                          />
+                          <Button
+                            onClick={handleCouponValidation}
+                            disabled={isValidatingCoupon || !couponCode.trim()}
+                            variant="outline"
+                            className="whitespace-nowrap"
+                          >
+                            {isValidatingCoupon ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Validating...
+                              </>
+                            ) : (
+                              'Apply'
+                            )}
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-md p-3">
+                          <div>
+                            <div className="font-medium text-green-800">{appliedCoupon.name}</div>
+                            <div className="text-sm text-green-600">
+                              Code: {appliedCoupon.code} • Save ${appliedCoupon.discountAmount}
+                            </div>
+                          </div>
+                          <Button
+                            onClick={handleRemoveCoupon}
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      )}
+                      {couponError && (
+                        <div className="text-sm text-red-600">{couponError}</div>
+                      )}
+                    </div>
                   </div>
 
                   {error && (
@@ -416,15 +544,25 @@ export default function ContractPurchasePage() {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span>Agreement Document</span>
-                      <span className="font-semibold">$700.00 CAD</span>
+                      <span className="font-semibold">${basePrice.toFixed(2)} CAD</span>
+                    </div>
+                    {appliedCoupon && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Discount ({appliedCoupon.code})</span>
+                        <span>-${appliedCoupon.discountAmount} CAD</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span>Subtotal</span>
+                      <span>${finalPrice.toFixed(2)} CAD</span>
                     </div>
                     <div className="flex justify-between">
                       <span>GST (5%)</span>
-                      <span className="font-semibold">$35.00 CAD</span>
+                      <span className="font-semibold">${gstAmount.toFixed(2)} CAD</span>
                     </div>
                     <div className="border-t pt-3 flex justify-between text-lg font-bold">
                       <span>Total</span>
-                      <span>$735.00 CAD</span>
+                      <span>${totalPrice.toFixed(2)} CAD</span>
                     </div>
                   </div>
                   

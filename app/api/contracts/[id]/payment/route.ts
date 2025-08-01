@@ -29,6 +29,10 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid contract ID' }, { status: 400 });
     }
 
+    // Parse coupon information from request body
+    const body = await request.json().catch(() => ({}));
+    const { coupon, originalPrice = 700, discountAmount = 0, finalPrice = 700 } = body;
+
     // Get the contract to verify ownership
     const [contract] = await db
       .select()
@@ -50,6 +54,11 @@ export async function POST(
       return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 });
     }
 
+    // Calculate pricing with GST
+    const gstAmount = finalPrice * 0.05;
+    const totalAmount = finalPrice + gstAmount;
+    const totalAmountCents = Math.round(totalAmount * 100); // Convert to cents for Stripe
+
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -59,9 +68,11 @@ export async function POST(
             currency: 'cad',
             product_data: {
               name: 'Agreeable.ca Cohabitation Agreement',
-              description: `Professional cohabitation agreement for ${contract.userFullName || user.name || 'Customer'}`,
+              description: coupon 
+                ? `Professional cohabitation agreement for ${contract.userFullName || user.name || 'Customer'} (${coupon.code} discount applied)`
+                : `Professional cohabitation agreement for ${contract.userFullName || user.name || 'Customer'}`,
             },
-            unit_amount: 73500 // $735.00 CAD in cents (includes 5% GST)
+            unit_amount: totalAmountCents
           },
           quantity: 1
         }
@@ -74,7 +85,14 @@ export async function POST(
       metadata: {
         contractId: contractId.toString(),
         userId: user.id.toString(),
-        product: 'cohabitation_agreement'
+        product: 'cohabitation_agreement',
+        originalPrice: originalPrice.toString(),
+        discountAmount: discountAmount.toString(),
+        finalPrice: finalPrice.toString(),
+        ...(coupon && {
+          couponId: coupon.id?.toString(),
+          couponCode: coupon.code
+        })
       },
       allow_promotion_codes: true,
       billing_address_collection: 'required',
