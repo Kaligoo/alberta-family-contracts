@@ -86,9 +86,8 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
       proposedMarriageDate: templateData.proposedMarriageDate,
       contractType: templateData.contractType,
       userFullName: templateData.userFullName,
-      cohabDate: templateData.cohabDate,
-      hasProposedMarriageDate: templateData.hasProposedMarriageDate,
-      isPrenuptial: templateData.isPrenuptial
+      cohabDate: templateData.cohabDate
+      // Conditional flags temporarily disabled for debugging
     });
     
     // Generate filled Word document (same as PDF v1)
@@ -109,13 +108,21 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
       console.log('Successfully rendered template with data');
     } catch (renderError) {
       console.error('Template rendering error:', renderError);
+      console.error('Template data keys:', Object.keys(templateData));
+      console.error('Render error details:', {
+        message: renderError instanceof Error ? renderError.message : 'Unknown error',
+        name: renderError instanceof Error ? renderError.name : 'Unknown',
+        stack: renderError instanceof Error ? renderError.stack : 'No stack trace'
+      });
       throw new Error(`Template rendering failed: ${renderError instanceof Error ? renderError.message : 'Unknown error'}`);
     }
     
     const filledDocxBuffer = doc.getZip().generate({ type: 'nodebuffer' });
     
     // Convert Word document to PDF using Gotenberg
+    console.log('Starting Gotenberg conversion...');
     const pdfBuffer = await convertWordToPDFWithGotenberg(filledDocxBuffer);
+    console.log('Gotenberg conversion completed successfully');
     
     console.log('Successfully generated PDF v2 using Gotenberg Word-to-PDF conversion');
     return new Uint8Array(pdfBuffer);
@@ -232,18 +239,18 @@ function prepareTemplateData(contract: any, user: any) {
       day: 'numeric' 
     }) : '',
     
-    // Boolean flags for conditional logic in templates
-    hasProposedMarriageDate: !!(contract.proposedMarriageDate),
-    hasCohabDate: !!(contract.cohabDate),
-    hasUserLawyer: !!(contract.userLawyer),
-    hasPartnerLawyer: !!(contract.partnerLawyer),
-    hasResidenceAddress: !!(contract.residenceAddress),
-    hasAdditionalClauses: !!(contract.additionalClauses),
+    // Boolean flags for conditional logic in templates (temporarily disabled for debugging)
+    // hasProposedMarriageDate: !!(contract.proposedMarriageDate),
+    // hasCohabDate: !!(contract.cohabDate),
+    // hasUserLawyer: !!(contract.userLawyer),
+    // hasPartnerLawyer: !!(contract.partnerLawyer),
+    // hasResidenceAddress: !!(contract.residenceAddress),
+    // hasAdditionalClauses: !!(contract.additionalClauses),
     
-    // Contract type flags for conditional logic
-    isCohabitation: (contract.contractType === 'cohabitation'),
-    isPrenuptial: (contract.contractType === 'prenuptial'), 
-    isPostnuptial: (contract.contractType === 'postnuptial'),
+    // Contract type flags for conditional logic (temporarily disabled for debugging)
+    // isCohabitation: (contract.contractType === 'cohabitation'),
+    // isPrenuptial: (contract.contractType === 'prenuptial'), 
+    // isPostnuptial: (contract.contractType === 'postnuptial'),
     contractType: contract.contractType || 'cohabitation',
     
     // Ages - using correct field names
