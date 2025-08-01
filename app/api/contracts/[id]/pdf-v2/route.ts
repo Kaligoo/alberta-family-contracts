@@ -83,10 +83,10 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
     
     // Debug template data
     console.log('Template data prepared:', {
-      hasProposedMarriageDate: templateData.hasProposedMarriageDate,
       proposedMarriageDate: templateData.proposedMarriageDate,
       contractType: templateData.contractType,
-      userFullName: templateData.userFullName
+      userFullName: templateData.userFullName,
+      cohabDate: templateData.cohabDate
     });
     
     // Generate filled Word document (same as PDF v1)
@@ -107,7 +107,7 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
       console.log('Successfully rendered template with data');
     } catch (renderError) {
       console.error('Template rendering error:', renderError);
-      throw new Error(`Template rendering failed: ${renderError.message}`);
+      throw new Error(`Template rendering failed: ${renderError instanceof Error ? renderError.message : 'Unknown error'}`);
     }
     
     const filledDocxBuffer = doc.getZip().generate({ type: 'nodebuffer' });
