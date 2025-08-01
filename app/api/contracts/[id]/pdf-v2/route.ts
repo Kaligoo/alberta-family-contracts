@@ -259,6 +259,26 @@ function prepareTemplateData(contract: any, user: any) {
     partner_lawyer: contract.partnerLawyer || null,
     residence_address: contract.residenceAddress || null,
     additional_clauses: contract.additionalClauses || null,
+    
+    // Pronoun conditionals for user
+    user_is_she: contract.userPronouns === 'she/her/hers' ? 'she' : null,
+    user_is_he: contract.userPronouns === 'he/him/his' ? 'he' : null,
+    user_is_they: contract.userPronouns === 'they/them/theirs' ? 'they' : null,
+    user_her: contract.userPronouns === 'she/her/hers' ? 'her' : null,
+    user_his: contract.userPronouns === 'he/him/his' ? 'his' : null,
+    user_their: contract.userPronouns === 'they/them/theirs' ? 'their' : null,
+    user_hers: contract.userPronouns === 'she/her/hers' ? 'hers' : null,
+    user_theirs: contract.userPronouns === 'they/them/theirs' ? 'theirs' : null,
+    
+    // Pronoun conditionals for partner
+    partner_is_she: contract.partnerPronouns === 'she/her/hers' ? 'she' : null,
+    partner_is_he: contract.partnerPronouns === 'he/him/his' ? 'he' : null,
+    partner_is_they: contract.partnerPronouns === 'they/them/theirs' ? 'they' : null,
+    partner_her: contract.partnerPronouns === 'she/her/hers' ? 'her' : null,
+    partner_his: contract.partnerPronouns === 'he/him/his' ? 'his' : null,
+    partner_their: contract.partnerPronouns === 'they/them/theirs' ? 'their' : null,
+    partner_hers: contract.partnerPronouns === 'she/her/hers' ? 'hers' : null,
+    partner_theirs: contract.partnerPronouns === 'they/them/theirs' ? 'theirs' : null,
     contractType: contract.contractType || 'cohabitation',
     
     // Ages - using correct field names
