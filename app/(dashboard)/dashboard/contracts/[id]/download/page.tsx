@@ -252,7 +252,7 @@ export default function ContractDownloadPage() {
                   <div className="text-sm text-gray-500">Includes 5% GST</div>
                 </div>
 
-                <Link href={`/dashboard/contracts/${contractId}/preview`}>
+                <Link href={`/dashboard/contracts/${contractId}/purchase`}>
                   <Button 
                     size="lg"
                     className="bg-orange-500 hover:bg-orange-600 text-lg px-8 py-3"
