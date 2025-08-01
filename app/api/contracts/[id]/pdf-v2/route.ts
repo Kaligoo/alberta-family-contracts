@@ -87,13 +87,13 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
       contractType: templateData.contractType,
       userFullName: templateData.userFullName,
       cohabDate: templateData.cohabDate,
-      hasProposedMarriageDate: templateData.hasProposedMarriageDate,
-      isPrenuptial: templateData.isPrenuptial
+      proposed_marriage_date: templateData.proposed_marriage_date,
+      cohab_date: templateData.cohab_date
     });
     
     console.log('Template conditional syntax guide:');
-    console.log('Use: {#hasProposedMarriageDate}...{/hasProposedMarriageDate}');
-    console.log('NOT: {#if proposed_marriage_date}...{/if}');
+    console.log('Use: {#proposed_marriage_date}They are engaged to be married and intend to be married on {proposed_marriage_date}.{/proposed_marriage_date}');
+    console.log('Available conditional fields: proposed_marriage_date, cohab_date, user_lawyer, partner_lawyer');
     
     // Generate filled Word document (same as PDF v1)
     const templateBuffer = Buffer.from(template.content, 'base64');
@@ -244,18 +244,21 @@ function prepareTemplateData(contract: any, user: any) {
       day: 'numeric' 
     }) : '',
     
-    // Boolean flags for conditional logic in templates
-    hasProposedMarriageDate: !!(contract.proposedMarriageDate),
-    hasCohabDate: !!(contract.cohabDate),
-    hasUserLawyer: !!(contract.userLawyer),
-    hasPartnerLawyer: !!(contract.partnerLawyer),
-    hasResidenceAddress: !!(contract.residenceAddress),
-    hasAdditionalClauses: !!(contract.additionalClauses),
-    
-    // Contract type flags for conditional logic
-    isCohabitation: (contract.contractType === 'cohabitation'),
-    isPrenuptial: (contract.contractType === 'prenuptial'), 
-    isPostnuptial: (contract.contractType === 'postnuptial'),
+    // Boolean flags for conditional logic in templates (based on actual field values)
+    proposed_marriage_date: contract.proposedMarriageDate ? new Date(contract.proposedMarriageDate).toLocaleDateString('en-US', {
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }) : null,
+    cohab_date: contract.cohabDate ? new Date(contract.cohabDate).toLocaleDateString('en-US', {
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }) : null,
+    user_lawyer: contract.userLawyer || null,
+    partner_lawyer: contract.partnerLawyer || null,
+    residence_address: contract.residenceAddress || null,
+    additional_clauses: contract.additionalClauses || null,
     contractType: contract.contractType || 'cohabitation',
     
     // Ages - using correct field names
