@@ -274,6 +274,47 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ Property separation type field migration already applied or failed:', error);
     }
 
+    // Apply migration 0012_schedule_b.sql (Schedule B - Partner's financial information) if needed
+    try {
+      // Add Schedule B income fields
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        ADD COLUMN IF NOT EXISTS schedule_b_income_employment numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_b_income_ei numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_b_income_workers_comp numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_b_income_investment numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_b_income_pension numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_b_income_government_assistance numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_b_income_self_employment numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_b_income_other numeric(12, 2),
+        ADD COLUMN IF NOT EXISTS schedule_b_income_total_tax_return numeric(12, 2);
+      `);
+
+      // Add Schedule B assets fields (using jsonb for compatibility)
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        ADD COLUMN IF NOT EXISTS schedule_b_assets_real_estate jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_b_assets_vehicles jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_b_assets_financial jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_b_assets_pensions jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_b_assets_business jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_b_assets_other jsonb;
+      `);
+
+      // Add Schedule B debts fields
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        ADD COLUMN IF NOT EXISTS schedule_b_debts_secured jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_b_debts_unsecured jsonb,
+        ADD COLUMN IF NOT EXISTS schedule_b_debts_other jsonb;
+      `);
+
+      appliedMigrations.push('0012_schedule_b');
+      console.log('✅ Schedule B fields migration applied');
+    } catch (error) {
+      console.log('⚠️ Schedule B fields migration already applied or failed:', error);
+    }
+
     // Update the migration journal
     for (const migration of appliedMigrations) {
       try {
