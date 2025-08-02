@@ -60,7 +60,10 @@
       "Bash(copy:*)",
       "Bash(powershell:*)",
       "WebFetch(domain:wilful.co)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(taskkill:*)",
+      "Bash(ssh:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

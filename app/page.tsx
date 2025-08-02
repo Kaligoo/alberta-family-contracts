@@ -1,11 +1,19 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Shield, FileText, Users, CheckCircle, Lock, Mail, User } from 'lucide-react';
 import { Navigation } from '@/components/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import AffiliateTracker from '@/components/affiliate-tracker';
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function HomePage() {
+  const { data: authData } = useSWR('/api/auth/me', fetcher);
+  const isAuthenticated = authData?.authenticated;
+
   return (
     <div className="min-h-screen bg-white">
       <AffiliateTracker />
@@ -13,28 +21,48 @@ export default function HomePage() {
       <main>
         {/* Hero Section */}
         <section className="relative overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+            <div className="grid lg:grid-cols-2 gap-8 items-center">
               {/* Left Column - Content */}
               <div className="max-w-xl">
-                <h1 className="text-4xl lg:text-5xl font-black text-gray-900 leading-tight mb-8">
+                <h1 className="text-4xl lg:text-5xl font-black text-gray-900 leading-tight mb-6">
                   Create Your
                   <span className="block text-blue-600">Family Agreement</span>
                   <span className="block">in Minutes</span>
                 </h1>
                 
-                <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+                <p className="text-xl text-gray-600 mb-6 leading-relaxed">
                   Professional cohabitation, prenuptial, and postnuptial agreements. 
                   Secure your relationship with legally sound documents.
                 </p>
 
-                {/* Login Form */}
-                <div className="bg-gray-50 rounded-2xl p-8 mb-8">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-6">Start Your Agreement</h2>
-                  
-                  <div className="space-y-4">
+                {/* Action Form */}
+                <div className="bg-gray-50 rounded-2xl p-6 mb-6">
+                  {isAuthenticated ? (
+                    <>
+                      <h2 className="text-xl font-semibold text-gray-900 mb-4">Continue Where We Left Off</h2>
+                      <div className="space-y-3">
+                        <Link href="/dashboard">
+                          <Button size="lg" className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-3">
+                            <ArrowRight className="mr-3 h-5 w-5" />
+                            Go to Dashboard
+                          </Button>
+                        </Link>
+                        <Link href="/dashboard/contracts/new">
+                          <Button variant="outline" size="lg" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 text-lg py-3">
+                            <FileText className="mr-3 h-5 w-5" />
+                            Start New Agreement
+                          </Button>
+                        </Link>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-xl font-semibold text-gray-900 mb-4">Start Your Agreement</h2>
+                      
+                      <div className="space-y-3">
                     <Link href="/sign-up">
-                      <Button size="lg" className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-4">
+                      <Button size="lg" className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-3">
                         <User className="mr-3 h-5 w-5" />
                         Create Account
                       </Button>
@@ -52,7 +80,7 @@ export default function HomePage() {
                     <Button 
                       variant="outline" 
                       size="lg" 
-                      className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 text-lg py-4"
+                      className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 text-lg py-3"
                     >
                       <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
                         <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -70,9 +98,11 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  <p className="text-sm text-gray-500 text-center mt-4">
-                    Free preview • No credit card required
-                  </p>
+                      <p className="text-sm text-gray-500 text-center mt-3">
+                        Free preview • No credit card required
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 {/* Pricing */}
@@ -107,9 +137,9 @@ export default function HomePage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-20 bg-gray-50">
+        <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
+            <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
                 Why Choose Agreeable.ca
               </h2>
@@ -155,12 +185,12 @@ export default function HomePage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 bg-blue-600">
+        <section className="py-16 bg-blue-600">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl font-bold text-white mb-6">
               Ready to Protect Your Relationship?
             </h2>
-            <p className="text-xl text-blue-100 mb-8">
+            <p className="text-xl text-blue-100 mb-6">
               Join hundreds of couples who have secured their future with professional family agreements
             </p>
             <div className="space-y-4 sm:space-y-0 sm:flex sm:justify-center sm:space-x-4">
