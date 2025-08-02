@@ -356,5 +356,27 @@ function prepareTemplateData(contract: any, user: any) {
     scheduleDebtsSecured: contract.scheduleDebtsSecured || [],
     scheduleDebtsUnsecured: contract.scheduleDebtsUnsecured || [],
     scheduleDebtsOther: contract.scheduleDebtsOther || [],
+
+    // Schedule B data - format for display (Partner's information)
+    scheduleBIncomeEmployment: contract.scheduleBIncomeEmployment ? `$${parseFloat(contract.scheduleBIncomeEmployment).toLocaleString()} CAD` : '',
+    scheduleBIncomeEI: contract.scheduleBIncomeEI ? `$${parseFloat(contract.scheduleBIncomeEI).toLocaleString()} CAD` : '',
+    scheduleBIncomeWorkersComp: contract.scheduleBIncomeWorkersComp ? `$${parseFloat(contract.scheduleBIncomeWorkersComp).toLocaleString()} CAD` : '',
+    scheduleBIncomeInvestment: contract.scheduleBIncomeInvestment ? `$${parseFloat(contract.scheduleBIncomeInvestment).toLocaleString()} CAD` : '',
+    scheduleBIncomePension: contract.scheduleBIncomePension ? `$${parseFloat(contract.scheduleBIncomePension).toLocaleString()} CAD` : '',
+    scheduleBIncomeGovernmentAssistance: contract.scheduleBIncomeGovernmentAssistance ? `$${parseFloat(contract.scheduleBIncomeGovernmentAssistance).toLocaleString()} CAD` : '',
+    scheduleBIncomeSelfEmployment: contract.scheduleBIncomeSelfEmployment ? `$${parseFloat(contract.scheduleBIncomeSelfEmployment).toLocaleString()} CAD` : '',
+    scheduleBIncomeOther: contract.scheduleBIncomeOther ? `$${parseFloat(contract.scheduleBIncomeOther).toLocaleString()} CAD` : '',
+    scheduleBIncomeTotalTaxReturn: contract.scheduleBIncomeTotalTaxReturn ? `$${parseFloat(contract.scheduleBIncomeTotalTaxReturn).toLocaleString()} CAD` : '',
+    
+    // Schedule B assets and debts (these will be arrays, can be processed in template)
+    scheduleBAssetsRealEstate: contract.scheduleBAssetsRealEstate || [],
+    scheduleBAssetsVehicles: contract.scheduleBAssetsVehicles || [],
+    scheduleBAssetsFinancial: contract.scheduleBAssetsFinancial || [],
+    scheduleBAssetsPensions: contract.scheduleBAssetsPensions || [],
+    scheduleBAssetsBusiness: contract.scheduleBAssetsBusiness || [],
+    scheduleBAssetsOther: contract.scheduleBAssetsOther || [],
+    scheduleBDebtsSecured: contract.scheduleBDebtsSecured || [],
+    scheduleBDebtsUnsecured: contract.scheduleBDebtsUnsecured || [],
+    scheduleBDebtsOther: contract.scheduleBDebtsOther || [],
   };
 }
