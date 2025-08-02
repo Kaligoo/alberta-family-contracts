@@ -132,6 +132,7 @@ export async function PUT(
     if (body.additionalClauses !== undefined) updateData.additionalClauses = body.additionalClauses === '' ? null : body.additionalClauses;
     if (body.notes !== undefined) updateData.notes = body.notes === '' ? null : body.notes;
     if (body.status !== undefined) updateData.status = body.status || 'draft';
+    if (body.propertySeparationType !== undefined) updateData.propertySeparationType = body.propertySeparationType === '' ? null : body.propertySeparationType;
     
     // Schedule A fields
     if (body.scheduleIncomeEmployment !== undefined) updateData.scheduleIncomeEmployment = body.scheduleIncomeEmployment === '' ? null : body.scheduleIncomeEmployment;

@@ -950,6 +950,127 @@ function ScheduleACard({ formData, updateFormData }: {
   );
 }
 
+function PropertyOptionsCard({ formData, updateFormData, isReadOnly }: { 
+  formData: any; 
+  updateFormData: (field: string, value: any) => void;
+  isReadOnly?: boolean; 
+}) {
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Home className="h-5 w-5" />
+          Property Arrangement
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <label className="flex items-start space-x-3 cursor-pointer">
+              <input
+                type="radio"
+                name="propertySeparationType"
+                value="separate_always"
+                checked={formData.propertySeparationType === 'separate_always'}
+                onChange={(e) => updateFormData('propertySeparationType', e.target.value)}
+                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                disabled={isReadOnly}
+              />
+              <div>
+                <div className="font-medium">What's mine is mine, and what's yours is yours</div>
+                <div className="text-sm text-gray-600">All property remains separate throughout the relationship</div>
+              </div>
+            </label>
+            
+            <label className="flex items-start space-x-3 cursor-pointer">
+              <input
+                type="radio"
+                name="propertySeparationType"
+                value="separate_until_marriage"
+                checked={formData.propertySeparationType === 'separate_until_marriage'}
+                onChange={(e) => updateFormData('propertySeparationType', e.target.value)}
+                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                disabled={isReadOnly}
+              />
+              <div>
+                <div className="font-medium">What's mine is mine, and what's yours is yours, until our marriage date</div>
+                <div className="text-sm text-gray-600">Property becomes joint after marriage</div>
+              </div>
+            </label>
+            
+            <label className="flex items-start space-x-3 cursor-pointer">
+              <input
+                type="radio"
+                name="propertySeparationType"
+                value="separate_until_children"
+                checked={formData.propertySeparationType === 'separate_until_children'}
+                onChange={(e) => updateFormData('propertySeparationType', e.target.value)}
+                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                disabled={isReadOnly}
+              />
+              <div>
+                <div className="font-medium">What's mine is mine and what's yours is yours, until we have children</div>
+                <div className="text-sm text-gray-600">Property becomes joint after having children together</div>
+              </div>
+            </label>
+            
+            <label className="flex items-start space-x-3 cursor-pointer">
+              <input
+                type="radio"
+                name="propertySeparationType"
+                value="joint_except_specific"
+                checked={formData.propertySeparationType === 'joint_except_specific'}
+                onChange={(e) => updateFormData('propertySeparationType', e.target.value)}
+                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                disabled={isReadOnly}
+              />
+              <div>
+                <div className="font-medium">I'd like to protect specific asset(s) like a gift from my parents or my home</div>
+                <div className="text-sm text-gray-600">Most property is joint except for specific protected assets</div>
+              </div>
+            </label>
+            
+            <label className="flex items-start space-x-3 cursor-pointer">
+              <input
+                type="radio"
+                name="propertySeparationType"
+                value="complicated"
+                checked={formData.propertySeparationType === 'complicated'}
+                onChange={(e) => updateFormData('propertySeparationType', e.target.value)}
+                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                disabled={isReadOnly}
+              />
+              <div>
+                <div className="font-medium">It's complicated</div>
+                <div className="text-sm text-gray-600">I need a custom agreement with more complex arrangements</div>
+              </div>
+            </label>
+          </div>
+        </div>
+        
+        {formData.propertySeparationType === 'complicated' && (
+          <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+            <p className="text-sm text-orange-800">
+              <strong>Note:</strong> For complex property arrangements, consider working directly with a lawyer 
+              for a fully customized agreement. Contact{' '}
+              <a href="mailto:ghorvath@kahanelaw.com" className="text-orange-600 hover:underline">
+                ghorvath@kahanelaw.com
+              </a>{' '}
+              for assistance.
+            </p>
+          </div>
+        )}
+        
+        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+          <p className="text-sm text-blue-800">
+            <strong>Note:</strong> You can change these property arrangement settings at any time before completing your agreement.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 const formatContractTypeName = (contractType: string) => {
   switch (contractType) {
     case 'cohabitation':
@@ -967,6 +1088,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     contractType: 'cohabitation',
+    propertySeparationType: '',
     userFullName: '',
     partnerFullName: '',
     userFirstName: '',
@@ -1052,6 +1174,7 @@ export default function DashboardPage() {
     if (contract) {
       setFormData({
         contractType: contract.contractType || 'cohabitation',
+        propertySeparationType: contract.propertySeparationType || '',
         userFullName: contract.userFullName || '',
         partnerFullName: contract.partnerFullName || '',
         userFirstName: contract.userFirstName || '',
@@ -1289,6 +1412,8 @@ export default function DashboardPage() {
         
         <div className="max-w-4xl mx-auto space-y-6">
           <PersonalInfoCard formData={formData} updateFormData={updateFormData} isReadOnly={isContractPaid} />
+          
+          <PropertyOptionsCard formData={formData} updateFormData={updateFormData} isReadOnly={isContractPaid} />
           
           {/* Relationship Information */}
           <Card className="mb-6">
