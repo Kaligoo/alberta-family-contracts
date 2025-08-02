@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { isContractPaid } from '@/lib/utils/payment';
+import { PdfProgressBar } from '@/components/ui/pdf-progress-bar';
 
 const formatContractTypeName = (contractType: string) => {
   switch (contractType) {
@@ -50,6 +51,7 @@ export default function ContractDownloadPage() {
   
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState('');
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   // Fetch contract data to check payment status
   const { data: contractData, error: contractError } = useSWR(
@@ -67,6 +69,7 @@ export default function ContractDownloadPage() {
     }
 
     setIsDownloading(true);
+    setIsGeneratingPdf(true);
     setDownloadError('');
     
     try {
@@ -92,6 +95,7 @@ export default function ContractDownloadPage() {
       setDownloadError('Failed to download contract');
     } finally {
       setIsDownloading(false);
+      setIsGeneratingPdf(false);
     }
   };
 
@@ -183,6 +187,23 @@ export default function ContractDownloadPage() {
                   <span>✓ Ready to sign</span>
                 </div>
               </div>
+
+                {/* Progress Bar */}
+                {isGeneratingPdf && (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+                    <PdfProgressBar
+                      contractId={contractId}
+                      isGenerating={isGeneratingPdf}
+                      onComplete={() => {
+                        setIsGeneratingPdf(false);
+                      }}
+                      onError={(error) => {
+                        setDownloadError(error);
+                        setIsGeneratingPdf(false);
+                      }}
+                    />
+                  </div>
+                )}
 
                 <Button 
                   onClick={handleDownload}

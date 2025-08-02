@@ -4,6 +4,7 @@ import { db } from '@/lib/db/drizzle';
 import { familyContracts, templates } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { generateResidenceContent } from '@/lib/content/residence-content';
+import { updatePdfProgress } from '@/lib/utils/pdf-progress';
 
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
@@ -44,8 +45,14 @@ export async function GET(
       return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
     }
 
+    // Initialize progress tracking
+    updatePdfProgress(contractId, 10, 'Initializing PDF generation...');
+
     // Generate PDF using Gotenberg (Word-to-PDF conversion)
-    const pdfBytes = await generateContractPDFWithGotenberg(contract, user);
+    const pdfBytes = await generateContractPDFWithGotenberg(contract, user, contractId);
+    
+    // Mark as completed
+    updatePdfProgress(contractId, 100, 'PDF generation completed!');
     
     return new NextResponse(pdfBytes, {
       headers: {
@@ -63,9 +70,11 @@ export async function GET(
   }
 }
 
-async function generateContractPDFWithGotenberg(contract: any, user: any): Promise<Uint8Array> {
+async function generateContractPDFWithGotenberg(contract: any, user: any, contractId?: number): Promise<Uint8Array> {
   try {
     console.log('Starting PDF v2 generation using Gotenberg Word-to-PDF conversion...');
+    
+    if (contractId) updatePdfProgress(contractId, 20, 'Loading document template...');
     
     // Get active template from database
     const activeTemplate = await db
@@ -79,6 +88,9 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
     }
 
     const template = activeTemplate[0];
+    
+    if (contractId) updatePdfProgress(contractId, 35, 'Preparing contract data...');
+    
     const templateData = prepareTemplateData(contract, user);
     
     // Debug template data
@@ -109,8 +121,12 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
     });
 
     try {
+      if (contractId) updatePdfProgress(contractId, 50, 'Filling contract template...');
+      
       doc.render(templateData);
       console.log('Successfully rendered template with data');
+      
+      if (contractId) updatePdfProgress(contractId, 65, 'Generating Word document...');
     } catch (renderError) {
       console.error('Template rendering error:', renderError);
       console.error('Template data keys:', Object.keys(templateData));
@@ -126,8 +142,10 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
     
     // Convert Word document to PDF using Gotenberg
     console.log('Starting Gotenberg conversion...');
-    const pdfBuffer = await convertWordToPDFWithGotenberg(filledDocxBuffer);
+    const pdfBuffer = await convertWordToPDFWithGotenberg(filledDocxBuffer, contractId);
     console.log('Gotenberg conversion completed successfully');
+    
+    if (contractId) updatePdfProgress(contractId, 95, 'Finalizing PDF...');
     
     console.log('Successfully generated PDF v2 using Gotenberg Word-to-PDF conversion');
     return new Uint8Array(pdfBuffer);
@@ -138,12 +156,14 @@ async function generateContractPDFWithGotenberg(contract: any, user: any): Promi
   }
 }
 
-async function convertWordToPDFWithGotenberg(docxBuffer: Buffer): Promise<Buffer> {
+async function convertWordToPDFWithGotenberg(docxBuffer: Buffer, contractId?: number): Promise<Buffer> {
   // Use production Gotenberg service by default, fallback to localhost for development
   const GOTENBERG_URL = process.env.GOTENBERG_URL || 'https://gotenberg-service-162295646145.us-central1.run.app';
   
   try {
     console.log('Converting Word document to PDF using Gotenberg LibreOffice conversion...');
+    
+    if (contractId) updatePdfProgress(contractId, 80, 'Converting to PDF...');
     
     // Create form data for Gotenberg LibreOffice conversion
     const formData = new FormData();

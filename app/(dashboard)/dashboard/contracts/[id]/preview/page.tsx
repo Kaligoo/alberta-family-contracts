@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import useSWR from 'swr';
 import { isContractPaid } from '@/lib/utils/payment';
+import { PdfProgressBar } from '@/components/ui/pdf-progress-bar';
 
 const formatContractTypeName = (contractType: string) => {
   switch (contractType) {
@@ -29,6 +30,7 @@ export default function ContractPreviewPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pdfReady, setPdfReady] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   
   const { data: contractData, mutate } = useSWR(
     `/api/contracts/${contractId}`,
@@ -62,10 +64,21 @@ export default function ContractPreviewPage() {
       setError(null);
       
       try {
-        // Test if the PDF endpoint is working
-        const response = await fetch(`/api/contracts/${contractId}/pdf-preview`, {
-          method: 'HEAD' // Just check if endpoint is available
+        // First check if PDF already exists
+        const headResponse = await fetch(`/api/contracts/${contractId}/pdf-preview`, {
+          method: 'HEAD'
         });
+        
+        if (headResponse.ok) {
+          setPdfReady(true);
+          setIsLoading(false);
+          return;
+        }
+        
+        // If PDF doesn't exist, generate it with progress tracking
+        setIsGeneratingPdf(true);
+        
+        const response = await fetch(`/api/contracts/${contractId}/pdf-preview`);
         
         if (response.ok) {
           setPdfReady(true);
@@ -77,6 +90,7 @@ export default function ContractPreviewPage() {
         setError('Failed to load PDF preview');
       } finally {
         setIsLoading(false);
+        setIsGeneratingPdf(false);
       }
     };
 
@@ -165,6 +179,24 @@ export default function ContractPreviewPage() {
 
         {/* PDF Preview */}
         <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4">
+          {/* Progress Bar */}
+          {isGeneratingPdf && (
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+              <PdfProgressBar
+                contractId={contractId}
+                isGenerating={isGeneratingPdf}
+                onComplete={() => {
+                  setIsGeneratingPdf(false);
+                  setPdfReady(true);
+                }}
+                onError={(error) => {
+                  setError(error);
+                  setIsGeneratingPdf(false);
+                }}
+              />
+            </div>
+          )}
+          
           {pdfReady && pdfUrl ? (
             <div className="space-y-4">
               {/* Primary PDF viewer - iframe */}
