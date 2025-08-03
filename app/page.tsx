@@ -20,70 +20,70 @@ export default function HomePage() {
       <Navigation />
       <main>
         {/* Hero Section */}
-        <section className="relative overflow-hidden pt-8 pb-20">
+        <section className="relative overflow-hidden pt-4 sm:pt-8 pb-12 sm:pb-20">
           {/* Background Elements */}
           <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -top-40 -right-32 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-indigo-600/20 rounded-full blur-3xl"></div>
-            <div className="absolute -bottom-40 -left-32 w-96 h-96 bg-gradient-to-tr from-purple-400/20 to-pink-600/20 rounded-full blur-3xl"></div>
+            <div className="absolute -top-40 -right-32 w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-br from-blue-400/20 to-indigo-600/20 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-40 -left-32 w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-tr from-purple-400/20 to-pink-600/20 rounded-full blur-3xl"></div>
           </div>
           
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20">
+            <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-12 lg:items-center">
               {/* Left Column - Content */}
-              <div className="max-w-2xl">
+              <div className="max-w-2xl order-2 lg:order-1">
                 {/* Trust Badge */}
-                <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6">
-                  <Shield className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-medium text-gray-700">Trusted by 100+ couples</span>
-                  <div className="flex -space-x-1">
+                <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm border border-white/20 rounded-full px-3 sm:px-4 py-2 mb-4 sm:mb-6 text-xs sm:text-sm">
+                  <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 flex-shrink-0" />
+                  <span className="font-medium text-gray-700">Trusted by 100+ couples</span>
+                  <div className="hidden sm:flex -space-x-1">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                      <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current" />
                     ))}
                   </div>
                 </div>
 
-                <h1 className="text-5xl lg:text-6xl font-extrabold text-gray-900 leading-[1.1] mb-6">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-gray-900 leading-[1.1] mb-4 sm:mb-6">
                   Your
                   <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
                     Family Agreement
                   </span>
-                  <span className="block text-4xl lg:text-5xl font-bold">Made Simple</span>
+                  <span className="block text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold">Made Simple</span>
                 </h1>
                 
-                <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+                <p className="text-lg sm:text-xl text-gray-600 mb-6 sm:mb-8 leading-relaxed">
                   Professional legal agreements in minutes, not weeks. Create cohabitation, 
                   prenuptial, and postnuptial agreements with confidence.
                 </p>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
                   <div className="text-center">
-                    <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full mx-auto mb-2">
-                      <Clock className="w-5 h-5 text-blue-600" />
+                    <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full mx-auto mb-1 sm:mb-2">
+                      <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                     </div>
-                    <div className="text-lg font-bold text-gray-900">15 min</div>
-                    <div className="text-sm text-gray-600">Average time</div>
+                    <div className="text-sm sm:text-lg font-bold text-gray-900">15 min</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Average time</div>
                   </div>
                   <div className="text-center">
-                    <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full mx-auto mb-2">
-                      <CreditCard className="w-5 h-5 text-green-600" />
+                    <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-full mx-auto mb-1 sm:mb-2">
+                      <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                     </div>
-                    <div className="text-lg font-bold text-gray-900">$700</div>
-                    <div className="text-sm text-gray-600">All inclusive</div>
+                    <div className="text-sm sm:text-lg font-bold text-gray-900">$700</div>
+                    <div className="text-xs sm:text-sm text-gray-600">All inclusive</div>
                   </div>
                   <div className="text-center">
-                    <div className="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-full mx-auto mb-2">
-                      <Zap className="w-5 h-5 text-purple-600" />
+                    <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-full mx-auto mb-1 sm:mb-2">
+                      <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                     </div>
-                    <div className="text-lg font-bold text-gray-900">Instant</div>
-                    <div className="text-sm text-gray-600">Preview</div>
+                    <div className="text-sm sm:text-lg font-bold text-gray-900">Instant</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Preview</div>
                   </div>
                 </div>
               </div>
 
               {/* Right Column - Login Card */}
-              <div className="relative">
-                <div className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl">
+              <div className="relative order-1 lg:order-2">
+                <div className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl">
                   {isAuthenticated ? (
                     <>
                       <div className="text-center mb-6">
@@ -167,13 +167,13 @@ export default function HomePage() {
                   )}
                 </div>
 
-                {/* Floating Pricing Card */}
-                <div className="absolute -bottom-6 -left-6 bg-white/90 backdrop-blur-sm border border-white/20 rounded-2xl p-4 shadow-lg">
-                  <div className="flex items-center space-x-3">
+                {/* Pricing Card - Mobile: Inline, Desktop: Floating */}
+                <div className="mt-6 lg:absolute lg:-bottom-6 lg:-left-6 bg-white/90 backdrop-blur-sm border border-white/20 rounded-2xl p-4 shadow-lg">
+                  <div className="flex items-center justify-center lg:justify-start space-x-3">
                     <div className="text-center">
                       <div className="flex items-center space-x-2">
-                        <span className="text-lg text-gray-400 line-through">$999</span>
-                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">$700</span>
+                        <span className="text-sm sm:text-lg text-gray-400 line-through">$999</span>
+                        <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">$700</span>
                       </div>
                       <div className="text-xs text-gray-500">+ 5% GST</div>
                     </div>
@@ -190,23 +190,23 @@ export default function HomePage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-20 relative">
+        <section className="py-12 sm:py-16 lg:py-20 relative">
           <div className="absolute inset-0 bg-gradient-to-b from-white via-gray-50/50 to-white"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
+            <div className="text-center mb-8 sm:mb-12 lg:mb-16">
               <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 rounded-full px-4 py-2 text-sm font-medium mb-4">
                 <CheckCircle className="w-4 h-4" />
                 Trusted Legal Platform
               </div>
-              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
                 Why Choose Agreeable.ca
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
                 Professional legal agreements with the support you need to make them legally binding
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {/* Feature 1 */}
               <div className="group">
                 <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -253,21 +253,21 @@ export default function HomePage() {
             </div>
 
             {/* Trust Indicators */}
-            <div className="mt-16 text-center">
-              <div className="inline-flex items-center space-x-8 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl px-8 py-4">
+            <div className="mt-12 sm:mt-16 text-center">
+              <div className="inline-flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-6 lg:space-x-8 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl px-4 sm:px-6 lg:px-8 py-4">
                 <div className="flex items-center space-x-2">
-                  <Shield className="w-5 h-5 text-green-600" />
-                  <span className="text-sm font-medium text-gray-700">Bank-Level Security</span>
+                  <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium text-gray-700">Bank-Level Security</span>
                 </div>
-                <div className="w-px h-6 bg-gray-200"></div>
+                <div className="hidden sm:block w-px h-6 bg-gray-200"></div>
                 <div className="flex items-center space-x-2">
-                  <Users className="w-5 h-5 text-blue-600" />
-                  <span className="text-sm font-medium text-gray-700">100+ Happy Couples</span>
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium text-gray-700">100+ Happy Couples</span>
                 </div>
-                <div className="w-px h-6 bg-gray-200"></div>
+                <div className="hidden sm:block w-px h-6 bg-gray-200"></div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-5 h-5 text-purple-600" />
-                  <span className="text-sm font-medium text-gray-700">Lawyer Approved</span>
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium text-gray-700">Lawyer Approved</span>
                 </div>
               </div>
             </div>
@@ -275,33 +275,33 @@ export default function HomePage() {
         </section>
 
         {/* CTA Section */}
-        <section className="relative py-20 overflow-hidden">
+        <section className="relative py-12 sm:py-16 lg:py-20 overflow-hidden">
           {/* Background with modern gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-700 to-indigo-800"></div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(120,119,198,0.3),transparent_70%)]"></div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.1),transparent_70%)]"></div>
           
           <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
               <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 text-white text-sm font-medium mb-6">
                 <CheckCircle className="w-4 h-4" />
                 100+ Couples Protected
               </div>
               
-              <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 leading-tight">
                 Ready to Protect Your
                 <span className="block bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
                   Future Together?
                 </span>
               </h2>
               
-              <p className="text-xl text-blue-100 mb-8 leading-relaxed max-w-2xl mx-auto">
+              <p className="text-lg sm:text-xl text-blue-100 mb-6 sm:mb-8 leading-relaxed max-w-2xl mx-auto">
                 Join over 100 couples who have secured their future with professional family agreements. 
                 Start your free preview today.
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6 sm:mb-8">
               <Link href="/sign-up">
                 <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-50 text-lg px-8 py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
                   <FileText className="mr-3 h-5 w-5" />
@@ -319,20 +319,20 @@ export default function HomePage() {
             </div>
 
             {/* Final trust indicators */}
-            <div className="flex justify-center items-center space-x-6 text-white/80">
+            <div className="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 lg:space-x-6 text-white/80">
               <div className="flex items-center space-x-2">
-                <Shield className="w-5 h-5" />
-                <span className="text-sm">Secure & Private</span>
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <span className="text-xs sm:text-sm">Secure & Private</span>
               </div>
-              <div className="w-px h-4 bg-white/30"></div>
+              <div className="hidden sm:block w-px h-4 bg-white/30"></div>
               <div className="flex items-center space-x-2">
-                <Clock className="w-5 h-5" />
-                <span className="text-sm">15 Minutes</span>
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <span className="text-xs sm:text-sm">15 Minutes</span>
               </div>
-              <div className="w-px h-4 bg-white/30"></div>
+              <div className="hidden sm:block w-px h-4 bg-white/30"></div>
               <div className="flex items-center space-x-2">
-                <CheckCircle className="w-5 h-5" />
-                <span className="text-sm">No Credit Card</span>
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <span className="text-xs sm:text-sm">No Credit Card</span>
               </div>
             </div>
           </div>
