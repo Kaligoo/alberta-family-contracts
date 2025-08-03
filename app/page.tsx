@@ -42,9 +42,9 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-gray-900 leading-[1.1] mb-4 sm:mb-6">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-gray-900 leading-tight mb-4 sm:mb-6">
                   Your
-                  <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
                     Family Agreement
                   </span>
                   <span className="block text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold">Made Simple</span>
