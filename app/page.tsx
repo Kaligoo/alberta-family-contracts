@@ -311,9 +311,9 @@ export default function HomePage() {
               </Link>
               
               <Link href="/contact">
-                <Button variant="outline" size="lg" className="border-2 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm text-lg px-8 py-4 rounded-xl">
-                  <Mail className="mr-3 h-5 w-5" />
-                  Ask Questions
+                <Button variant="outline" size="lg" className="border-2 border-white/50 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm text-lg px-8 py-4 rounded-xl font-semibold">
+                  <Mail className="mr-3 h-5 w-5 text-white" />
+                  <span className="text-white">Ask Questions</span>
                 </Button>
               </Link>
             </div>
