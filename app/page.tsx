@@ -20,7 +20,7 @@ export default function HomePage() {
       <Navigation />
       <main>
         {/* Hero Section */}
-        <section className="relative overflow-hidden pt-4 sm:pt-8 pb-12 sm:pb-20">
+        <section className="relative overflow-hidden pt-4 sm:pt-8 pb-8 sm:pb-16">
           {/* Background Elements */}
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute -top-40 -right-32 w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-br from-blue-400/20 to-indigo-600/20 rounded-full blur-3xl"></div>
@@ -56,7 +56,7 @@ export default function HomePage() {
                 </p>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
+                <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
                   <div className="text-center">
                     <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full mx-auto mb-1 sm:mb-2">
                       <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
@@ -194,10 +194,6 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-b from-white via-gray-50/50 to-white"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 rounded-full px-4 py-2 text-sm font-medium mb-4">
-                <CheckCircle className="w-4 h-4" />
-                Trusted Legal Platform
-              </div>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
                 Why Choose Agreeable.ca
               </h2>
