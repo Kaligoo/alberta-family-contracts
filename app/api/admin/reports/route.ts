@@ -242,7 +242,20 @@ async function getSummaryReport(month?: string | null, startDate?: string | null
   });
 }
 
+// Whitelist of allowed date columns to prevent SQL injection
+const ALLOWED_DATE_COLUMNS = [
+  'created_at',
+  'updated_at', 
+  'affiliate_tracking.created_at',
+  'coupon_usage.created_at'
+];
+
 function buildDateFilters(month?: string | null, startDate?: string | null, endDate?: string | null, dateColumn: string = 'created_at') {
+  // Validate dateColumn against whitelist to prevent SQL injection
+  if (!ALLOWED_DATE_COLUMNS.includes(dateColumn)) {
+    throw new Error(`Invalid date column: ${dateColumn}`);
+  }
+  
   let whereClause;
   let groupBy;
 

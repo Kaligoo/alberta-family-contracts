@@ -56,7 +56,7 @@ export default function HomePage() {
                 </p>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
+                <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-2 sm:mb-3">
                   <div className="text-center">
                     <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full mx-auto mb-1 sm:mb-2">
                       <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
