@@ -57,6 +57,12 @@ export function Navigation() {
                 FAQ
               </Link>
               <Link
+                href="/alberta-family-law"
+                className="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+              >
+                Alberta Family Law
+              </Link>
+              <Link
                 href="/contact"
                 className="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
               >
@@ -129,6 +135,13 @@ export function Navigation() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 FAQ
+              </Link>
+              <Link
+                href="/alberta-family-law"
+                className="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Alberta Family Law
               </Link>
               <Link
                 href="/contact"
