@@ -34,7 +34,7 @@ export default function HomePage() {
                 {/* Trust Badge */}
                 <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6">
                   <Shield className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-medium text-gray-700">Trusted by 500+ couples</span>
+                  <span className="text-sm font-medium text-gray-700">Trusted by 100+ couples</span>
                   <div className="flex -space-x-1">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
@@ -262,7 +262,7 @@ export default function HomePage() {
                 <div className="w-px h-6 bg-gray-200"></div>
                 <div className="flex items-center space-x-2">
                   <Users className="w-5 h-5 text-blue-600" />
-                  <span className="text-sm font-medium text-gray-700">500+ Happy Couples</span>
+                  <span className="text-sm font-medium text-gray-700">100+ Happy Couples</span>
                 </div>
                 <div className="w-px h-6 bg-gray-200"></div>
                 <div className="flex items-center space-x-2">
@@ -285,7 +285,7 @@ export default function HomePage() {
             <div className="mb-8">
               <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 text-white text-sm font-medium mb-6">
                 <CheckCircle className="w-4 h-4" />
-                500+ Couples Protected
+                100+ Couples Protected
               </div>
               
               <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
@@ -296,7 +296,7 @@ export default function HomePage() {
               </h2>
               
               <p className="text-xl text-blue-100 mb-8 leading-relaxed max-w-2xl mx-auto">
-                Join hundreds of couples who have secured their future with professional family agreements. 
+                Join over 100 couples who have secured their future with professional family agreements. 
                 Start your free preview today.
               </p>
             </div>
