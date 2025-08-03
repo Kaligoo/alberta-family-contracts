@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, FileText, Users, DollarSign, Home, Save, ChevronDown, ChevronUp, Calculator } from 'lucide-react';
+import { SpousalSupportSelector } from '@/components/ui/spousal-support-selector';
 import { User } from '@/lib/db/schema';
 import useSWR from 'swr';
 
@@ -1478,6 +1479,7 @@ export default function DashboardPage() {
   const [formData, setFormData] = useState({
     contractType: 'cohabitation',
     propertySeparationType: '',
+    spousalSupportType: '',
     userFullName: '',
     partnerFullName: '',
     userFirstName: '',
@@ -1583,6 +1585,7 @@ export default function DashboardPage() {
       setFormData({
         contractType: contract.contractType || 'cohabitation',
         propertySeparationType: contract.propertySeparationType || '',
+        spousalSupportType: contract.spousalSupportType || '',
         userFullName: contract.userFullName || '',
         partnerFullName: contract.partnerFullName || '',
         userFirstName: contract.userFirstName || '',
@@ -1841,6 +1844,11 @@ export default function DashboardPage() {
           <PersonalInfoCard formData={formData} updateFormData={updateFormData} isReadOnly={isContractPaid} />
           
           <PropertyOptionsCard formData={formData} updateFormData={updateFormData} isReadOnly={isContractPaid} />
+          
+          <SpousalSupportSelector 
+            value={formData.spousalSupportType} 
+            onChange={(value) => updateFormData('spousalSupportType', value)} 
+          />
           
           {/* Relationship Information */}
           <Card className="mb-6">

@@ -118,6 +118,7 @@ export const familyContracts = pgTable('family_contracts', {
   // Contract Details
   contractType: varchar('contract_type', { length: 50 }).notNull().default('cohabitation'),
   propertySeparationType: varchar('property_separation_type', { length: 50 }), // 'separate_always', 'separate_until_marriage', 'separate_until_children', 'joint_except_specific', 'complicated'
+  spousalSupportType: varchar('spousal_support_type', { length: 50 }), // 'no_affect_child_support', 'full_waiver', 'waiver_until_children', 'complicated'
   status: varchar('status', { length: 20 }).notNull().default('draft'), // draft, preview, paid
   
   // Address Information

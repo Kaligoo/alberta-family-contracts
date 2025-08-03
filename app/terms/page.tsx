@@ -63,6 +63,7 @@ export default function TermsPage() {
                 <li>Review all generated documents carefully</li>
                 <li>Seek appropriate legal advice before executing any agreement</li>
                 <li>Not use the service to create documents for illegal purposes</li>
+                <li><strong>Not share, distribute, or reproduce your generated agreement for use by others without them purchasing their own contract through this website</strong></li>
               </ul>
 
               <h2 className="text-xl font-semibold text-gray-900 mb-4">5. Privacy and Data Protection</h2>
@@ -104,11 +105,23 @@ export default function TermsPage() {
                 may not be suitable for all situations and may require modification by qualified legal professionals.
               </p>
 
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">9. Intellectual Property</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">9. Intellectual Property and Document Sharing Restrictions</h2>
+              <p className="text-gray-600 mb-4">
                 All content, templates, software, and materials provided through this service are owned by or licensed to 
                 Agreeable.ca. Users receive a limited license to use the service and download generated documents 
-                for their personal use only. Commercial use or redistribution is prohibited without explicit written permission.
+                for their personal use only.
+              </p>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <p className="text-red-800 font-medium mb-2">DOCUMENT SHARING PROHIBITION:</p>
+                <p className="text-red-700 text-sm">
+                  You expressly agree not to share, distribute, copy, or reproduce your generated agreement(s) for the purpose of 
+                  allowing others to use them as templates or to avoid purchasing their own contract through this website. 
+                  Each user must purchase their own contract to ensure proper legal protections and support our service.
+                </p>
+              </div>
+              <p className="text-gray-600 mb-6">
+                Commercial use, redistribution, or sharing for template purposes is prohibited without explicit written permission. 
+                Violation of these terms may result in account termination and legal action.
               </p>
 
               <h2 className="text-xl font-semibold text-gray-900 mb-4">10. Termination</h2>

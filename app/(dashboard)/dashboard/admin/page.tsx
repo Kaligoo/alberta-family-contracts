@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Upload, FileText, Settings, Trash2, Download, Eye, Plus, Users, Edit, Mail, Link as LinkIcon, Tag, ExternalLink, Copy } from 'lucide-react';
+import { Upload, FileText, Settings, Trash2, Download, Eye, Plus, Users, Edit, Mail, Link as LinkIcon, Tag, ExternalLink, Copy, BarChart3, TrendingUp, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import useSWR from 'swr';
 
@@ -130,6 +130,26 @@ export default function AdminDashboardPage() {
   const [couponError, setCouponError] = useState('');
   const [couponSuccess, setCouponSuccess] = useState('');
   const [isSavingCoupon, setIsSavingCoupon] = useState(false);
+
+  // Reports state
+  const [selectedReportType, setSelectedReportType] = useState('summary');
+  const [reportMonth, setReportMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
+  const [reportStartDate, setReportStartDate] = useState('');
+  const [reportEndDate, setReportEndDate] = useState('');
+  const [reportDateMode, setReportDateMode] = useState<'month' | 'range'>('month');
+  
+  // Fetch reports data
+  const reportParams = new URLSearchParams({
+    type: selectedReportType,
+    ...(reportDateMode === 'month' ? { month: reportMonth } : {}),
+    ...(reportDateMode === 'range' && reportStartDate ? { startDate: reportStartDate } : {}),
+    ...(reportDateMode === 'range' && reportEndDate ? { endDate: reportEndDate } : {}),
+  });
+  
+  const { data: reportsData, error: reportsError, mutate: mutateReports } = useSWR(
+    `/api/admin/reports?${reportParams.toString()}`,
+    fetcher
+  );
 
   const { data: templatesData, error, mutate } = useSWR('/api/admin/templates', fetcher);
   const { data: lawyersData, error: lawyersError, mutate: mutateLawyers } = useSWR('/api/admin/lawyers', fetcher);
@@ -643,9 +663,335 @@ export default function AdminDashboardPage() {
         <div className="mb-8">
           <h1 className="text-2xl lg:text-3xl font-bold mb-2">Admin Dashboard</h1>
           <p className="text-gray-600">
-            Manage document templates and system settings.
+            Manage document templates, system settings, and view reports.
           </p>
         </div>
+
+        {/* Reports Section */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <BarChart3 className="mr-2 h-5 w-5" />
+              Analytics & Reports
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Report Controls */}
+            <div className="space-y-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Report Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Report Type
+                  </label>
+                  <select
+                    value={selectedReportType}
+                    onChange={(e) => setSelectedReportType(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="summary">Summary Overview</option>
+                    <option value="user-registrations">User Registrations</option>
+                    <option value="sales">Sales & Revenue</option>
+                    <option value="affiliate-usage">Affiliate Performance</option>
+                  </select>
+                </div>
+
+                {/* Date Mode */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Date Range
+                  </label>
+                  <select
+                    value={reportDateMode}
+                    onChange={(e) => setReportDateMode(e.target.value as 'month' | 'range')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="month">By Month</option>
+                    <option value="range">Custom Range</option>
+                  </select>
+                </div>
+
+                {/* Date Selection */}
+                <div>
+                  {reportDateMode === 'month' ? (
+                    <>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Select Month
+                      </label>
+                      <input
+                        type="month"
+                        value={reportMonth}
+                        onChange={(e) => setReportMonth(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Date Range
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="date"
+                          value={reportStartDate}
+                          onChange={(e) => setReportStartDate(e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        />
+                        <input
+                          type="date"
+                          value={reportEndDate}
+                          onChange={(e) => setReportEndDate(e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <Button
+                  onClick={() => mutateReports()}
+                  className="bg-orange-500 hover:bg-orange-600"
+                >
+                  <TrendingUp className="mr-2 h-4 w-4" />
+                  Refresh Report
+                </Button>
+              </div>
+            </div>
+
+            {/* Report Content */}
+            {!reportsData ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                <span className="ml-2 text-gray-600">Loading report...</span>
+              </div>
+            ) : reportsError ? (
+              <div className="text-center py-8">
+                <p className="text-red-600">Failed to load report data</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Summary Report */}
+                {selectedReportType === 'summary' && reportsData.data && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-blue-600">Total Users</p>
+                          <p className="text-2xl font-bold text-blue-900">{reportsData.data.totalUsers}</p>
+                        </div>
+                        <Users className="h-8 w-8 text-blue-600" />
+                      </div>
+                      <p className="text-xs text-blue-600 mt-2">+{reportsData.data.newUsers} this period</p>
+                    </div>
+                    
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-green-600">Total Revenue</p>
+                          <p className="text-2xl font-bold text-green-900">${reportsData.data.totalRevenue}</p>
+                        </div>
+                        <TrendingUp className="h-8 w-8 text-green-600" />
+                      </div>
+                      <p className="text-xs text-green-600 mt-2">+${reportsData.data.periodRevenue} this period</p>
+                    </div>
+                    
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-purple-600">Paid Contracts</p>
+                          <p className="text-2xl font-bold text-purple-900">{reportsData.data.totalPaidContracts}</p>
+                        </div>
+                        <FileText className="h-8 w-8 text-purple-600" />
+                      </div>
+                      <p className="text-xs text-purple-600 mt-2">+{reportsData.data.periodPaidContracts} this period</p>
+                    </div>
+                    
+                    <div className="bg-orange-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-orange-600">Active Affiliates</p>
+                          <p className="text-2xl font-bold text-orange-900">{reportsData.data.activeAffiliateLinks}</p>
+                        </div>
+                        <LinkIcon className="h-8 w-8 text-orange-600" />
+                      </div>
+                      <p className="text-xs text-orange-600 mt-2">{reportsData.data.activeCouponCodes} active coupons</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* User Registrations Report */}
+                {selectedReportType === 'user-registrations' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-lg font-medium mb-4">Registration Trends</h3>
+                        {reportsData.data && reportsData.data.length > 0 ? (
+                          <div className="space-y-2">
+                            {reportsData.data.map((item: any, index: number) => (
+                              <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                <span className="text-sm text-gray-600">
+                                  {new Date(item.period).toLocaleDateString()}
+                                </span>
+                                <span className="font-medium">{item.count} users</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500">No registration data for selected period</p>
+                        )}
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-medium mb-4">Recent Registrations</h3>
+                        {reportsData.recentRegistrations && reportsData.recentRegistrations.length > 0 ? (
+                          <div className="space-y-2">
+                            {reportsData.recentRegistrations.slice(0, 5).map((user: any) => (
+                              <div key={user.id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                <div>
+                                  <p className="font-medium text-sm">{user.name || 'N/A'}</p>
+                                  <p className="text-xs text-gray-500">{user.email}</p>
+                                </div>
+                                <span className="text-xs text-gray-500">
+                                  {new Date(user.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500">No recent registrations</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sales Report */}
+                {selectedReportType === 'sales' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">Sales Performance</h3>
+                      {reportsData.data && reportsData.data.length > 0 ? (
+                        <div className="space-y-2">
+                          {reportsData.data.map((item: any, index: number) => (
+                            <div key={index} className="grid grid-cols-5 gap-4 p-3 bg-gray-50 rounded">
+                              <span className="text-sm text-gray-600">
+                                {new Date(item.period).toLocaleDateString()}
+                              </span>
+                              <span className="font-medium">{item.totalSales} sales</span>
+                              <span className="text-green-600">${item.totalRevenue}</span>
+                              <span className="text-purple-600">{item.withCoupons} w/ coupons</span>
+                              <span className="text-orange-600">{item.withAffiliates} w/ affiliates</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500">No sales data for selected period</p>
+                      )}
+                    </div>
+
+                    {reportsData.topCoupons && reportsData.topCoupons.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-medium mb-4">Top Performing Coupons</h3>
+                        <div className="space-y-2">
+                          {reportsData.topCoupons.slice(0, 5).map((coupon: any, index: number) => (
+                            <div key={index} className="grid grid-cols-4 gap-4 p-3 bg-gray-50 rounded">
+                              <span className="font-medium">{coupon.code}</span>
+                              <span className="text-sm">{coupon.usageCount} uses</span>
+                              <span className="text-red-600">-${coupon.totalDiscount} discount</span>
+                              <span className="text-green-600">${coupon.totalRevenue} revenue</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {reportsData.recentSales && reportsData.recentSales.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-medium mb-4">Recent Sales</h3>
+                        <div className="space-y-2">
+                          {reportsData.recentSales.slice(0, 5).map((sale: any, index: number) => (
+                            <div key={index} className="grid grid-cols-4 gap-4 p-3 bg-gray-50 rounded">
+                              <div>
+                                <p className="font-medium text-sm">{sale.userFullName}</p>
+                                {sale.partnerFullName && (
+                                  <p className="text-xs text-gray-500">& {sale.partnerFullName}</p>
+                                )}
+                              </div>
+                              <span className="text-green-600">${sale.finalPrice}</span>
+                              <span className="text-sm">
+                                {sale.couponCode && <span className="text-purple-600">{sale.couponCode}</span>}
+                                {sale.affiliateCode && <span className="text-orange-600">{sale.affiliateCode}</span>}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(sale.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Affiliate Usage Report */}
+                {selectedReportType === 'affiliate-usage' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">Affiliate Performance</h3>
+                      {reportsData.data && reportsData.data.length > 0 ? (
+                        <div className="space-y-2">
+                          {reportsData.data.map((affiliate: any, index: number) => (
+                            <div key={index} className="grid grid-cols-6 gap-4 p-3 bg-gray-50 rounded">
+                              <div>
+                                <p className="font-medium text-sm">{affiliate.affiliateName}</p>
+                                <p className="text-xs text-gray-500">{affiliate.affiliateCode}</p>
+                              </div>
+                              <span className="text-sm">{affiliate.totalClicks} clicks</span>
+                              <span className="text-sm">{affiliate.totalSignups} signups</span>
+                              <span className="text-sm">{affiliate.totalPurchases} purchases</span>
+                              <span className="text-green-600">${affiliate.totalCommission}</span>
+                              <span className="text-blue-600">${affiliate.totalRevenue}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500">No affiliate data for selected period</p>
+                      )}
+                    </div>
+
+                    {reportsData.recentActivity && reportsData.recentActivity.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-medium mb-4">Recent Affiliate Activity</h3>
+                        <div className="space-y-2">
+                          {reportsData.recentActivity.slice(0, 10).map((activity: any, index: number) => (
+                            <div key={index} className="grid grid-cols-4 gap-4 p-3 bg-gray-50 rounded">
+                              <span className="font-medium text-sm">{activity.affiliateName}</span>
+                              <span className={`text-sm px-2 py-1 rounded text-xs ${
+                                activity.action === 'purchase' ? 'bg-green-100 text-green-800' :
+                                activity.action === 'signup' ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {activity.action}
+                              </span>
+                              <span className="text-green-600">
+                                {activity.commissionAmount ? `$${activity.commissionAmount}` : '-'}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(activity.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Upload New Template */}
         <Card className="mb-8">

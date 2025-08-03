@@ -63,7 +63,8 @@
       "Bash(true)",
       "Bash(taskkill:*)",
       "Bash(ssh:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(cls)"
     ],
     "deny": []
   }
