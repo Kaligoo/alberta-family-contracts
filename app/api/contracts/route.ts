@@ -44,7 +44,33 @@ export async function GET() {
     // Transform children data for backward compatibility (age -> birthdate)
     const transformedContracts = contracts.map(transformChildrenData);
     
-    return NextResponse.json({ contracts: transformedContracts });
+    // Add debug info if no contracts found
+    let debugInfo = {};
+    if (contracts.length === 0) {
+      const allUserContracts = await db
+        .select()
+        .from(familyContracts)
+        .where(eq(familyContracts.userId, user.id));
+      
+      debugInfo = {
+        userId: user.id,
+        userEmail: user.email,
+        hasTeam: !!userWithTeam?.teamId,
+        teamId: userWithTeam?.teamId || null,
+        totalContractsForUser: allUserContracts.length,
+        contractsWithoutTeamFilter: allUserContracts.map(c => ({
+          id: c.id,
+          teamId: c.teamId,
+          status: c.status,
+          createdAt: c.createdAt
+        }))
+      };
+    }
+    
+    return NextResponse.json({ 
+      contracts: transformedContracts,
+      ...(contracts.length === 0 && { debug: debugInfo })
+    });
   } catch (error) {
     console.error('Error fetching contracts:', error);
     return NextResponse.json(
