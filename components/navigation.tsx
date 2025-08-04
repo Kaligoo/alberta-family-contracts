@@ -68,6 +68,18 @@ export function Navigation() {
               >
                 Contact
               </Link>
+              <Link
+                href="/privacy"
+                className="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+              >
+                Privacy
+              </Link>
+              <Link
+                href="/terms"
+                className="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+              >
+                Terms
+              </Link>
             </div>
           </div>
 
@@ -149,6 +161,20 @@ export function Navigation() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Contact
+              </Link>
+              <Link
+                href="/privacy"
+                className="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Privacy
+              </Link>
+              <Link
+                href="/terms"
+                className="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Terms
               </Link>
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-2">

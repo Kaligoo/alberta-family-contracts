@@ -15,6 +15,7 @@ import { Loader2, FileText, Users, DollarSign, Home, Save, ChevronDown, ChevronU
 import { SpousalSupportSelector } from '@/components/ui/spousal-support-selector';
 import { User } from '@/lib/db/schema';
 import useSWR from 'swr';
+import Link from 'next/link';
 
 type ActionState = {
   error?: string;
@@ -1840,6 +1841,30 @@ export default function DashboardPage() {
           )}
         </div>
         
+        {/* Privacy Notice */}
+        <Card className="mb-6 border-blue-200 bg-blue-50">
+          <CardContent className="pt-6">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0 mt-1">
+                <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="text-sm text-blue-800">
+                <p className="font-medium mb-2">Privacy Notice</p>
+                <p className="mb-2">
+                  We collect and store your personal information solely to create your personalized family agreement. 
+                  Your information is used only for this purpose and is protected according to Canadian privacy laws including PIPEDA and Alberta's PIPA.
+                </p>
+                <p>
+                  By continuing, you consent to our collection and use of this information. You can withdraw consent at any time. 
+                  Learn more in our <Link href="/privacy" className="underline hover:text-blue-900">Privacy Policy</Link>.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="max-w-4xl mx-auto space-y-6">
           <PersonalInfoCard formData={formData} updateFormData={updateFormData} isReadOnly={isContractPaid} />
           
