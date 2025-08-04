@@ -14,23 +14,30 @@ export async function GET() {
 
     const userWithTeam = await getUserWithTeam(user.id);
     
-    if (!userWithTeam?.teamId) {
-      return NextResponse.json({ contracts: [] });
-    }
-
     // Get all contracts for this user
-    console.log('Fetching contracts for user:', user.id, 'team:', userWithTeam.teamId);
+    console.log('Fetching contracts for user:', user.id, 'team:', userWithTeam?.teamId);
     
-    const contracts = await db
-      .select()
-      .from(familyContracts)
-      .where(
-        and(
-          eq(familyContracts.userId, user.id),
-          eq(familyContracts.teamId, userWithTeam.teamId)
+    let contracts;
+    if (userWithTeam?.teamId) {
+      // User has a team, filter by both userId and teamId
+      contracts = await db
+        .select()
+        .from(familyContracts)
+        .where(
+          and(
+            eq(familyContracts.userId, user.id),
+            eq(familyContracts.teamId, userWithTeam.teamId)
+          )
         )
-      )
-      .orderBy(desc(familyContracts.updatedAt));
+        .orderBy(desc(familyContracts.updatedAt));
+    } else {
+      // User doesn't have a team, just filter by userId
+      contracts = await db
+        .select()
+        .from(familyContracts)
+        .where(eq(familyContracts.userId, user.id))
+        .orderBy(desc(familyContracts.updatedAt));
+    }
 
     console.log('Found contracts:', contracts.length);
     
