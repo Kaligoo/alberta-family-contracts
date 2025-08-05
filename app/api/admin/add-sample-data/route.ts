@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getUserWithTeam } from '@/lib/db/queries';
+import { getUser } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts } from '@/lib/db/schema';
 
@@ -9,12 +9,6 @@ export async function POST(request: NextRequest) {
     
     if (!user || user.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const userWithTeam = await getUserWithTeam(user.id);
-    
-    if (!userWithTeam?.teamId) {
-      return NextResponse.json({ error: 'User not in team' }, { status: 400 });
     }
 
     // Sample contracts
@@ -91,7 +85,6 @@ export async function POST(request: NextRequest) {
         .insert(familyContracts)
         .values({
           userId: user.id,
-          teamId: userWithTeam.teamId,
           userFullName: contract.userFullName,
           partnerFullName: contract.partnerFullName,
           userJobTitle: contract.userJobTitle,

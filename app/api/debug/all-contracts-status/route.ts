@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getUserWithTeam } from '@/lib/db/queries';
+import { getUser } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts } from '@/lib/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,12 +10,6 @@ export async function GET(request: NextRequest) {
     
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const userWithTeam = await getUserWithTeam(user.id);
-    
-    if (!userWithTeam?.teamId) {
-      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
 
     // Get all contracts for this user
@@ -31,12 +25,7 @@ export async function GET(request: NextRequest) {
         updatedAt: familyContracts.updatedAt
       })
       .from(familyContracts)
-      .where(
-        and(
-          eq(familyContracts.userId, user.id),
-          eq(familyContracts.teamId, userWithTeam.teamId)
-        )
-      );
+      .where(eq(familyContracts.userId, user.id));
 
     // Debug information for each contract
     const debugInfo = contracts.map(contract => ({

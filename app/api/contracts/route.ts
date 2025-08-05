@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getUserWithTeam } from '@/lib/db/queries';
+import { getUser } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts } from '@/lib/db/schema';
-import { and, eq, desc } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 export async function GET() {
   try {
@@ -12,64 +12,22 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userWithTeam = await getUserWithTeam(user.id);
-    
     // Get all contracts for this user
-    console.log('Fetching contracts for user:', user.id, 'team:', userWithTeam?.teamId);
+    console.log('Fetching contracts for user:', user.id);
     
-    let contracts;
-    if (userWithTeam?.teamId) {
-      // User has a team, filter by both userId and teamId
-      contracts = await db
-        .select()
-        .from(familyContracts)
-        .where(
-          and(
-            eq(familyContracts.userId, user.id),
-            eq(familyContracts.teamId, userWithTeam.teamId)
-          )
-        )
-        .orderBy(desc(familyContracts.updatedAt));
-    } else {
-      // User doesn't have a team, just filter by userId
-      contracts = await db
-        .select()
-        .from(familyContracts)
-        .where(eq(familyContracts.userId, user.id))
-        .orderBy(desc(familyContracts.updatedAt));
-    }
+    const contracts = await db
+      .select()
+      .from(familyContracts)
+      .where(eq(familyContracts.userId, user.id))
+      .orderBy(desc(familyContracts.updatedAt));
 
     console.log('Found contracts:', contracts.length);
     
     // Transform children data for backward compatibility (age -> birthdate)
     const transformedContracts = contracts.map(transformChildrenData);
     
-    // Add debug info if no contracts found
-    let debugInfo = {};
-    if (contracts.length === 0) {
-      const allUserContracts = await db
-        .select()
-        .from(familyContracts)
-        .where(eq(familyContracts.userId, user.id));
-      
-      debugInfo = {
-        userId: user.id,
-        userEmail: user.email,
-        hasTeam: !!userWithTeam?.teamId,
-        teamId: userWithTeam?.teamId || null,
-        totalContractsForUser: allUserContracts.length,
-        contractsWithoutTeamFilter: allUserContracts.map(c => ({
-          id: c.id,
-          teamId: c.teamId,
-          status: c.status,
-          createdAt: c.createdAt
-        }))
-      };
-    }
-    
     return NextResponse.json({ 
-      contracts: transformedContracts,
-      ...(contracts.length === 0 && { debug: debugInfo })
+      contracts: transformedContracts
     });
   } catch (error) {
     console.error('Error fetching contracts:', error);
@@ -88,12 +46,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userWithTeam = await getUserWithTeam(user.id);
-    
-    if (!userWithTeam?.teamId) {
-      return NextResponse.json({ error: 'User is not part of a team' }, { status: 400 });
-    }
-
     const body = await request.json();
     
     // Create new contract
@@ -101,7 +53,6 @@ export async function POST(request: NextRequest) {
       .insert(familyContracts)
       .values({
         userId: user.id,
-        teamId: userWithTeam.teamId,
         userFullName: body.userFullName || null,
         partnerFullName: body.partnerFullName || null,
         userFirstName: body.userFirstName || null,

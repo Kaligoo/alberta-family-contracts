@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getUserWithTeam } from '@/lib/db/queries';
+import { getUser } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
@@ -15,13 +15,11 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userWithTeam = await getUserWithTeam(user.id);
     const { id } = await params;
     const contractId = parseInt(id);
     
-    if (!userWithTeam?.teamId || !contractId || isNaN(contractId)) {
+    if (!contractId || isNaN(contractId)) {
       console.error('Invalid request parameters:', { 
-        teamId: userWithTeam?.teamId, 
         contractId, 
         rawId: id,
         isNaN: isNaN(contractId)
@@ -36,8 +34,7 @@ export async function POST(
       .where(
         and(
           eq(familyContracts.id, contractId),
-          eq(familyContracts.userId, user.id),
-          eq(familyContracts.teamId, userWithTeam.teamId)
+          eq(familyContracts.userId, user.id)
         )
       )
       .limit(1);
@@ -56,8 +53,7 @@ export async function POST(
       .where(
         and(
           eq(familyContracts.id, contractId),
-          eq(familyContracts.userId, user.id),
-          eq(familyContracts.teamId, userWithTeam.teamId)
+          eq(familyContracts.userId, user.id)
         )
       )
       .returning();
@@ -65,7 +61,6 @@ export async function POST(
     console.log('Set contract as current:', {
       contractId,
       userId: user.id,
-      teamId: userWithTeam.teamId,
       success: !!updatedContract
     });
 

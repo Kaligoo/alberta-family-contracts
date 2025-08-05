@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { familyContracts, users, teamMembers } from '@/lib/db/schema';
+import { familyContracts, users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
@@ -16,21 +16,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'test@test.com user not found' });
     }
 
-    // Get test user's team info
-    const [teamMember] = await db
-      .select({ teamId: teamMembers.teamId })
-      .from(teamMembers)
-      .where(eq(teamMembers.userId, testUser.id))
-      .limit(1);
-
-    // Get all contracts for test user (regardless of teamId)
+    // Get all contracts for test user
     const userContracts = await db
       .select({
         id: familyContracts.id,
         userFullName: familyContracts.userFullName,
         partnerFullName: familyContracts.partnerFullName,
         userId: familyContracts.userId,
-        teamId: familyContracts.teamId,
         status: familyContracts.status,
         contractType: familyContracts.contractType,
         createdAt: familyContracts.createdAt,
@@ -48,18 +40,13 @@ export async function GET(request: NextRequest) {
       testUser: {
         id: testUser.id,
         email: testUser.email,
-        role: testUser.role,
-        teamId: teamMember?.teamId || null
+        role: testUser.role
       },
       userContracts: userContracts,
       userContractCount: userContracts.length,
       totalContractsInDatabase: allContracts.length,
-      hasTeam: !!teamMember?.teamId,
       debug: {
-        queryUsed: teamMember?.teamId ? 'userId + teamId filter' : 'userId only filter',
-        teamIdFromMember: teamMember?.teamId,
-        contractsWithNullTeamId: userContracts.filter(c => c.teamId === null).length,
-        contractsWithTeamId: userContracts.filter(c => c.teamId !== null).length
+        queryUsed: 'userId only filter (teams removed)'
       }
     });
   } catch (error) {

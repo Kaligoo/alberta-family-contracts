@@ -21,19 +21,17 @@ function incrementVersion() {
             currentVersion = versionData.version || '0.0';
         }
         
-        // Parse version (expects format like "0.17" or "1.5")
-        const versionMatch = currentVersion.match(/^(\d+)\.(\d+)$/);
+        // Parse version (expects format like "0.10" or "1.25")
+        const versionNum = parseFloat(currentVersion);
         
-        if (!versionMatch) {
-            console.warn(`Warning: Unable to parse version format '${currentVersion}', setting to 0.1`);
-            currentVersion = '0.0';
+        if (isNaN(versionNum)) {
+            console.warn(`Warning: Unable to parse version format '${currentVersion}', setting to 0.10`);
+            currentVersion = '0.10';
         }
         
-        const major = parseInt(versionMatch ? versionMatch[1] : '0');
-        const minor = parseInt(versionMatch ? versionMatch[2] : '0');
-        
-        // Increment minor version
-        const newVersion = `${major}.${minor + 1}`;
+        // Increment by 0.01
+        const newVersionNum = versionNum + 0.01;
+        const newVersion = newVersionNum.toFixed(2);
         
         // Write new version
         const newVersionData = { version: newVersion };
