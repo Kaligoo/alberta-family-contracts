@@ -32,7 +32,7 @@ export async function GET() {
     }
 
     // Try to see what columns actually exist by selecting them individually
-    const columnTests = {};
+    const columnTests: Record<string, string> = {};
     const columnsToTest = ['id', 'user_id', 'user_full_name', 'created_at', 'updated_at', 'status', 'contract_type'];
     
     for (const column of columnsToTest) {
