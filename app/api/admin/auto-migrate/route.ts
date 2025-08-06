@@ -317,6 +317,12 @@ export async function POST(request: NextRequest) {
 
     // Apply migration 0013_remove_teams.sql (remove team-related tables and columns) if needed
     try {
+      // Remove team_id column from users table
+      await db.execute(sql`
+        ALTER TABLE users 
+        DROP COLUMN IF EXISTS team_id;
+      `);
+
       // Remove team_id column from family_contracts table
       await db.execute(sql`
         ALTER TABLE family_contracts 
@@ -331,8 +337,8 @@ export async function POST(request: NextRequest) {
 
       // Remove team-related tables
       await db.execute(sql`
-        DROP TABLE IF EXISTS "team_members";
-        DROP TABLE IF EXISTS "teams";
+        DROP TABLE IF EXISTS "team_members" CASCADE;
+        DROP TABLE IF EXISTS "teams" CASCADE;
       `);
 
       appliedMigrations.push('0013_remove_teams');
