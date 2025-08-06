@@ -18,7 +18,8 @@
       "Bash(pkill:*)",
       "Bash(taskkill:*)",
       "Bash(npm run build:*)",
-      "WebFetch(domain:agreeable.ca)"
+      "WebFetch(domain:agreeable.ca)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
