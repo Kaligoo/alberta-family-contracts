@@ -315,6 +315,32 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ Schedule B fields migration already applied or failed:', error);
     }
 
+    // Apply migration 0013_remove_teams.sql (remove team-related tables and columns) if needed
+    try {
+      // Remove team_id column from family_contracts table
+      await db.execute(sql`
+        ALTER TABLE family_contracts 
+        DROP COLUMN IF EXISTS team_id;
+      `);
+
+      // Remove team-related columns from affiliate_tracking table
+      await db.execute(sql`
+        ALTER TABLE affiliate_tracking 
+        DROP COLUMN IF EXISTS team_id;
+      `);
+
+      // Remove team-related tables
+      await db.execute(sql`
+        DROP TABLE IF EXISTS "team_members";
+        DROP TABLE IF EXISTS "teams";
+      `);
+
+      appliedMigrations.push('0013_remove_teams');
+      console.log('✅ Team-related tables and columns removal migration applied');
+    } catch (error) {
+      console.log('⚠️ Team removal migration already applied or failed:', error);
+    }
+
     // Update the migration journal
     for (const migration of appliedMigrations) {
       try {
