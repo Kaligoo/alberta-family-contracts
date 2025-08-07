@@ -18,17 +18,17 @@ export async function GET() {
       return NextResponse.json({ contract: null });
     }
 
-    // Get the user's current contract (for now, just get the most recent since column may not exist yet)
+    // Get the user's current contract
     const [contract] = await db
       .select()
       .from(familyContracts)
       .where(
         and(
           eq(familyContracts.userId, user.id),
-          eq(familyContracts.teamId, userWithTeam.teamId)
+          eq(familyContracts.teamId, userWithTeam.teamId),
+          eq(familyContracts.isCurrentContract, 'true')
         )
       )
-      .orderBy(desc(familyContracts.updatedAt))
       .limit(1);
 
     return NextResponse.json({ contract: contract || null });

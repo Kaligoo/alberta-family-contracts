@@ -46,11 +46,25 @@ export async function POST(
       return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
     }
 
-    // For now, just return success since the column may not exist yet
-    // TODO: Implement proper current contract setting once column is added
+    // First, clear any existing current contract for this user
+    await db
+      .update(familyContracts)
+      .set({ 
+        isCurrentContract: 'false'
+      })
+      .where(
+        and(
+          eq(familyContracts.userId, user.id),
+          eq(familyContracts.teamId, userWithTeam.teamId),
+          eq(familyContracts.isCurrentContract, 'true')
+        )
+      );
+
+    // Set the selected contract as current
     const [updatedContract] = await db
       .update(familyContracts)
       .set({ 
+        isCurrentContract: 'true',
         updatedAt: new Date()
       })
       .where(
