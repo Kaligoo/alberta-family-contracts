@@ -1,6 +1,6 @@
 const { drizzle } = require('drizzle-orm/neon-http');
 const { neon } = require('@neondatabase/serverless');
-const { users, teams, teamMembers } = require('../lib/db/schema');
+const { users } = require('../lib/db/schema');
 const { eq } = require('drizzle-orm');
 const bcrypt = require('bcryptjs');
 
@@ -47,25 +47,6 @@ async function createAdminUser(email, password, name = 'Admin User') {
       .returning();
 
     console.log(`Successfully created admin user: ${email}`);
-
-    // Create a team for the admin
-    const newTeam = await db
-      .insert(teams)
-      .values({
-        name: `${name}'s Team`
-      })
-      .returning();
-
-    // Add user to team
-    await db
-      .insert(teamMembers)
-      .values({
-        userId: newUser[0].id,
-        teamId: newTeam[0].id,
-        role: 'owner'
-      });
-
-    console.log(`Created team and added user as owner.`);
     
     return newUser[0];
   } catch (error) {

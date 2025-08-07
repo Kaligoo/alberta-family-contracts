@@ -21,27 +21,7 @@ async function addSampleData() {
     
     const adminUserId = adminResult[0].id;
     
-    // Find or create a team for the admin
-    let teamResult = await sql`
-      SELECT id FROM teams WHERE name = 'Garrett Horvath''s Team' LIMIT 1
-    `;
-    
-    if (teamResult.length === 0) {
-      teamResult = await sql`
-        INSERT INTO teams (name, created_at, updated_at)
-        VALUES ('Garrett Horvath''s Team', NOW(), NOW())
-        RETURNING id
-      `;
-    }
-    
-    const teamId = teamResult[0].id;
-    
-    // Ensure admin is in the team
-    await sql`
-      INSERT INTO team_members (user_id, team_id, role, created_at, updated_at)
-      VALUES (${adminUserId}, ${teamId}, 'owner', NOW(), NOW())
-      ON CONFLICT (user_id, team_id) DO NOTHING
-    `;
+    console.log(`Found admin user with ID: ${adminUserId}`);
     
     // Sample contracts
     const sampleContracts = [
@@ -114,14 +94,14 @@ async function addSampleData() {
     for (const contract of sampleContracts) {
       await sql`
         INSERT INTO family_contracts (
-          user_id, team_id, user_full_name, partner_full_name,
+          user_id, user_full_name, partner_full_name,
           user_job_title, partner_job_title, user_income, partner_income,
           user_email, partner_email, user_phone, partner_phone,
           user_address, partner_address, residence_address, residence_ownership,
           expense_split_type, additional_clauses, notes, contract_type, status,
           created_at, updated_at
         ) VALUES (
-          ${adminUserId}, ${teamId}, ${contract.userFullName}, ${contract.partnerFullName},
+          ${adminUserId}, ${contract.userFullName}, ${contract.partnerFullName},
           ${contract.userJobTitle}, ${contract.partnerJobTitle}, ${contract.userIncome}, ${contract.partnerIncome},
           ${contract.userEmail}, ${contract.partnerEmail}, ${contract.userPhone}, ${contract.partnerPhone},
           ${contract.userAddress}, ${contract.partnerAddress}, ${contract.residenceAddress}, ${contract.residenceOwnership},
