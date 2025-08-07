@@ -4,7 +4,41 @@ import { db } from '@/lib/db/drizzle';
 import { familyContracts } from '@/lib/db/schema';
 import { and, eq, desc } from 'drizzle-orm';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url);
+  const contractId = url.searchParams.get('id');
+
+  // If an ID is provided, fetch that specific contract
+  if (contractId) {
+    try {
+      const user = await getUser();
+      if (!user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      const [contract] = await db
+        .select()
+        .from(familyContracts)
+        .where(
+          and(
+            eq(familyContracts.id, parseInt(contractId, 10)),
+            eq(familyContracts.userId, user.id)
+          )
+        );
+
+      if (!contract) {
+        return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
+      }
+
+      return NextResponse.json({ contract });
+    } catch (error) {
+      console.error('Error fetching specific contract:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch contract data' },
+        { status: 500 }
+      );
+    }
+  }
   try {
     const user = await getUser();
     
