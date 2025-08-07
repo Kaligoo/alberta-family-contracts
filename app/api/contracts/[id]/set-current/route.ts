@@ -47,17 +47,13 @@ export async function POST(
     try {
       console.log('Clearing existing current contracts for user:', user.id);
       
+      // Clear all current contracts for this user (handle both boolean and string values)
       const clearResult = await db
         .update(familyContracts)
         .set({ 
           isCurrentContract: 'false'
         })
-        .where(
-          and(
-            eq(familyContracts.userId, user.id),
-            eq(familyContracts.isCurrentContract, 'true')
-          )
-        );
+        .where(eq(familyContracts.userId, user.id));
 
       console.log('Clear existing contracts result:', clearResult);
 
@@ -71,6 +67,8 @@ export async function POST(
 
     // Set the selected contract as current
     try {
+      console.log('Setting contract as current:', contractId);
+      
       const updateResult = await db
         .update(familyContracts)
         .set({ 
