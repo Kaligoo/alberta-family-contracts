@@ -14,10 +14,53 @@ export async function GET() {
 
     // Get the user's current contract (most recent)
     const [contract] = await db
-      .select()
+      .select({
+        id: familyContracts.id,
+        userId: familyContracts.userId,
+        userFullName: familyContracts.userFullName,
+        partnerFullName: familyContracts.partnerFullName,
+        userFirstName: familyContracts.userFirstName,
+        partnerFirstName: familyContracts.partnerFirstName,
+        userPronouns: familyContracts.userPronouns,
+        partnerPronouns: familyContracts.partnerPronouns,
+        userAge: familyContracts.userAge,
+        partnerAge: familyContracts.partnerAge,
+        userJobTitle: familyContracts.userJobTitle,
+        partnerJobTitle: familyContracts.partnerJobTitle,
+        userIncome: familyContracts.userIncome,
+        partnerIncome: familyContracts.partnerIncome,
+        cohabDate: familyContracts.cohabDate,
+        proposedMarriageDate: familyContracts.proposedMarriageDate,
+        userEmail: familyContracts.userEmail,
+        userPhone: familyContracts.userPhone,
+        userAddress: familyContracts.userAddress,
+        userLawyer: familyContracts.userLawyer,
+        partnerEmail: familyContracts.partnerEmail,
+        partnerPhone: familyContracts.partnerPhone,
+        partnerAddress: familyContracts.partnerAddress,
+        partnerLawyer: familyContracts.partnerLawyer,
+        children: familyContracts.children,
+        contractType: familyContracts.contractType,
+        propertySeparationType: familyContracts.propertySeparationType,
+        status: familyContracts.status,
+        residenceAddress: familyContracts.residenceAddress,
+        residenceOwnership: familyContracts.residenceOwnership,
+        expenseSplitType: familyContracts.expenseSplitType,
+        customExpenseSplit: familyContracts.customExpenseSplit,
+        additionalClauses: familyContracts.additionalClauses,
+        notes: familyContracts.notes,
+        documentGenerated: familyContracts.documentGenerated,
+        documentPath: familyContracts.documentPath,
+        isCurrentContract: familyContracts.isCurrentContract,
+        isPaid: familyContracts.isPaid,
+        termsAccepted: familyContracts.termsAccepted,
+        termsAcceptedAt: familyContracts.termsAcceptedAt,
+        createdAt: familyContracts.createdAt,
+        updatedAt: familyContracts.updatedAt,
+      })
       .from(familyContracts)
       .where(eq(familyContracts.userId, user.id))
-      .orderBy(desc(familyContracts.updatedAt))
+      .orderBy(desc(familyContracts.createdAt))
       .limit(1);
 
     return NextResponse.json({ contract: contract || null });
