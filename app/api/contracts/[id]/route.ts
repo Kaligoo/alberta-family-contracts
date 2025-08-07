@@ -6,7 +6,7 @@ import { and, eq } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const user = await getUser();
@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = await params;
+    const { id } = params;
     const contractId = parseInt(id);
     
     if (!contractId) {

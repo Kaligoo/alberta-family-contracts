@@ -55,7 +55,7 @@ export default function ContractDownloadPage() {
 
   // Fetch contract data to check payment status
   const { data: contractData, error: contractError } = useSWR(
-    contractId ? `/api/contract?id=${contractId}` : null,
+    contractId ? `/api/contracts/${contractId}` : null,
     fetcher
   );
 
