@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { users, teams, teamMembers } from '@/lib/db/schema';
+import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
@@ -46,23 +46,6 @@ export async function POST(request: NextRequest) {
         role: 'admin'
       })
       .returning();
-
-    // Create a team for the admin
-    const newTeam = await db
-      .insert(teams)
-      .values({
-        name: `${name || email}'s Team`
-      })
-      .returning();
-
-    // Add user to team
-    await db
-      .insert(teamMembers)
-      .values({
-        userId: newUser[0].id,
-        teamId: newTeam[0].id,
-        role: 'owner'
-      });
 
     return NextResponse.json({ 
       message: 'Admin user created successfully',

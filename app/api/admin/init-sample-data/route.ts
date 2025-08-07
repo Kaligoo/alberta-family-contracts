@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
-import { users, teams, teamMembers, familyContracts } from '@/lib/db/schema';
-import { eq, sql } from 'drizzle-orm';
-import { getUser, getUserWithTeam } from '@/lib/db/queries';
+import { familyContracts } from '@/lib/db/schema';
+import { sql } from 'drizzle-orm';
+import { getUser } from '@/lib/db/queries';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,13 +11,6 @@ export async function POST(request: NextRequest) {
     
     if (!currentUser) {
       return NextResponse.json({ error: 'Unauthorized - user not logged in' }, { status: 401 });
-    }
-
-    // Get the user's team information
-    const userWithTeam = await getUserWithTeam(currentUser.id);
-    
-    if (!userWithTeam?.teamId) {
-      return NextResponse.json({ error: 'User is not part of a team' }, { status: 400 });
     }
 
     // Sample contracts with realistic Alberta data (production-compatible version)
@@ -95,14 +88,14 @@ export async function POST(request: NextRequest) {
       // Use raw SQL with sql template literal for parameterized queries
       const result = await db.execute(sql`
         INSERT INTO family_contracts (
-          user_id, team_id, user_full_name, partner_full_name, 
+          user_id, user_full_name, partner_full_name, 
           user_job_title, partner_job_title, user_income, partner_income,
           user_email, partner_email, user_phone, partner_phone,
           user_address, partner_address, residence_address, residence_ownership,
           expense_split_type, additional_clauses, notes, contract_type, status, children,
           created_at, updated_at
         ) VALUES (
-          ${currentUser.id}, ${userWithTeam.teamId}, ${contract.userFullName}, ${contract.partnerFullName}, 
+          ${currentUser.id}, ${contract.userFullName}, ${contract.partnerFullName}, 
           ${contract.userJobTitle}, ${contract.partnerJobTitle}, ${contract.userIncome}, ${contract.partnerIncome},
           ${contract.userEmail}, ${contract.partnerEmail}, ${contract.userPhone}, ${contract.partnerPhone},
           ${contract.userAddress}, ${contract.partnerAddress}, ${contract.residenceAddress}, ${contract.residenceOwnership},

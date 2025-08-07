@@ -1,6 +1,4 @@
-import { getTeamForUser } from '@/lib/db/queries';
-
+// Team functionality removed - contracts now work directly with users
 export async function GET() {
-  const team = await getTeamForUser();
-  return Response.json(team);
+  return Response.json({ message: 'Team functionality has been removed' }, { status: 410 });
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getUserWithTeam } from '@/lib/db/queries';
+import { getUser } from '@/lib/db/queries';
 import { stripe } from '@/lib/payments/stripe';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts } from '@/lib/db/schema';
@@ -16,11 +16,6 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userWithTeam = await getUserWithTeam(user.id);
-    
-    if (!userWithTeam?.teamId) {
-      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
-    }
 
     const resolvedParams = await params;
     const contractId = parseInt(resolvedParams.id);
@@ -40,8 +35,7 @@ export async function POST(
       .where(
         and(
           eq(familyContracts.id, contractId),
-          eq(familyContracts.userId, user.id),
-          eq(familyContracts.teamId, userWithTeam.teamId)
+          eq(familyContracts.userId, user.id)
         )
       )
       .limit(1);

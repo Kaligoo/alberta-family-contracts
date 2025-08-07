@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getUserWithTeam } from '@/lib/db/queries';
+import { getUser } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts } from '@/lib/db/schema';
 import { and, eq, desc } from 'drizzle-orm';
@@ -12,20 +12,56 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userWithTeam = await getUserWithTeam(user.id);
-    
-    if (!userWithTeam?.teamId) {
-      return NextResponse.json({ contract: null });
-    }
-
     // Get the user's current contract
     const [contract] = await db
-      .select()
+      .select({
+        id: familyContracts.id,
+        userId: familyContracts.userId,
+        userFullName: familyContracts.userFullName,
+        partnerFullName: familyContracts.partnerFullName,
+        userFirstName: familyContracts.userFirstName,
+        partnerFirstName: familyContracts.partnerFirstName,
+        userPronouns: familyContracts.userPronouns,
+        partnerPronouns: familyContracts.partnerPronouns,
+        userAge: familyContracts.userAge,
+        partnerAge: familyContracts.partnerAge,
+        userJobTitle: familyContracts.userJobTitle,
+        partnerJobTitle: familyContracts.partnerJobTitle,
+        userIncome: familyContracts.userIncome,
+        partnerIncome: familyContracts.partnerIncome,
+        cohabDate: familyContracts.cohabDate,
+        proposedMarriageDate: familyContracts.proposedMarriageDate,
+        userEmail: familyContracts.userEmail,
+        userPhone: familyContracts.userPhone,
+        userAddress: familyContracts.userAddress,
+        userLawyer: familyContracts.userLawyer,
+        partnerEmail: familyContracts.partnerEmail,
+        partnerPhone: familyContracts.partnerPhone,
+        partnerAddress: familyContracts.partnerAddress,
+        partnerLawyer: familyContracts.partnerLawyer,
+        children: familyContracts.children,
+        contractType: familyContracts.contractType,
+        propertySeparationType: familyContracts.propertySeparationType,
+        status: familyContracts.status,
+        residenceAddress: familyContracts.residenceAddress,
+        residenceOwnership: familyContracts.residenceOwnership,
+        expenseSplitType: familyContracts.expenseSplitType,
+        customExpenseSplit: familyContracts.customExpenseSplit,
+        additionalClauses: familyContracts.additionalClauses,
+        notes: familyContracts.notes,
+        documentGenerated: familyContracts.documentGenerated,
+        documentPath: familyContracts.documentPath,
+        isCurrentContract: familyContracts.isCurrentContract,
+        isPaid: familyContracts.isPaid,
+        termsAccepted: familyContracts.termsAccepted,
+        termsAcceptedAt: familyContracts.termsAcceptedAt,
+        createdAt: familyContracts.createdAt,
+        updatedAt: familyContracts.updatedAt,
+      })
       .from(familyContracts)
       .where(
         and(
           eq(familyContracts.userId, user.id),
-          eq(familyContracts.teamId, userWithTeam.teamId),
           eq(familyContracts.isCurrentContract, 'true')
         )
       )

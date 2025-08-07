@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getUserWithTeam } from '@/lib/db/queries';
+import { getUser } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts } from '@/lib/db/schema';
-import { and, eq, desc } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 export async function GET() {
   try {
@@ -12,32 +12,66 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userWithTeam = await getUserWithTeam(user.id);
-    
-    if (!userWithTeam?.teamId) {
-      return NextResponse.json({ contracts: [] });
-    }
-
     // Get all contracts for this user
-    console.log('Fetching contracts for user:', user.id, 'team:', userWithTeam.teamId);
+    console.log('Fetching contracts for user:', user.id);
     
     const contracts = await db
-      .select()
+      .select({
+        id: familyContracts.id,
+        userId: familyContracts.userId,
+        userFullName: familyContracts.userFullName,
+        partnerFullName: familyContracts.partnerFullName,
+        userFirstName: familyContracts.userFirstName,
+        partnerFirstName: familyContracts.partnerFirstName,
+        userPronouns: familyContracts.userPronouns,
+        partnerPronouns: familyContracts.partnerPronouns,
+        userAge: familyContracts.userAge,
+        partnerAge: familyContracts.partnerAge,
+        userJobTitle: familyContracts.userJobTitle,
+        partnerJobTitle: familyContracts.partnerJobTitle,
+        userIncome: familyContracts.userIncome,
+        partnerIncome: familyContracts.partnerIncome,
+        cohabDate: familyContracts.cohabDate,
+        proposedMarriageDate: familyContracts.proposedMarriageDate,
+        userEmail: familyContracts.userEmail,
+        userPhone: familyContracts.userPhone,
+        userAddress: familyContracts.userAddress,
+        userLawyer: familyContracts.userLawyer,
+        partnerEmail: familyContracts.partnerEmail,
+        partnerPhone: familyContracts.partnerPhone,
+        partnerAddress: familyContracts.partnerAddress,
+        partnerLawyer: familyContracts.partnerLawyer,
+        children: familyContracts.children,
+        contractType: familyContracts.contractType,
+        propertySeparationType: familyContracts.propertySeparationType,
+        status: familyContracts.status,
+        residenceAddress: familyContracts.residenceAddress,
+        residenceOwnership: familyContracts.residenceOwnership,
+        expenseSplitType: familyContracts.expenseSplitType,
+        customExpenseSplit: familyContracts.customExpenseSplit,
+        additionalClauses: familyContracts.additionalClauses,
+        notes: familyContracts.notes,
+        documentGenerated: familyContracts.documentGenerated,
+        documentPath: familyContracts.documentPath,
+        isCurrentContract: familyContracts.isCurrentContract,
+        isPaid: familyContracts.isPaid,
+        termsAccepted: familyContracts.termsAccepted,
+        termsAcceptedAt: familyContracts.termsAcceptedAt,
+        createdAt: familyContracts.createdAt,
+        updatedAt: familyContracts.updatedAt,
+      })
       .from(familyContracts)
-      .where(
-        and(
-          eq(familyContracts.userId, user.id),
-          eq(familyContracts.teamId, userWithTeam.teamId)
-        )
-      )
-      .orderBy(desc(familyContracts.updatedAt));
+      .where(eq(familyContracts.userId, user.id))
+      .orderBy(desc(familyContracts.createdAt));
 
     console.log('Found contracts:', contracts.length);
     
     // Transform children data for backward compatibility (age -> birthdate)
     const transformedContracts = contracts.map(transformChildrenData);
     
-    return NextResponse.json({ contracts: transformedContracts });
+    return NextResponse.json({ 
+      contracts: transformedContracts
+    });
   } catch (error) {
     console.error('Error fetching contracts:', error);
     return NextResponse.json(
@@ -55,12 +89,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userWithTeam = await getUserWithTeam(user.id);
-    
-    if (!userWithTeam?.teamId) {
-      return NextResponse.json({ error: 'User is not part of a team' }, { status: 400 });
-    }
-
     const body = await request.json();
     
     // Create new contract
@@ -68,7 +96,6 @@ export async function POST(request: NextRequest) {
       .insert(familyContracts)
       .values({
         userId: user.id,
-        teamId: userWithTeam.teamId,
         userFullName: body.userFullName || null,
         partnerFullName: body.partnerFullName || null,
         userFirstName: body.userFirstName || null,

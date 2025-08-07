@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser, getUserWithTeam } from '@/lib/db/queries';
+import { getUser } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts, templates } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
@@ -23,11 +23,10 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userWithTeam = await getUserWithTeam(user.id);
     const resolvedParams = await params;
     const contractId = parseInt(resolvedParams.id);
     
-    if (!userWithTeam?.teamId || isNaN(contractId)) {
+    if (isNaN(contractId)) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
 
@@ -38,8 +37,7 @@ export async function GET(
       .where(
         and(
           eq(familyContracts.id, contractId),
-          eq(familyContracts.userId, user.id),
-          eq(familyContracts.teamId, userWithTeam.teamId)
+          eq(familyContracts.userId, user.id)
         )
       )
       .limit(1);
