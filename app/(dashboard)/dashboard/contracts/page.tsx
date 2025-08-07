@@ -33,19 +33,27 @@ export default function ContractsPage() {
 
   const handleSetCurrentContract = async (contractId: number) => {
     try {
+      console.log('Attempting to set current contract:', contractId);
+      
       const response = await fetch(`/api/contracts/${contractId}/set-current`, {
         method: 'POST',
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
       if (response.ok) {
+        console.log('Success! Redirecting to edit page...');
         // Redirect to edit-contract page to edit the now-current contract
         window.location.href = '/dashboard/edit-contract';
       } else {
-        alert('Failed to set current contract. Please try again.');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('API Error Response:', errorData);
+        alert(`Failed to set current contract. Error: ${errorData.error || 'Please try again.'}`);
       }
     } catch (error) {
-      console.error('Error setting current contract:', error);
-      alert('Failed to set current contract. Please try again.');
+      console.error('Network/JS Error setting current contract:', error);
+      alert(`Failed to set current contract. Network error: ${error instanceof Error ? error.message : 'Please try again.'}`);
     }
   };
 
