@@ -3,7 +3,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "postbuild": "node scripts/auto-migrate.js",
+    "postbuild": "node scripts/auto-migrate.js && node scripts/post-build-schema-check.js",
     "start": "next start",
     "version:increment": "node scripts/increment-version.js",
     "db:setup": "npx tsx lib/db/setup.ts",

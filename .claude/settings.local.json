@@ -19,7 +19,8 @@
       "Bash(taskkill:*)",
       "Bash(npm run build:*)",
       "WebFetch(domain:agreeable.ca)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": []
   }

@@ -24,3 +24,10 @@
 - Auto-migration endpoint: `/api/admin/auto-migrate` with header `x-auto-migrate-key: claude-auto-migrate-2024`
 - Manual migration via admin dashboard at `/dashboard/admin` -> "Apply Schema Changes" button
 - Schema changes without migration will cause production database queries to fail
+
+## Schema Validation & Prevention
+- **BEFORE DEPLOYMENT**: Always run `npm run schema:validate` to check for schema drift
+- **SAFE DEPLOYMENT**: Use `npm run deploy:safe` instead of direct git push
+- **POST-BUILD**: Automatic schema validation runs after each build
+- **CI/CD**: GitHub Actions will block merges if schema validation fails
+- **MONITORING**: Check `/api/admin/validate-schema` endpoint for real-time schema health
