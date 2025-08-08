@@ -9,11 +9,28 @@ function getResendClient() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
-async function generatePDF(contractId: string): Promise<ArrayBuffer> {
+async function generatePDF(contractId: string, request: NextRequest): Promise<ArrayBuffer> {
   try {
-    const pdfResponse = await fetch(`${process.env.BASE_URL || 'https://agreeable.ca'}/api/contracts/${contractId}/pdf-v2`);
+    // Forward authentication headers from the original request
+    const headers: HeadersInit = {};
+    
+    // Copy relevant headers for authentication
+    const authHeaders = ['cookie', 'authorization'];
+    authHeaders.forEach(headerName => {
+      const value = request.headers.get(headerName);
+      if (value) {
+        headers[headerName] = value;
+      }
+    });
+
+    const pdfResponse = await fetch(`${process.env.BASE_URL || 'https://agreeable.ca'}/api/contracts/${contractId}/pdf-v2`, {
+      headers
+    });
+    
     if (!pdfResponse.ok) {
-      throw new Error(`Failed to generate PDF: ${pdfResponse.status}`);
+      const errorText = await pdfResponse.text();
+      console.error(`PDF generation failed with status ${pdfResponse.status}:`, errorText);
+      throw new Error(`Failed to generate PDF: ${pdfResponse.status} - ${errorText}`);
     }
     return await pdfResponse.arrayBuffer();
   } catch (error) {
@@ -207,7 +224,7 @@ export async function POST(request: NextRequest) {
     // Generate PDF document
     let pdfBuffer: ArrayBuffer;
     try {
-      pdfBuffer = await generatePDF(contractId);
+      pdfBuffer = await generatePDF(contractId, request);
     } catch (error) {
       console.error('Failed to generate PDF:', error);
       return NextResponse.json({ 
