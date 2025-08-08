@@ -45,7 +45,9 @@ function createLawyerEmailTemplate(
   partnerName: string,
   contractType: string,
   contractId: string,
-  isUserLawyer: boolean
+  isUserLawyer: boolean,
+  clientEmail?: string,
+  clientPhone?: string
 ): string {
   const baseUrl = process.env.BASE_URL || 'https://agreeable.ca';
   
@@ -63,7 +65,7 @@ function createLawyerEmailTemplate(
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 40px 30px; text-align: center;">
           <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">
-            Agreeable
+            agreeable.ca
           </h1>
           <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 16px;">
             Legal Document Service Platform
@@ -81,7 +83,7 @@ function createLawyerEmailTemplate(
           </p>
           
           <p style="color: #4b5563; font-size: 16px; margin: 0 0 20px 0;">
-            You have been selected by <strong>${clientName}</strong> to provide independent legal advice regarding their ${contractType.toLowerCase()} with <strong>${partnerName}</strong>.
+            You have been selected by <strong>${clientName}</strong> to provide independent legal advice on a ${contractType.toLowerCase()} with <strong>${partnerName}</strong>.
           </p>
 
           <!-- What is Agreeable -->
@@ -99,6 +101,8 @@ function createLawyerEmailTemplate(
             <h3 style="color: #1f2937; margin: 0 0 15px 0; font-size: 18px;">Contract Details</h3>
             <div style="color: #4b5563; font-size: 14px;">
               <p style="margin: 5px 0;"><strong>Your Client:</strong> ${clientName}</p>
+              ${clientEmail ? `<p style="margin: 5px 0;"><strong>Client Email:</strong> ${clientEmail}</p>` : ''}
+              ${clientPhone ? `<p style="margin: 5px 0;"><strong>Client Phone:</strong> ${clientPhone}</p>` : ''}
               <p style="margin: 5px 0;"><strong>Partner:</strong> ${partnerName}</p>
               <p style="margin: 5px 0;"><strong>Document Type:</strong> ${contractType}</p>
               <p style="margin: 5px 0;"><strong>Contract ID:</strong> #${contractId}</p>
@@ -258,7 +262,9 @@ export async function POST(request: NextRequest) {
           partnerFullName,
           contractType,
           contractId,
-          true
+          true,
+          contract.userEmail || undefined,
+          contract.userPhone || undefined
         ),
         attachments: [
           {
@@ -310,7 +316,9 @@ export async function POST(request: NextRequest) {
           userFullName,
           contractType,
           contractId,
-          false
+          false,
+          contract.partnerEmail || undefined,
+          contract.partnerPhone || undefined
         ),
         attachments: [
           {

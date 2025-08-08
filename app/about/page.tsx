@@ -15,9 +15,9 @@ export default function AboutPage() {
                   About Alberta Family Contracts
                 </h1>
                 <p className="mt-4 text-xl text-gray-600">
-                  Bridging the access to justice gap with lawyer-drafted family agreements at 
-                  budget-friendly prices. Real legal protection, not the inadequate documents 
-                  offered by non-lawyer services.
+                  Our goal is to provide budget-friendly agreement drafts customized to your specific needs 
+                  at a fraction of the price of having a lawyer draft them traditionally. Real legal 
+                  protection, not the inadequate documents offered by non-lawyer services.
                 </p>
               </div>
             </div>
@@ -36,7 +36,17 @@ export default function AboutPage() {
                     </div>
                     <h3 className="text-xl font-bold text-gray-900">Garrett Horvath</h3>
                     <p className="text-orange-600 font-medium">Family Law Lawyer</p>
-                    <p className="text-gray-600 text-sm mt-1">Over 10 Years Experience</p>
+                    <p className="text-gray-600 text-sm mt-1">
+                      Over 10 Years Experience | 
+                      <a 
+                        href="https://kahanelaw.com/our-lawyers/garrett-horvath-calgary-family-law-lawyer/" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-orange-600 hover:text-orange-700 underline ml-1"
+                      >
+                        Kahane Law
+                      </a>
+                    </p>
                   </div>
                 </div>
               </div>
@@ -77,7 +87,7 @@ export default function AboutPage() {
                         The Lawyer Advantage
                       </h3>
                       <p className="text-gray-600 leading-relaxed">
-                        With over 10 years of family law experience, I've seen firsthand how inadequate legal documents 
+                        As a Family Lawyer employed with <a href="https://kahanelaw.com/our-lawyers/garrett-horvath-calgary-family-law-lawyer/" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:text-orange-700 underline">Kahane Law</a> with over 10 years of family law experience, I've seen firsthand how inadequate legal documents 
                         can devastate families. Other online options are not provided by lawyers and frankly, they suck. 
                         They often fail to meet the legal requirements for binding agreements under Alberta law, leaving 
                         you with worthless documents when you need protection most.
