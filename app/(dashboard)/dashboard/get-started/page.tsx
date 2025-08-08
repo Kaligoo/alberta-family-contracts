@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Heart, Users, Gem, UserCheck, Info, ArrowRight, Clock } from 'lucide-react';
+import { Heart, Users, Gem, UserCheck, Info, ArrowRight, Clock, Loader2 } from 'lucide-react';
 
 const agreementTypes = [
   {
@@ -54,11 +54,19 @@ const agreementTypes = [
 export default function GetStartedPage() {
   const router = useRouter();
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState<string | null>(null);
 
   const handleSelectAgreement = async (agreementId: string) => {
     if (agreementId === 'cohabitation' || agreementId === 'prenuptial') {
+      // Prevent multiple clicks
+      if (isCreating) return;
+      
+      setIsCreating(agreementId);
+      
       // Create a new contract and redirect to editing
       try {
+        console.log('Creating new contract of type:', agreementId);
+        
         const response = await fetch('/api/contracts', {
           method: 'POST',
           headers: {
@@ -72,35 +80,58 @@ export default function GetStartedPage() {
           }),
         });
 
+        console.log('Create contract response status:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
           const newContractId = data.contract?.id;
           
+          console.log('Created contract with ID:', newContractId);
+          
           if (newContractId) {
             // Set this contract as the current contract
             try {
+              console.log('Setting contract as current:', newContractId);
+              
               const setCurrentResponse = await fetch(`/api/contracts/${newContractId}/set-current`, {
                 method: 'POST',
               });
               
+              console.log('Set current response status:', setCurrentResponse.status);
+              
               if (setCurrentResponse.ok) {
-                router.push(`/dashboard/edit-contract`);
+                const setCurrentData = await setCurrentResponse.json();
+                console.log('Set current successful:', setCurrentData);
+                
+                // Force a small delay to ensure DB operations complete
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                console.log('Redirecting to edit-contract...');
+                // Use router.replace instead of router.push to prevent back button issues
+                router.replace(`/dashboard/edit-contract`);
               } else {
-                console.error('Failed to set contract as current, but redirecting anyway');
-                router.push(`/dashboard/edit-contract`);
+                const errorData = await setCurrentResponse.json();
+                console.error('Failed to set contract as current:', errorData);
+                console.log('Redirecting anyway...');
+                router.replace(`/dashboard/edit-contract`);
               }
             } catch (error) {
               console.error('Error setting current contract:', error);
-              router.push(`/dashboard/edit-contract`);
+              console.log('Redirecting anyway...');
+              router.replace(`/dashboard/edit-contract`);
             }
           } else {
-            console.error('No contract ID returned');
+            console.error('No contract ID returned from create API');
+            console.error('API response data:', data);
           }
         } else {
-          console.error('Failed to create contract');
+          const errorData = await response.json();
+          console.error('Failed to create contract:', response.status, errorData);
         }
       } catch (error) {
         console.error('Error creating contract:', error);
+      } finally {
+        setIsCreating(null);
       }
     }
   };
@@ -187,13 +218,23 @@ export default function GetStartedPage() {
                   {type.available && (
                     <Button
                       className="w-full bg-orange-500 hover:bg-orange-600"
+                      disabled={isCreating === type.id}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleSelectAgreement(type.id);
                       }}
                     >
-                      Get Started
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                      {isCreating === type.id ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Creating Agreement...
+                        </>
+                      ) : (
+                        <>
+                          Get Started
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </>
+                      )}
                     </Button>
                   )}
                   
