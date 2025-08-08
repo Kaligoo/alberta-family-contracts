@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { ArrowLeft, Mail, Send, CheckCircle, Loader2, FileText, Plus, X } from 'lucide-react';
+import { EmailProgressBar } from '@/components/ui/email-progress-bar';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
@@ -408,6 +409,27 @@ function SendToLawyerPageContent() {
                   {sendStatus.message}
                 </p>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Email Progress Bar */}
+        {isSending && (
+          <Card className="mb-6 border-blue-200 bg-blue-50">
+            <CardContent className="pt-6">
+              <EmailProgressBar
+                isEmailSending={isSending}
+                onComplete={() => {
+                  // Progress bar completion is handled by the main sending process
+                }}
+                onError={(error) => {
+                  setSendStatus({
+                    success: false,
+                    message: error
+                  });
+                  setIsSending(false);
+                }}
+              />
             </CardContent>
           </Card>
         )}
