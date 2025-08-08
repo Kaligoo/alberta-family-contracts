@@ -211,6 +211,9 @@ function SendToLawyerPageContent() {
 
     setIsSending(true);
     setSendStatus(null);
+    
+    // Scroll to top so user can see the progress bar
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     try {
       // First generate the Word document
