@@ -1,5 +1,161 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/db/queries';
+import { Resend } from 'resend';
+import { db } from '@/lib/db/drizzle';
+import { familyContracts } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
+
+function getResendClient() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
+
+async function generatePDF(contractId: string): Promise<ArrayBuffer> {
+  try {
+    const pdfResponse = await fetch(`${process.env.BASE_URL || 'https://agreeable.ca'}/api/contracts/${contractId}/pdf-v2`);
+    if (!pdfResponse.ok) {
+      throw new Error(`Failed to generate PDF: ${pdfResponse.status}`);
+    }
+    return await pdfResponse.arrayBuffer();
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    throw error;
+  }
+}
+
+function createLawyerEmailTemplate(
+  lawyerName: string,
+  clientName: string,
+  partnerName: string,
+  contractType: string,
+  contractId: string,
+  isUserLawyer: boolean
+): string {
+  const baseUrl = process.env.BASE_URL || 'https://agreeable.ca';
+  
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>New ${contractType} - Independent Legal Advice Required</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5; line-height: 1.6;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 0;">
+        
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 40px 30px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">
+            Agreeable
+          </h1>
+          <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 16px;">
+            Legal Document Service Platform
+          </p>
+        </div>
+        
+        <!-- Content -->
+        <div style="padding: 40px 30px;">
+          <h2 style="color: #1f2937; font-size: 24px; margin: 0 0 20px 0; font-weight: 600;">
+            Independent Legal Advice Request
+          </h2>
+          
+          <p style="color: #4b5563; font-size: 16px; margin: 0 0 20px 0;">
+            Dear ${lawyerName},
+          </p>
+          
+          <p style="color: #4b5563; font-size: 16px; margin: 0 0 20px 0;">
+            You have been selected by <strong>${clientName}</strong> to provide independent legal advice regarding their ${contractType.toLowerCase()} with <strong>${partnerName}</strong>.
+          </p>
+
+          <!-- What is Agreeable -->
+          <div style="background-color: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 20px; margin: 25px 0; border-radius: 0 4px 4px 0;">
+            <h3 style="color: #0369a1; margin: 0 0 12px 0; font-size: 18px;">About Agreeable</h3>
+            <p style="color: #0c4a6e; margin: 0; font-size: 14px;">
+              Agreeable is a legal document platform that helps couples create professional family agreements. 
+              Our system generates comprehensive documents based on their specific circumstances, which are then 
+              reviewed by independent lawyers like yourself to ensure proper legal advice and execution.
+            </p>
+          </div>
+          
+          <!-- Contract Details -->
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0;">
+            <h3 style="color: #1f2937; margin: 0 0 15px 0; font-size: 18px;">Contract Details</h3>
+            <div style="color: #4b5563; font-size: 14px;">
+              <p style="margin: 5px 0;"><strong>Your Client:</strong> ${clientName}</p>
+              <p style="margin: 5px 0;"><strong>Partner:</strong> ${partnerName}</p>
+              <p style="margin: 5px 0;"><strong>Document Type:</strong> ${contractType}</p>
+              <p style="margin: 5px 0;"><strong>Contract ID:</strong> #${contractId}</p>
+              <p style="margin: 5px 0;"><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p>
+            </div>
+          </div>
+          
+          <!-- What's Required -->
+          <h3 style="color: #1f2937; font-size: 18px; margin: 25px 0 15px 0;">What's Required</h3>
+          <p style="color: #4b5563; font-size: 16px; margin: 0 0 15px 0;">
+            Your client will need to schedule a consultation with you to:
+          </p>
+          <ul style="color: #4b5563; font-size: 16px; margin: 0 0 20px 20px; padding: 0;">
+            <li style="margin: 8px 0;">Review the terms and conditions of the agreement</li>
+            <li style="margin: 8px 0;">Receive independent legal advice specific to their situation</li>
+            <li style="margin: 8px 0;">Ask questions about their rights and obligations</li>
+            <li style="margin: 8px 0;">Sign the agreement if everything is satisfactory</li>
+          </ul>
+          
+          <!-- Attachments -->
+          <div style="background-color: #fefbf2; border-left: 4px solid #fbbf24; padding: 20px; margin: 25px 0; border-radius: 0 4px 4px 0;">
+            <h3 style="color: #92400e; margin: 0 0 12px 0; font-size: 18px;">📎 Attached Documents</h3>
+            <ul style="color: #92400e; margin: 0; font-size: 14px; padding-left: 20px;">
+              <li style="margin: 5px 0;">Word Document (.docx) - Editable version for review</li>
+              <li style="margin: 5px 0;">PDF Document (.pdf) - Final formatted version</li>
+            </ul>
+          </div>
+          
+          <!-- Next Steps -->
+          <h3 style="color: #1f2937; font-size: 18px; margin: 25px 0 15px 0;">Next Steps</h3>
+          <p style="color: #4b5563; font-size: 16px; margin: 0 0 20px 0;">
+            Please contact <strong>${clientName}</strong> to arrange a consultation at your earliest convenience. 
+            Both parties must receive independent legal advice before the agreement can be executed.
+          </p>
+          
+          <!-- Support -->
+          <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center;">
+            <h3 style="color: #1e40af; margin: 0 0 15px 0; font-size: 18px;">Questions or Support?</h3>
+            <p style="color: #1e40af; font-size: 14px; margin: 0 0 15px 0;">
+              Learn more about our platform and services:
+            </p>
+            <div style="margin: 15px 0;">
+              <a href="${baseUrl}/about" 
+                 style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; 
+                        border-radius: 6px; display: inline-block; margin: 5px; font-weight: 600;">
+                About Agreeable
+              </a>
+            </div>
+            <p style="color: #1e40af; font-size: 14px; margin: 15px 0 0 0;">
+              Technical questions? Contact <a href="mailto:ghorvath@agreeable.ca" style="color: #2563eb; text-decoration: none;"><strong>ghorvath@agreeable.ca</strong></a>
+            </p>
+          </div>
+          
+          <p style="color: #4b5563; font-size: 16px; margin: 25px 0 0 0;">
+            Thank you for providing independent legal advice.<br>
+            <strong>The Agreeable Team</strong>
+          </p>
+        </div>
+        
+        <!-- Footer -->
+        <div style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+          <p style="color: #9ca3af; font-size: 12px; margin: 0 0 8px 0;">
+            This email was sent from Agreeable (agreeable.ca) - Legal Document Platform
+          </p>
+          <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+            Contract ID: #${contractId} | Generated: ${new Date().toLocaleDateString()}
+          </p>
+        </div>
+        
+      </div>
+    </body>
+    </html>
+  `;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,111 +181,182 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // For testing purposes, we'll simulate sending emails
-    // In a real implementation, you would integrate with an email service like:
-    // - SendGrid
-    // - AWS SES
-    // - Nodemailer with SMTP
-    // - Resend
-    
     console.log('Sending contract to lawyers:');
     console.log(`User Lawyer: ${userLawyerName} (${userLawyerEmail})`);
     console.log(`Partner Lawyer: ${partnerLawyerName} (${partnerLawyerEmail})`);
     console.log(`Contract ID: ${contractId}`);
     console.log(`Parties: ${userFullName} & ${partnerFullName}`);
-    console.log(`Document size: ${contractDocument.size} bytes`);
 
-    // Simulate email sending delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Get contract details from database
+    const [contract] = await db
+      .select()
+      .from(familyContracts)
+      .where(eq(familyContracts.id, parseInt(contractId)))
+      .limit(1);
 
-    // For now, we'll just log the action and return success
-    // In production, you would:
-    // 1. Convert the document to base64 or save temporarily
-    // 2. Compose professional email content
-    // 3. Send emails with attachment to both lawyers
-    // 4. Log the activity in the database
-    // 5. Potentially notify the users
+    if (!contract) {
+      return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
+    }
 
-    const emailContent = {
-      subject: `New Alberta Cohabitation Agreement - ${userFullName} & ${partnerFullName}`,
-      userLawyerMessage: `
-Dear ${userLawyerName},
+    const contractType = contract.contractType === 'cohabitation' 
+      ? 'Alberta Cohabitation Agreement'
+      : contract.contractType === 'prenuptial'
+      ? 'Alberta Prenuptial Agreement' 
+      : 'Alberta Family Agreement';
 
-You have been selected to provide legal counsel for ${userFullName} regarding their cohabitation agreement with ${partnerFullName}.
+    // Generate PDF document
+    let pdfBuffer: ArrayBuffer;
+    try {
+      pdfBuffer = await generatePDF(contractId);
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+      return NextResponse.json({ 
+        error: 'Failed to generate PDF document' 
+      }, { status: 500 });
+    }
 
-Please find the attached draft agreement for your review. Your client will need to schedule a consultation to:
-- Review the terms and conditions
-- Provide legal advice specific to their situation
-- Sign the agreement if everything is satisfactory
+    // Convert Word document to buffer
+    const wordBuffer = await contractDocument.arrayBuffer();
 
-Contract Details:
-- Client: ${userFullName}
-- Partner: ${partnerFullName}
-- Contract ID: #${contractId}
-- Document Type: Alberta Cohabitation Agreement
+    // Initialize Resend client
+    const resend = getResendClient();
 
-Please contact your client to arrange a consultation at your earliest convenience.
+    // Prepare email data
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'Agreeable <emailverification@agreeable.ca>';
+    const subject = `Independent Legal Advice Required - ${contractType}`;
 
-Best regards,
-Alberta Family Contracts Team
-      `,
-      partnerLawyerMessage: `
-Dear ${partnerLawyerName},
+    const emailResults = [];
 
-You have been selected to provide legal counsel for ${partnerFullName} regarding their cohabitation agreement with ${userFullName}.
+    // Send email to user's lawyer
+    try {
+      console.log(`Sending email to user's lawyer: ${userLawyerEmail}`);
+      
+      const userEmailResult = await resend.emails.send({
+        from: fromEmail,
+        to: [userLawyerEmail],
+        subject: `${subject} - ${userFullName}`,
+        html: createLawyerEmailTemplate(
+          userLawyerName,
+          userFullName,
+          partnerFullName,
+          contractType,
+          contractId,
+          true
+        ),
+        attachments: [
+          {
+            filename: `agreement-${contractId}.docx`,
+            content: Buffer.from(wordBuffer),
+          },
+          {
+            filename: `agreement-${contractId}.pdf`,
+            content: Buffer.from(pdfBuffer),
+          },
+        ],
+      });
 
-Please find the attached draft agreement for your review. Your client will need to schedule a consultation to:
-- Review the terms and conditions  
-- Provide legal advice specific to their situation
-- Sign the agreement if everything is satisfactory
-
-Contract Details:
-- Client: ${partnerFullName}
-- Partner: ${userFullName}
-- Contract ID: #${contractId}
-- Document Type: Alberta Cohabitation Agreement
-
-Please contact your client to arrange a consultation at your earliest convenience.
-
-Best regards,
-Alberta Family Contracts Team
-      `
-    };
-
-    // TODO: Implement actual email sending
-    // Example with a hypothetical email service:
-    /*
-    await emailService.send({
-      to: userLawyerEmail,
-      subject: emailContent.subject,
-      text: emailContent.userLawyerMessage,
-      attachments: [{
-        filename: `cohabitation-agreement-${contractId}.docx`,
-        content: await contractDocument.arrayBuffer()
-      }]
-    });
-
-    await emailService.send({
-      to: partnerLawyerEmail,
-      subject: emailContent.subject,
-      text: emailContent.partnerLawyerMessage,
-      attachments: [{
-        filename: `cohabitation-agreement-${contractId}.docx`,
-        content: await contractDocument.arrayBuffer()
-      }]
-    });
-    */
-
-    return NextResponse.json({
-      success: true,
-      message: 'Contract sent successfully to both lawyers',
-      details: {
-        userLawyer: `${userLawyerName} (${userLawyerEmail})`,
-        partnerLawyer: `${partnerLawyerName} (${partnerLawyerEmail})`,
-        contractId,
-        emailContent // For testing - remove in production
+      if (userEmailResult.error) {
+        throw new Error(`Failed to send email to user lawyer: ${userEmailResult.error.message}`);
       }
-    });
+
+      emailResults.push({
+        lawyer: 'user',
+        name: userLawyerName,
+        email: userLawyerEmail,
+        messageId: userEmailResult.data?.id,
+        status: 'sent'
+      });
+
+      console.log(`✅ Email sent to user's lawyer: ${userEmailResult.data?.id}`);
+    } catch (error) {
+      console.error('Error sending email to user lawyer:', error);
+      emailResults.push({
+        lawyer: 'user',
+        name: userLawyerName,
+        email: userLawyerEmail,
+        status: 'failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+
+    // Send email to partner's lawyer
+    try {
+      console.log(`Sending email to partner's lawyer: ${partnerLawyerEmail}`);
+      
+      const partnerEmailResult = await resend.emails.send({
+        from: fromEmail,
+        to: [partnerLawyerEmail],
+        subject: `${subject} - ${partnerFullName}`,
+        html: createLawyerEmailTemplate(
+          partnerLawyerName,
+          partnerFullName,
+          userFullName,
+          contractType,
+          contractId,
+          false
+        ),
+        attachments: [
+          {
+            filename: `agreement-${contractId}.docx`,
+            content: Buffer.from(wordBuffer),
+          },
+          {
+            filename: `agreement-${contractId}.pdf`,
+            content: Buffer.from(pdfBuffer),
+          },
+        ],
+      });
+
+      if (partnerEmailResult.error) {
+        throw new Error(`Failed to send email to partner lawyer: ${partnerEmailResult.error.message}`);
+      }
+
+      emailResults.push({
+        lawyer: 'partner',
+        name: partnerLawyerName,
+        email: partnerLawyerEmail,
+        messageId: partnerEmailResult.data?.id,
+        status: 'sent'
+      });
+
+      console.log(`✅ Email sent to partner's lawyer: ${partnerEmailResult.data?.id}`);
+    } catch (error) {
+      console.error('Error sending email to partner lawyer:', error);
+      emailResults.push({
+        lawyer: 'partner',
+        name: partnerLawyerName,
+        email: partnerLawyerEmail,
+        status: 'failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+
+    // Check results
+    const failedEmails = emailResults.filter(result => result.status === 'failed');
+    const successfulEmails = emailResults.filter(result => result.status === 'sent');
+
+    if (failedEmails.length > 0 && successfulEmails.length === 0) {
+      // All emails failed
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to send emails to both lawyers',
+        details: emailResults
+      }, { status: 500 });
+    } else if (failedEmails.length > 0) {
+      // Some emails failed
+      return NextResponse.json({
+        success: false,
+        error: `Failed to send email${failedEmails.length > 1 ? 's' : ''} to ${failedEmails.map(e => e.name).join(' and ')}`,
+        details: emailResults
+      }, { status: 207 }); // 207 Multi-Status
+    } else {
+      // All emails sent successfully
+      return NextResponse.json({
+        success: true,
+        message: 'Contract documents sent successfully to both lawyers',
+        details: emailResults
+      });
+    }
 
   } catch (error) {
     console.error('Error sending contract to lawyers:', error);
