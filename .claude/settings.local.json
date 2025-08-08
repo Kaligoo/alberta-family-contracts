@@ -20,7 +20,10 @@
       "Bash(npm run build:*)",
       "WebFetch(domain:agreeable.ca)",
       "Bash(grep:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(git rm:*)",
+      "Bash(npm run:*)",
+      "Bash(del C:afcfix_users_table.sql)"
     ],
     "deny": []
   }
