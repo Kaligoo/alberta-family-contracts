@@ -39,8 +39,8 @@ export async function createCheckoutSession({
       }
     ],
     mode: 'subscription',
-    success_url: `${process.env.BASE_URL}/api/stripe/checkout?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.BASE_URL}/pricing`,
+    success_url: `${process.env.BASE_URL || 'https://agreeable.ca'}/api/stripe/checkout?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.BASE_URL || 'https://agreeable.ca'}/pricing`,
     client_reference_id: user.id.toString(),
     allow_promotion_codes: true,
     subscription_data: {

@@ -9,7 +9,7 @@ const { Resend } = require('resend');
 
 async function sendVerificationEmail(email, token) {
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const verificationUrl = `${process.env.BASE_URL}/verify-email?token=${token}`;
+  const verificationUrl = `${process.env.BASE_URL || 'https://agreeable.ca'}/verify-email?token=${token}`;
   
   const html = `
     <!DOCTYPE html>
@@ -118,7 +118,7 @@ async function testVerificationEmail(to) {
     console.log('✅ Verification email sent successfully!');
     console.log('Message ID:', result.id);
     console.log('\n🔗 Test verification link would be:');
-    console.log(`${process.env.BASE_URL}/verify-email?token=test-verification-token-123`);
+    console.log(`${process.env.BASE_URL || 'https://agreeable.ca'}/verify-email?token=test-verification-token-123`);
     
   } catch (error) {
     console.error('❌ Error sending verification email:', error.message);

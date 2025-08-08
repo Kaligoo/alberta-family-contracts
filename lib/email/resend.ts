@@ -35,7 +35,8 @@ export async function sendEmail({ to, subject, html, from }: SendEmailOptions) {
 }
 
 export async function sendVerificationEmail(email: string, token: string) {
-  const verificationUrl = `${process.env.BASE_URL}/verify-email?token=${token}`;
+  const baseUrl = process.env.BASE_URL || 'https://agreeable.ca';
+  const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
   
   const html = `
     <!DOCTYPE html>
