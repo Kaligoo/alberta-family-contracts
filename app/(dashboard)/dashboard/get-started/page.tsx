@@ -16,7 +16,7 @@ const agreementTypes = [
     icon: Users,
     available: true,
     detailedDescription: 'A cohabitation agreement is for unmarried couples who are living together or planning to live together. It helps establish financial responsibilities, property rights, and other important matters while maintaining your relationship.',
-    bestFor: 'Couples who are living together but not married',
+    bestFor: 'Use this contract if you don\'t intend to be married but you are living with, or plan to live with, your partner',
     timeline: 'Can be created at any time during your relationship'
   },
   {
@@ -26,7 +26,7 @@ const agreementTypes = [
     icon: Gem,
     available: true,
     detailedDescription: 'A prenuptial agreement is created before marriage to establish how assets, debts, and other financial matters will be handled during the marriage and in the event of divorce.',
-    bestFor: 'Engaged couples who want to plan their financial future',
+    bestFor: 'Use this contract if you may get married in the future and are living with, or plan to live with, your partner',
     timeline: 'Must be signed before your wedding ceremony'
   },
   {
