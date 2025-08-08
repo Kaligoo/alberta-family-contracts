@@ -73,6 +73,16 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     };
   }
 
+  // Check if email is verified
+  if (!foundUser.emailVerified) {
+    return {
+      error: 'Please verify your email address before signing in.',
+      email,
+      password,
+      needsVerification: true
+    };
+  }
+
   await Promise.all([
     setSession(foundUser),
     logActivity(foundUser.id, ActivityType.SIGN_IN)
@@ -103,18 +113,26 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 
   if (existingUser.length > 0) {
     return {
-      error: 'Failed to create user. Please try again.',
+      error: 'An account with this email already exists. Please try signing in instead.',
       email,
       password
     };
   }
 
   const passwordHash = await hashPassword(password);
+  
+  // Generate verification token
+  const { randomBytes } = await import('crypto');
+  const verificationToken = randomBytes(32).toString('hex');
+  const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
   const newUser: NewUser = {
     email,
     passwordHash,
-    role: 'owner'
+    role: 'owner',
+    emailVerificationToken: verificationToken,
+    emailVerificationExpires: verificationExpires,
+    emailVerified: null // Will be set when verified
   };
 
   const [createdUser] = await db.insert(users).values(newUser).returning();
@@ -127,18 +145,20 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     };
   }
 
-  await Promise.all([
-    logActivity(createdUser.id, ActivityType.SIGN_UP),
-    setSession(createdUser)
-  ]);
-
-  const redirectTo = formData.get('redirect') as string | null;
-  if (redirectTo === 'checkout') {
-    const priceId = formData.get('priceId') as string;
-    return createCheckoutSession({ priceId });
+  // Send verification email
+  try {
+    const { sendVerificationEmail } = await import('@/lib/email/resend');
+    await sendVerificationEmail(email, verificationToken);
+    console.log('✅ Verification email sent successfully to:', email);
+  } catch (emailError) {
+    console.error('❌ Failed to send verification email:', emailError);
+    // Don't fail the signup if email fails - user can resend later
   }
 
-  redirect('/dashboard');
+  await logActivity(createdUser.id, ActivityType.SIGN_UP);
+
+  // Don't auto-login unverified users - redirect to verification page
+  redirect('/verify-email-sent?email=' + encodeURIComponent(email));
 });
 
 export async function signOut() {
