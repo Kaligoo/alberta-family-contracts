@@ -27,6 +27,19 @@ const formatContractTypeName = (contractType: string) => {
   }
 };
 
+const formatPhoneNumber = (phone: string) => {
+  // Remove all non-digits
+  const digits = phone.replace(/\D/g, '');
+  
+  // Format as xxx-xxx-xxxx if we have 10 digits
+  if (digits.length === 10) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  
+  // Return original if not 10 digits
+  return phone;
+};
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 interface LawyerOption {
@@ -65,7 +78,7 @@ function SendToLawyerPageContent() {
 
   // Add lawyer form state
   const [showAddLawyerForm, setShowAddLawyerForm] = useState<'user' | 'partner' | null>(null);
-  const [addLawyerData, setAddLawyerData] = useState({ name: '', email: '', firm: '' });
+  const [addLawyerData, setAddLawyerData] = useState({ name: '', email: '', firm: '', phone: '' });
   const [isAddingLawyer, setIsAddingLawyer] = useState(false);
   const [addLawyerError, setAddLawyerError] = useState('');
 
@@ -145,7 +158,7 @@ function SendToLawyerPageContent() {
 
       if (response.ok) {
         mutate(); // Refresh lawyers list
-        setAddLawyerData({ name: '', email: '', firm: '' });
+        setAddLawyerData({ name: '', email: '', firm: '', phone: '' });
         setShowAddLawyerForm(null);
       } else {
         const error = await response.json();
@@ -428,7 +441,7 @@ function SendToLawyerPageContent() {
                       <div className="text-sm text-gray-600">{lawyer.firm}</div>
                       <div className="text-sm text-gray-500">{lawyer.email}</div>
                       {lawyer.phone && (
-                        <div className="text-sm text-gray-500">{lawyer.phone}</div>
+                        <div className="text-sm text-gray-500">{formatPhoneNumber(lawyer.phone)}</div>
                       )}
                       {lawyer.website && (
                         <div className="text-xs text-blue-600 mt-1">
@@ -467,7 +480,7 @@ function SendToLawyerPageContent() {
                     <Button
                       onClick={() => {
                         setShowAddLawyerForm(null);
-                        setAddLawyerData({ name: '', email: '', firm: '' });
+                        setAddLawyerData({ name: '', email: '', firm: '', phone: '' });
                         setAddLawyerError('');
                       }}
                       variant="ghost"
@@ -496,6 +509,13 @@ function SendToLawyerPageContent() {
                       placeholder="Law Firm Name"
                       value={addLawyerData.firm}
                       onChange={(e) => setAddLawyerData(prev => ({ ...prev, firm: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Phone Number (optional)"
+                      value={addLawyerData.phone}
+                      onChange={(e) => setAddLawyerData(prev => ({ ...prev, phone: e.target.value }))}
                       className="w-full px-3 py-2 border rounded-md text-sm"
                     />
                     <Button
@@ -550,7 +570,7 @@ function SendToLawyerPageContent() {
                       <div className="text-sm text-gray-600">{lawyer.firm}</div>
                       <div className="text-sm text-gray-500">{lawyer.email}</div>
                       {lawyer.phone && (
-                        <div className="text-sm text-gray-500">{lawyer.phone}</div>
+                        <div className="text-sm text-gray-500">{formatPhoneNumber(lawyer.phone)}</div>
                       )}
                       {lawyer.website && (
                         <div className="text-xs text-blue-600 mt-1">
@@ -589,7 +609,7 @@ function SendToLawyerPageContent() {
                     <Button
                       onClick={() => {
                         setShowAddLawyerForm(null);
-                        setAddLawyerData({ name: '', email: '', firm: '' });
+                        setAddLawyerData({ name: '', email: '', firm: '', phone: '' });
                         setAddLawyerError('');
                       }}
                       variant="ghost"
@@ -618,6 +638,13 @@ function SendToLawyerPageContent() {
                       placeholder="Law Firm Name"
                       value={addLawyerData.firm}
                       onChange={(e) => setAddLawyerData(prev => ({ ...prev, firm: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Phone Number (optional)"
+                      value={addLawyerData.phone}
+                      onChange={(e) => setAddLawyerData(prev => ({ ...prev, phone: e.target.value }))}
                       className="w-full px-3 py-2 border rounded-md text-sm"
                     />
                     <Button

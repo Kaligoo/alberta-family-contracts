@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, email, firm, party } = body;
-    console.log('🔵 Request data:', { name, email, firm, party });
+    const { name, email, firm, party, phone } = body;
+    console.log('🔵 Request data:', { name, email, firm, party, phone });
 
     if (!name || !email || !firm || !party) {
       console.log('❌ Missing required fields');
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
         name,
         email,
         firm,
-        phone: null,
+        phone: phone || null,
         address: null,
         website: null,
         party,

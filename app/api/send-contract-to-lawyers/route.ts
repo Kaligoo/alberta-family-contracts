@@ -39,6 +39,19 @@ async function generatePDF(contractId: string, request: NextRequest): Promise<Ar
   }
 }
 
+function formatPhoneNumber(phone: string): string {
+  // Remove all non-digits
+  const digits = phone.replace(/\D/g, '');
+  
+  // Format as xxx-xxx-xxxx if we have 10 digits
+  if (digits.length === 10) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  
+  // Return original if not 10 digits
+  return phone;
+}
+
 function createLawyerEmailTemplate(
   lawyerName: string,
   clientName: string,
@@ -102,7 +115,7 @@ function createLawyerEmailTemplate(
             <div style="color: #4b5563; font-size: 14px;">
               <p style="margin: 5px 0;"><strong>Your Client:</strong> ${clientName}</p>
               ${clientEmail ? `<p style="margin: 5px 0;"><strong>Client Email:</strong> ${clientEmail}</p>` : ''}
-              ${clientPhone ? `<p style="margin: 5px 0;"><strong>Client Phone:</strong> ${clientPhone}</p>` : ''}
+              ${clientPhone ? `<p style="margin: 5px 0;"><strong>Client Phone:</strong> ${formatPhoneNumber(clientPhone)}</p>` : ''}
               <p style="margin: 5px 0;"><strong>Partner:</strong> ${partnerName}</p>
               <p style="margin: 5px 0;"><strong>Document Type:</strong> ${contractType}</p>
               <p style="margin: 5px 0;"><strong>Contract ID:</strong> #${contractId}</p>
