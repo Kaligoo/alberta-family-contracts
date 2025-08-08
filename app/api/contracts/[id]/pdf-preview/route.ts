@@ -45,7 +45,7 @@ export async function GET(
     // Generate watermarked PDF preview using same Word template system
     const pdfBytes = await generateWatermarkedPDFPreview(contract, user);
     
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(Buffer.from(pdfBytes), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'inline',
@@ -124,7 +124,7 @@ async function convertWatermarkedWordToPDF(docxBuffer: Buffer): Promise<Buffer> 
     const formData = new FormData();
     
     // Add the watermarked Word document file
-    const docxBlob = new Blob([docxBuffer], { 
+    const docxBlob = new Blob([new Uint8Array(docxBuffer)], { 
       type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
     });
     formData.append('files', docxBlob, 'contract-preview.docx');

@@ -49,7 +49,7 @@ export async function GET(
     // Generate PDF using Word template + Puppeteer
     const pdfBytes = await generateContractPDFFromTemplate(contract, user);
     
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(new Uint8Array(pdfBytes), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="cohabitation-agreement-${contractId}.pdf"`
@@ -136,7 +136,7 @@ async function convertUsingMicroservice(docxBuffer: Buffer): Promise<Buffer> {
   
   // Create form data
   const formData = new FormData();
-  const blob = new Blob([docxBuffer], { 
+  const blob = new Blob([new Uint8Array(docxBuffer)], { 
     type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
   });
   formData.append('file', blob, 'contract.docx');

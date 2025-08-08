@@ -52,7 +52,7 @@ export async function GET(
     // Mark as completed
     updatePdfProgress(contractId, 100, 'PDF generation completed!');
     
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(new Uint8Array(pdfBytes), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="cohabitation-agreement-v2-${contractId}.pdf"`
@@ -167,7 +167,7 @@ async function convertWordToPDFWithGotenberg(docxBuffer: Buffer, contractId?: nu
     const formData = new FormData();
     
     // Add the Word document file
-    const docxBlob = new Blob([docxBuffer], { 
+    const docxBlob = new Blob([new Uint8Array(docxBuffer)], { 
       type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
     });
     formData.append('files', docxBlob, 'contract.docx');
