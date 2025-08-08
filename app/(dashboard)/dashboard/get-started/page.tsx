@@ -74,7 +74,28 @@ export default function GetStartedPage() {
 
         if (response.ok) {
           const data = await response.json();
-          router.push(`/dashboard/edit-contract`);
+          const newContractId = data.contract?.id;
+          
+          if (newContractId) {
+            // Set this contract as the current contract
+            try {
+              const setCurrentResponse = await fetch(`/api/contracts/${newContractId}/set-current`, {
+                method: 'POST',
+              });
+              
+              if (setCurrentResponse.ok) {
+                router.push(`/dashboard/edit-contract`);
+              } else {
+                console.error('Failed to set contract as current, but redirecting anyway');
+                router.push(`/dashboard/edit-contract`);
+              }
+            } catch (error) {
+              console.error('Error setting current contract:', error);
+              router.push(`/dashboard/edit-contract`);
+            }
+          } else {
+            console.error('No contract ID returned');
+          }
         } else {
           console.error('Failed to create contract');
         }
