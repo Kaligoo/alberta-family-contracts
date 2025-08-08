@@ -25,7 +25,8 @@
       "Bash(npm run:*)",
       "Bash(del C:afcfix_users_table.sql)",
       "Bash(npm install:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(git restore:*)"
     ],
     "deny": []
   }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
 import { users } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
 import { sendVerificationEmail } from '@/lib/email/resend';
 import { randomBytes } from 'crypto';
 
@@ -23,8 +23,8 @@ export async function POST(request: NextRequest) {
       .where(
         and(
           eq(users.email, email),
-          eq(users.emailVerified, null), // Not verified
-          eq(users.deletedAt, null) // Not deleted
+          isNull(users.emailVerified), // Not verified
+          isNull(users.deletedAt) // Not deleted
         )
       )
       .limit(1);

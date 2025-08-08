@@ -11,7 +11,7 @@ import type { AdapterAccount } from "@auth/core/adapters"
 
 // NextAuth.js required tables
 export const users = pgTable("user", {
-  id: serial("id").primaryKey(),
+  id: varchar("id", { length: 255 }).primaryKey(),
   name: varchar("name", { length: 255 }),
   email: varchar("email", { length: 255 }).notNull(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
@@ -26,7 +26,7 @@ export const users = pgTable("user", {
 export const accounts = pgTable(
   "account",
   {
-    userId: integer("userId")
+    userId: varchar("userId", { length: 255 })
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     type: varchar("type", { length: 255 })
@@ -53,7 +53,7 @@ export const sessions = pgTable("session", {
   sessionToken: varchar("sessionToken", { length: 255 })
     .notNull()
     .primaryKey(),
-  userId: integer("userId")
+  userId: varchar("userId", { length: 255 })
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   expires: timestamp("expires", { mode: "date" }).notNull(),

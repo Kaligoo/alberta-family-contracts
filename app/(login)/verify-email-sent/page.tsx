@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, ArrowLeft, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 
-export default function VerifyEmailSentPage() {
+function VerifyEmailSentContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
   const [isResending, setIsResending] = useState(false);
@@ -113,5 +113,22 @@ export default function VerifyEmailSentPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function VerifyEmailSentPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin w-8 h-8 border-2 border-orange-600 border-t-transparent rounded-full mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <VerifyEmailSentContent />
+    </Suspense>
   );
 }

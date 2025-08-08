@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
 import { users } from '@/lib/db/schema';
-import { eq, and, gt } from 'drizzle-orm';
+import { eq, and, gt, isNull } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
         and(
           eq(users.emailVerificationToken, token),
           gt(users.emailVerificationExpires, new Date()),
-          eq(users.emailVerified, null) // Not already verified
+          isNull(users.emailVerified) // Not already verified
         )
       )
       .limit(1);
