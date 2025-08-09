@@ -1684,8 +1684,6 @@ export default function DashboardPage() {
   }, [contractData, firstContract]);
 
   const handleSave = async () => {
-    // Allow saving of paid contracts (only party names are restricted via form fields)
-
     setIsSaving(true);
     setSaveState({});
 
@@ -2004,19 +2002,13 @@ export default function DashboardPage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   onClick={handleSave}
-                  disabled={isSaving || isContractPaid}
-                  className={`flex-1 ${isContractPaid ? 'bg-gray-400 hover:bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
-                  title={isContractPaid ? 'Contract is locked after payment' : ''}
+                  disabled={isSaving}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
                 >
                   {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Saving...
-                    </>
-                  ) : isContractPaid ? (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Contract Locked (Paid)
                     </>
                   ) : (
                     <>
