@@ -48,14 +48,19 @@ export async function POST(request: NextRequest) {
 async function handlePaymentComplete(session: Stripe.Checkout.Session) {
   try {
     console.log('Processing payment completion for session:', session.id);
+    console.log('Session metadata:', session.metadata);
+    console.log('Session client_reference_id:', session.client_reference_id);
     
     // Get contract ID from metadata
     const contractId = session.metadata?.contractId || session.client_reference_id;
     
     if (!contractId) {
-      console.error('No contract ID found in session metadata');
+      console.error('No contract ID found in session metadata or client_reference_id');
+      console.error('Session object keys:', Object.keys(session));
       return;
     }
+    
+    console.log(`Found contract ID: ${contractId}`);
 
     // Update contract as paid
     const [updatedContract] = await db
