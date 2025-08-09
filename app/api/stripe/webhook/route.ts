@@ -108,12 +108,24 @@ async function handlePaymentComplete(session: Stripe.Checkout.Session) {
       
       console.log(`Payment amount for admin notification: ${paymentAmount}`);
 
+      // Prepare contact information for admin notification
+      const contactInfo = {
+        userEmail: updatedContract.userEmail || undefined,
+        userPhone: updatedContract.userPhone || undefined,
+        partnerEmail: updatedContract.partnerEmail || undefined,
+        partnerPhone: updatedContract.partnerPhone || undefined
+      };
+
+      // For now, lawyers are not selected at payment time - they are chosen later on the send-to-lawyer page
+      // So we pass undefined for lawyerInfo
       await sendAdminSaleNotification(
         contractId,
         updatedContract.userFullName || 'Unknown User',
         updatedContract.partnerFullName || 'Unknown Partner',
         contractType,
-        paymentAmount
+        paymentAmount,
+        contactInfo,
+        undefined // lawyerInfo - not available at payment time
       );
     } else {
       console.error(`Contract ${contractId} not found for payment update`);

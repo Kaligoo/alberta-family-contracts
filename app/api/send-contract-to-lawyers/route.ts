@@ -208,16 +208,30 @@ export async function POST(request: NextRequest) {
     const userFullName = formData.get('userFullName') as string;
     const partnerFullName = formData.get('partnerFullName') as string;
     const contractDocument = formData.get('contractDocument') as File;
+    const sendToUserLawyer = formData.get('sendToUserLawyer') === 'true';
+    const sendToPartnerLawyer = formData.get('sendToPartnerLawyer') === 'true';
 
-    if (!contractId || !userLawyerEmail || !partnerLawyerEmail || !contractDocument) {
+    if (!contractId || !contractDocument || (!sendToUserLawyer && !sendToPartnerLawyer)) {
       return NextResponse.json({ 
-        error: 'Missing required fields' 
+        error: 'Missing required fields or no lawyers selected' 
+      }, { status: 400 });
+    }
+
+    if (sendToUserLawyer && (!userLawyerEmail || !userLawyerName)) {
+      return NextResponse.json({ 
+        error: 'User lawyer information required when sending to user lawyer' 
+      }, { status: 400 });
+    }
+
+    if (sendToPartnerLawyer && (!partnerLawyerEmail || !partnerLawyerName)) {
+      return NextResponse.json({ 
+        error: 'Partner lawyer information required when sending to partner lawyer' 
       }, { status: 400 });
     }
 
     console.log('Sending contract to lawyers:');
-    console.log(`User Lawyer: ${userLawyerName} (${userLawyerEmail})`);
-    console.log(`Partner Lawyer: ${partnerLawyerName} (${partnerLawyerEmail})`);
+    console.log(`Send to User Lawyer: ${sendToUserLawyer} - ${userLawyerName} (${userLawyerEmail})`);
+    console.log(`Send to Partner Lawyer: ${sendToPartnerLawyer} - ${partnerLawyerName} (${partnerLawyerEmail})`);
     console.log(`Contract ID: ${contractId}`);
     console.log(`Parties: ${userFullName} & ${partnerFullName}`);
 
@@ -261,112 +275,120 @@ export async function POST(request: NextRequest) {
 
     const emailResults = [];
 
-    // Send email to user's lawyer
-    try {
-      console.log(`Sending email to user's lawyer: ${userLawyerEmail}`);
-      
-      const userEmailResult = await resend.emails.send({
-        from: fromEmail,
-        to: [userLawyerEmail],
-        subject: `${subject} - ${userFullName}`,
-        html: createLawyerEmailTemplate(
-          userLawyerName,
-          userFullName,
-          partnerFullName,
-          contractType,
-          contractId,
-          true,
-          contract.userEmail || undefined,
-          contract.userPhone || undefined
-        ),
-        attachments: [
-          {
-            filename: `agreement-${contractId}.docx`,
-            content: Buffer.from(wordBuffer),
-          },
-          {
-            filename: `agreement-${contractId}.pdf`,
-            content: Buffer.from(pdfBuffer),
-          },
-        ],
-      });
+    // Send email to user's lawyer (only if selected)
+    if (sendToUserLawyer) {
+      try {
+        console.log(`Sending email to user's lawyer: ${userLawyerEmail}`);
+        
+        const userEmailResult = await resend.emails.send({
+          from: fromEmail,
+          to: [userLawyerEmail],
+          subject: `${subject} - ${userFullName}`,
+          html: createLawyerEmailTemplate(
+            userLawyerName,
+            userFullName,
+            partnerFullName,
+            contractType,
+            contractId,
+            true,
+            contract.userEmail || undefined,
+            contract.userPhone || undefined
+          ),
+          attachments: [
+            {
+              filename: `agreement-${contractId}.docx`,
+              content: Buffer.from(wordBuffer),
+            },
+            {
+              filename: `agreement-${contractId}.pdf`,
+              content: Buffer.from(pdfBuffer),
+            },
+          ],
+        });
 
-      if (userEmailResult.error) {
-        throw new Error(`Failed to send email to user lawyer: ${userEmailResult.error.message}`);
+        if (userEmailResult.error) {
+          throw new Error(`Failed to send email to user lawyer: ${userEmailResult.error.message}`);
+        }
+
+        emailResults.push({
+          lawyer: 'user',
+          name: userLawyerName,
+          email: userLawyerEmail,
+          messageId: userEmailResult.data?.id,
+          status: 'sent'
+        });
+
+        console.log(`✅ Email sent to user's lawyer: ${userEmailResult.data?.id}`);
+      } catch (error) {
+        console.error('Error sending email to user lawyer:', error);
+        emailResults.push({
+          lawyer: 'user',
+          name: userLawyerName,
+          email: userLawyerEmail,
+          status: 'failed',
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
       }
-
-      emailResults.push({
-        lawyer: 'user',
-        name: userLawyerName,
-        email: userLawyerEmail,
-        messageId: userEmailResult.data?.id,
-        status: 'sent'
-      });
-
-      console.log(`✅ Email sent to user's lawyer: ${userEmailResult.data?.id}`);
-    } catch (error) {
-      console.error('Error sending email to user lawyer:', error);
-      emailResults.push({
-        lawyer: 'user',
-        name: userLawyerName,
-        email: userLawyerEmail,
-        status: 'failed',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+    } else {
+      console.log('Skipping email to user\'s lawyer (not selected)');
     }
 
-    // Send email to partner's lawyer
-    try {
-      console.log(`Sending email to partner's lawyer: ${partnerLawyerEmail}`);
-      
-      const partnerEmailResult = await resend.emails.send({
-        from: fromEmail,
-        to: [partnerLawyerEmail],
-        subject: `${subject} - ${partnerFullName}`,
-        html: createLawyerEmailTemplate(
-          partnerLawyerName,
-          partnerFullName,
-          userFullName,
-          contractType,
-          contractId,
-          false,
-          contract.partnerEmail || undefined,
-          contract.partnerPhone || undefined
-        ),
-        attachments: [
-          {
-            filename: `agreement-${contractId}.docx`,
-            content: Buffer.from(wordBuffer),
-          },
-          {
-            filename: `agreement-${contractId}.pdf`,
-            content: Buffer.from(pdfBuffer),
-          },
-        ],
-      });
+    // Send email to partner's lawyer (only if selected)
+    if (sendToPartnerLawyer) {
+      try {
+        console.log(`Sending email to partner's lawyer: ${partnerLawyerEmail}`);
+        
+        const partnerEmailResult = await resend.emails.send({
+          from: fromEmail,
+          to: [partnerLawyerEmail],
+          subject: `${subject} - ${partnerFullName}`,
+          html: createLawyerEmailTemplate(
+            partnerLawyerName,
+            partnerFullName,
+            userFullName,
+            contractType,
+            contractId,
+            false,
+            contract.partnerEmail || undefined,
+            contract.partnerPhone || undefined
+          ),
+          attachments: [
+            {
+              filename: `agreement-${contractId}.docx`,
+              content: Buffer.from(wordBuffer),
+            },
+            {
+              filename: `agreement-${contractId}.pdf`,
+              content: Buffer.from(pdfBuffer),
+            },
+          ],
+        });
 
-      if (partnerEmailResult.error) {
-        throw new Error(`Failed to send email to partner lawyer: ${partnerEmailResult.error.message}`);
+        if (partnerEmailResult.error) {
+          throw new Error(`Failed to send email to partner lawyer: ${partnerEmailResult.error.message}`);
+        }
+
+        emailResults.push({
+          lawyer: 'partner',
+          name: partnerLawyerName,
+          email: partnerLawyerEmail,
+          messageId: partnerEmailResult.data?.id,
+          status: 'sent'
+        });
+
+        console.log(`✅ Email sent to partner's lawyer: ${partnerEmailResult.data?.id}`);
+      } catch (error) {
+        console.error('Error sending email to partner lawyer:', error);
+        emailResults.push({
+          lawyer: 'partner',
+          name: partnerLawyerName,
+          email: partnerLawyerEmail,
+          status: 'failed',
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
       }
-
-      emailResults.push({
-        lawyer: 'partner',
-        name: partnerLawyerName,
-        email: partnerLawyerEmail,
-        messageId: partnerEmailResult.data?.id,
-        status: 'sent'
-      });
-
-      console.log(`✅ Email sent to partner's lawyer: ${partnerEmailResult.data?.id}`);
-    } catch (error) {
-      console.error('Error sending email to partner lawyer:', error);
-      emailResults.push({
-        lawyer: 'partner',
-        name: partnerLawyerName,
-        email: partnerLawyerEmail,
-        status: 'failed',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+    } else {
+      console.log('Skipping email to partner\'s lawyer (not selected)');
     }
 
     // Check results
@@ -389,9 +411,14 @@ export async function POST(request: NextRequest) {
       }, { status: 207 }); // 207 Multi-Status
     } else {
       // All emails sent successfully
+      const sentToCount = emailResults.length;
+      const message = sentToCount === 2 
+        ? 'Contract documents sent successfully to both lawyers'
+        : `Contract documents sent successfully to ${sentToCount} lawyer${sentToCount > 1 ? 's' : ''}`;
+      
       return NextResponse.json({
         success: true,
-        message: 'Contract documents sent successfully to both lawyers',
+        message,
         details: emailResults
       });
     }

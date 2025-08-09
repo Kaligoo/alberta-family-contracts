@@ -61,8 +61,8 @@ function SendToLawyerPageContent() {
   const paymentSuccess = searchParams.get('payment_success') === 'true';
   
   const [selectedLawyers, setSelectedLawyers] = useState<{
-    user: number | null;
-    partner: number | null;
+    user: number | 'later' | null;
+    partner: number | 'later' | null;
   }>({
     user: null,
     partner: null
@@ -131,7 +131,7 @@ function SendToLawyerPageContent() {
     }
   }, [sessionId, isPaid, contractData]);
 
-  const handleLawyerSelect = (party: 'user' | 'partner', lawyerId: number) => {
+  const handleLawyerSelect = (party: 'user' | 'partner', lawyerId: number | 'later') => {
     setSelectedLawyers(prev => ({
       ...prev,
       [party]: lawyerId
@@ -173,8 +173,8 @@ function SendToLawyerPageContent() {
   };
 
   // Get selected lawyer details
-  const selectedUserLawyer = lawyerOptions.find(l => l.id === selectedLawyers.user);
-  const selectedPartnerLawyer = lawyerOptions.find(l => l.id === selectedLawyers.partner);
+  const selectedUserLawyer = typeof selectedLawyers.user === 'number' ? lawyerOptions.find(l => l.id === selectedLawyers.user) : null;
+  const selectedPartnerLawyer = typeof selectedLawyers.partner === 'number' ? lawyerOptions.find(l => l.id === selectedLawyers.partner) : null;
 
   // Check if lawyers are from same firm
   const areLawyersFromSameFirm = selectedUserLawyer && selectedPartnerLawyer && 
@@ -196,7 +196,15 @@ function SendToLawyerPageContent() {
   };
 
   const handleSendToLawyers = async () => {
-    if (!selectedLawyers.user || !selectedLawyers.partner || !contractId) {
+    if ((!selectedLawyers.user || selectedLawyers.user === 'later') && (!selectedLawyers.partner || selectedLawyers.partner === 'later')) {
+      setSendStatus({
+        success: false,
+        message: 'Please select at least one lawyer to send the contract to.'
+      });
+      return;
+    }
+    
+    if (!contractId) {
       return;
     }
 
@@ -228,8 +236,8 @@ function SendToLawyerPageContent() {
       const docBlob = await docResponse.blob();
 
       // Get selected lawyer details
-      const userLawyer = lawyerOptions.find(l => l.id === selectedLawyers.user);
-      const partnerLawyer = lawyerOptions.find(l => l.id === selectedLawyers.partner);
+      const userLawyer = typeof selectedLawyers.user === 'number' ? lawyerOptions.find(l => l.id === selectedLawyers.user) : null;
+      const partnerLawyer = typeof selectedLawyers.partner === 'number' ? lawyerOptions.find(l => l.id === selectedLawyers.partner) : null;
 
       // Create FormData to send email with attachment
       const formData = new FormData();
@@ -241,6 +249,10 @@ function SendToLawyerPageContent() {
       formData.append('userFullName', contract?.userFullName || '');
       formData.append('partnerFullName', contract?.partnerFullName || '');
       formData.append('contractDocument', docBlob, `cohabitation-agreement-${contractId}.docx`);
+      
+      // Add flags to indicate which lawyers should receive emails
+      formData.append('sendToUserLawyer', selectedLawyers.user !== 'later' && selectedLawyers.user !== null ? 'true' : 'false');
+      formData.append('sendToPartnerLawyer', selectedLawyers.partner !== 'later' && selectedLawyers.partner !== null ? 'true' : 'false');
 
       // Send to email API endpoint (to be created)
       const emailResponse = await fetch('/api/send-contract-to-lawyers', {
@@ -249,9 +261,21 @@ function SendToLawyerPageContent() {
       });
 
       if (emailResponse.ok) {
+        const userLawyerSelected = selectedLawyers.user !== 'later' && selectedLawyers.user !== null;
+        const partnerLawyerSelected = selectedLawyers.partner !== 'later' && selectedLawyers.partner !== null;
+        
+        let message = 'Contract successfully sent! ';
+        if (userLawyerSelected && partnerLawyerSelected) {
+          message += 'Both lawyers will contact you to schedule consultations.';
+        } else if (userLawyerSelected) {
+          message += `${contract?.userFullName || 'Your'} lawyer will contact you to schedule a consultation.`;
+        } else if (partnerLawyerSelected) {
+          message += `${contract?.partnerFullName || 'Your partner\'s'} lawyer will contact you to schedule a consultation.`;
+        }
+        
         setSendStatus({
           success: true,
-          message: 'Contract successfully sent to both lawyers! They will contact you to schedule consultations.'
+          message
         });
       } else {
         const errorData = await emailResponse.json();
@@ -450,6 +474,24 @@ function SendToLawyerPageContent() {
               </p>
             </CardHeader>
             <CardContent className="space-y-3">
+              {/* Decide later option */}
+              <div className="border rounded-lg p-3 border-dashed border-gray-300 bg-gray-50">
+                <label className="flex items-start cursor-pointer">
+                  <input
+                    type="radio"
+                    name="userLawyer"
+                    value="later"
+                    checked={selectedLawyers.user === 'later'}
+                    onChange={() => handleLawyerSelect('user', 'later')}
+                    className="mt-1 mr-3"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-700">Decide later</div>
+                    <div className="text-sm text-gray-600">Skip selecting a lawyer for {contract?.userFullName || 'this party'} for now</div>
+                  </div>
+                </label>
+              </div>
+
               {getUserLawyers().map((lawyer) => (
                 <div key={lawyer.id} className="border rounded-lg p-3">
                   <label className="flex items-start cursor-pointer">
@@ -579,6 +621,24 @@ function SendToLawyerPageContent() {
               </p>
             </CardHeader>
             <CardContent className="space-y-3">
+              {/* Decide later option */}
+              <div className="border rounded-lg p-3 border-dashed border-gray-300 bg-gray-50">
+                <label className="flex items-start cursor-pointer">
+                  <input
+                    type="radio"
+                    name="partnerLawyer"
+                    value="later"
+                    checked={selectedLawyers.partner === 'later'}
+                    onChange={() => handleLawyerSelect('partner', 'later')}
+                    className="mt-1 mr-3"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-700">Decide later</div>
+                    <div className="text-sm text-gray-600">Skip selecting a lawyer for {contract?.partnerFullName || 'this party'} for now</div>
+                  </div>
+                </label>
+              </div>
+
               {getPartnerLawyers().map((lawyer) => (
                 <div key={lawyer.id} className="border rounded-lg p-3">
                   <label className="flex items-start cursor-pointer">
@@ -738,7 +798,12 @@ function SendToLawyerPageContent() {
           </Link>
           <Button 
             onClick={handleSendToLawyers}
-            disabled={!selectedLawyers.user || !selectedLawyers.partner || isSending || (!paymentVerified && !isPaid) || areLawyersFromSameFirm}
+            disabled={
+              ((!selectedLawyers.user || selectedLawyers.user === 'later') && (!selectedLawyers.partner || selectedLawyers.partner === 'later')) || 
+              isSending || 
+              (!paymentVerified && !isPaid) || 
+              !!areLawyersFromSameFirm
+            }
             className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isSending ? (

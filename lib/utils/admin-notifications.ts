@@ -9,7 +9,17 @@ function createAdminSaleNotificationTemplate(
   partnerFullName: string,
   contractType: string,
   contractId: string,
-  paymentAmount?: string
+  paymentAmount?: string,
+  contactInfo?: {
+    userEmail?: string;
+    userPhone?: string;
+    partnerEmail?: string;
+    partnerPhone?: string;
+  },
+  lawyerInfo?: {
+    userLawyer?: { name: string; email: string; firm: string; phone: string };
+    partnerLawyer?: { name: string; email: string; firm: string; phone: string };
+  }
 ): string {
   return `
     <!DOCTYPE html>
@@ -54,9 +64,45 @@ function createAdminSaleNotificationTemplate(
             <h3 style="color: #92400e; margin: 0 0 15px 0; font-size: 16px;">👥 Parties</h3>
             <div style="color: #92400e; font-size: 14px;">
               <p style="margin: 5px 0;"><strong>Party A:</strong> ${userFullName}</p>
-              <p style="margin: 5px 0;"><strong>Party B:</strong> ${partnerFullName}</p>
+              ${contactInfo?.userEmail ? `<p style="margin: 5px 0; margin-left: 20px;">📧 ${contactInfo.userEmail}</p>` : ''}
+              ${contactInfo?.userPhone ? `<p style="margin: 5px 0; margin-left: 20px;">📞 ${contactInfo.userPhone}</p>` : ''}
+              
+              <p style="margin: 15px 0 5px 0;"><strong>Party B:</strong> ${partnerFullName}</p>
+              ${contactInfo?.partnerEmail ? `<p style="margin: 5px 0; margin-left: 20px;">📧 ${contactInfo.partnerEmail}</p>` : ''}
+              ${contactInfo?.partnerPhone ? `<p style="margin: 5px 0; margin-left: 20px;">📞 ${contactInfo.partnerPhone}</p>` : ''}
             </div>
           </div>
+
+          ${lawyerInfo && (lawyerInfo.userLawyer || lawyerInfo.partnerLawyer) ? `
+          <!-- Selected Lawyers -->
+          <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #1e40af; margin: 0 0 15px 0; font-size: 16px;">⚖️ Selected Lawyers</h3>
+            <div style="color: #1e40af; font-size: 14px;">
+              ${lawyerInfo.userLawyer ? `
+              <p style="margin: 5px 0;"><strong>${userFullName}'s Lawyer:</strong> ${lawyerInfo.userLawyer.name}</p>
+              <p style="margin: 5px 0; margin-left: 20px;">🏢 ${lawyerInfo.userLawyer.firm}</p>
+              <p style="margin: 5px 0; margin-left: 20px;">📧 ${lawyerInfo.userLawyer.email}</p>
+              ${lawyerInfo.userLawyer.phone ? `<p style="margin: 5px 0; margin-left: 20px;">📞 ${lawyerInfo.userLawyer.phone}</p>` : ''}
+              ` : '<p style="margin: 5px 0;"><strong>Party A Lawyer:</strong> Not yet selected</p>'}
+              
+              ${lawyerInfo.partnerLawyer ? `
+              <p style="margin: 15px 0 5px 0;"><strong>${partnerFullName}'s Lawyer:</strong> ${lawyerInfo.partnerLawyer.name}</p>
+              <p style="margin: 5px 0; margin-left: 20px;">🏢 ${lawyerInfo.partnerLawyer.firm}</p>
+              <p style="margin: 5px 0; margin-left: 20px;">📧 ${lawyerInfo.partnerLawyer.email}</p>
+              ${lawyerInfo.partnerLawyer.phone ? `<p style="margin: 5px 0; margin-left: 20px;">📞 ${lawyerInfo.partnerLawyer.phone}</p>` : ''}
+              ` : '<p style="margin: 5px 0;"><strong>Party B Lawyer:</strong> Not yet selected</p>'}
+            </div>
+          </div>
+          ` : `
+          <!-- Lawyers Not Yet Selected -->
+          <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #92400e; margin: 0 0 15px 0; font-size: 16px;">⚖️ Legal Counsel Status</h3>
+            <div style="color: #92400e; font-size: 14px;">
+              <p style="margin: 5px 0;">Lawyers have not yet been selected by the parties.</p>
+              <p style="margin: 5px 0;">They will choose legal counsel on the send-to-lawyer page.</p>
+            </div>
+          </div>
+          `}
           
           <p style="color: #6b7280; font-size: 12px; margin: 20px 0 0 0; text-align: center;">
             This notification was generated automatically when the contract payment was completed.
@@ -74,7 +120,17 @@ export async function sendAdminSaleNotification(
   userFullName: string,
   partnerFullName: string,
   contractType: string,
-  paymentAmount?: string
+  paymentAmount?: string,
+  contactInfo?: {
+    userEmail?: string;
+    userPhone?: string;
+    partnerEmail?: string;
+    partnerPhone?: string;
+  },
+  lawyerInfo?: {
+    userLawyer?: { name: string; email: string; firm: string; phone: string };
+    partnerLawyer?: { name: string; email: string; firm: string; phone: string };
+  }
 ): Promise<void> {
   try {
     if (!process.env.RESEND_API_KEY) {
@@ -96,7 +152,9 @@ export async function sendAdminSaleNotification(
         partnerFullName,
         contractType,
         contractId,
-        paymentAmount
+        paymentAmount,
+        contactInfo,
+        lawyerInfo
       ),
     });
 

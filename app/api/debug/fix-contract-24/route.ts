@@ -31,11 +31,22 @@ export async function POST(request: NextRequest) {
         ? 'Alberta Prenuptial Agreement' 
         : 'Alberta Family Agreement';
 
+      // Prepare contact information for admin notification
+      const contactInfo = {
+        userEmail: updatedContract.userEmail || undefined,
+        userPhone: updatedContract.userPhone || undefined,
+        partnerEmail: updatedContract.partnerEmail || undefined,
+        partnerPhone: updatedContract.partnerPhone || undefined
+      };
+
       await sendAdminSaleNotification(
         contractId.toString(),
         updatedContract.userFullName || 'Unknown User',
         updatedContract.partnerFullName || 'Unknown Partner',
-        contractType
+        contractType,
+        undefined, // no payment amount for debug
+        contactInfo,
+        undefined // lawyerInfo - not available at payment time
       );
 
       return NextResponse.json({ 
