@@ -824,7 +824,7 @@ function ScheduleACard({ formData, updateFormData }: {
         <CardContent className="space-y-8">
           {/* A. INCOME Section */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">A. INCOME</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">A. ANNUAL INCOME</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="scheduleIncomeEmployment">Employment Income</Label>
@@ -1213,7 +1213,7 @@ function ScheduleBCard({ formData, updateFormData }: {
         <CardContent className="space-y-8">
           {/* A. INCOME Section */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">A. INCOME</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">A. ANNUAL INCOME</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="scheduleBIncomeEmployment">Employment Income</Label>
