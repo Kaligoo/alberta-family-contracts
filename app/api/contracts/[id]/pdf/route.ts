@@ -397,6 +397,43 @@ function prepareTemplateData(contract: any, user: any) {
     contractType: contract.contractType || 'cohabitation',
     contractTypeUpper: (contract.contractType || 'cohabitation').toUpperCase(),
     
+    // Relationship status - dynamic text based on dates
+    relationshipStatus: (() => {
+      let status = '';
+      const today = new Date();
+      
+      // Check cohabitation date
+      if (contract.cohabDate) {
+        const cohabDate = new Date(contract.cohabDate);
+        const cohabDateFormatted = cohabDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+        
+        if (cohabDate <= today) {
+          status += `have lived together since ${cohabDateFormatted}.`;
+        } else {
+          status += `intend to begin living together on ${cohabDateFormatted}.`;
+        }
+      }
+      
+      // Check proposed marriage date
+      if (contract.proposedMarriageDate) {
+        const proposedDate = new Date(contract.proposedMarriageDate);
+        const proposedDateFormatted = proposedDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+        
+        if (status) status += ' '; // Add space between sentences if cohabitation status exists
+        status += `The parties are engaged to be married and intend to be married on ${proposedDateFormatted}.`;
+      }
+      
+      return status;
+    })(),
+    
     // Ages - using correct field names
     userAge: contract.user_age || contract.userAge || '[Your Age]',
     partnerAge: contract.partner_age || contract.partnerAge || '[Partner Age]', 
