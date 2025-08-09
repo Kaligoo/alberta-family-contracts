@@ -191,80 +191,6 @@ function createLawyerEmailTemplate(
   `;
 }
 
-function createAdminNotificationTemplate(
-  userFullName: string,
-  partnerFullName: string,
-  contractType: string,
-  contractId: string,
-  userLawyerName: string,
-  partnerLawyerName: string
-): string {
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Sale Completed - ${contractType} #${contractId}</title>
-    </head>
-    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5; line-height: 1.6;">
-      <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 0;">
-        
-        <!-- Header -->
-        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">
-            💰 Sale Completed
-          </h1>
-          <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;">
-            Contract sent to lawyers successfully
-          </p>
-        </div>
-        
-        <!-- Content -->
-        <div style="padding: 30px;">
-          <h2 style="color: #1f2937; font-size: 20px; margin: 0 0 20px 0; font-weight: 600;">
-            New Sale Summary
-          </h2>
-          
-          <!-- Contract Details -->
-          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #1f2937; margin: 0 0 15px 0; font-size: 16px;">Contract Information</h3>
-            <div style="color: #4b5563; font-size: 14px;">
-              <p style="margin: 5px 0;"><strong>Contract ID:</strong> #${contractId}</p>
-              <p style="margin: 5px 0;"><strong>Document Type:</strong> ${contractType}</p>
-              <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
-            </div>
-          </div>
-
-          <!-- Parties -->
-          <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #92400e; margin: 0 0 15px 0; font-size: 16px;">👥 Parties</h3>
-            <div style="color: #92400e; font-size: 14px;">
-              <p style="margin: 5px 0;"><strong>Party A:</strong> ${userFullName}</p>
-              <p style="margin: 5px 0;"><strong>Party B:</strong> ${partnerFullName}</p>
-            </div>
-          </div>
-
-          <!-- Selected Lawyers -->
-          <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #1e40af; margin: 0 0 15px 0; font-size: 16px;">⚖️ Selected Lawyers</h3>
-            <div style="color: #1e40af; font-size: 14px;">
-              <p style="margin: 5px 0;"><strong>${userFullName}'s Lawyer:</strong> ${userLawyerName}</p>
-              <p style="margin: 5px 0;"><strong>${partnerFullName}'s Lawyer:</strong> ${partnerLawyerName}</p>
-            </div>
-          </div>
-          
-          <p style="color: #6b7280; font-size: 12px; margin: 20px 0 0 0; text-align: center;">
-            This notification was generated automatically when the contract was successfully sent to both lawyers.
-          </p>
-        </div>
-        
-      </div>
-    </body>
-    </html>
-  `;
-}
-
 export async function POST(request: NextRequest) {
   try {
     const user = await getUser();
@@ -462,34 +388,7 @@ export async function POST(request: NextRequest) {
         details: emailResults
       }, { status: 207 }); // 207 Multi-Status
     } else {
-      // All emails sent successfully - now send admin notification
-      try {
-        console.log('Sending admin notification email...');
-        
-        const adminEmailResult = await resend.emails.send({
-          from: fromEmail,
-          to: ['admin@agreeable.com'],
-          subject: `Sale Completed - ${contractType} #${contractId}`,
-          html: createAdminNotificationTemplate(
-            userFullName,
-            partnerFullName,
-            contractType,
-            contractId,
-            userLawyerName,
-            partnerLawyerName
-          ),
-        });
-
-        if (adminEmailResult.error) {
-          console.error('Failed to send admin notification:', adminEmailResult.error.message);
-        } else {
-          console.log(`✅ Admin notification sent: ${adminEmailResult.data?.id}`);
-        }
-      } catch (error) {
-        console.error('Error sending admin notification:', error);
-        // Don't fail the main request if admin notification fails
-      }
-
+      // All emails sent successfully
       return NextResponse.json({
         success: true,
         message: 'Contract documents sent successfully to both lawyers',

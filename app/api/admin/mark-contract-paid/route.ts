@@ -3,6 +3,7 @@ import { getUser } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { sendAdminSaleNotification } from '@/lib/utils/admin-notifications';
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,6 +32,20 @@ export async function POST(request: NextRequest) {
       .returning();
 
     if (updatedContract) {
+      // Send admin notification
+      const contractType = updatedContract.contractType === 'cohabitation' 
+        ? 'Alberta Cohabitation Agreement'
+        : updatedContract.contractType === 'prenuptial'
+        ? 'Alberta Prenuptial Agreement' 
+        : 'Alberta Family Agreement';
+
+      await sendAdminSaleNotification(
+        contractId,
+        updatedContract.userFullName || 'Unknown User',
+        updatedContract.partnerFullName || 'Unknown Partner',
+        contractType
+      );
+
       return NextResponse.json({ 
         success: true, 
         message: `Contract ${contractId} marked as paid`,

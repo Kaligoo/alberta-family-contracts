@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
 import { familyContracts } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { sendAdminSaleNotification } from '@/lib/utils/admin-notifications';
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -69,6 +70,25 @@ async function handlePaymentComplete(session: Stripe.Checkout.Session) {
 
     if (updatedContract) {
       console.log(`Successfully marked contract ${contractId} as paid`);
+      
+      // Send admin notification
+      const contractType = updatedContract.contractType === 'cohabitation' 
+        ? 'Alberta Cohabitation Agreement'
+        : updatedContract.contractType === 'prenuptial'
+        ? 'Alberta Prenuptial Agreement' 
+        : 'Alberta Family Agreement';
+
+      const paymentAmount = session.amount_total 
+        ? `$${(session.amount_total / 100).toFixed(2)} ${session.currency?.toUpperCase() || 'CAD'}`
+        : undefined;
+
+      await sendAdminSaleNotification(
+        contractId,
+        updatedContract.userFullName || 'Unknown User',
+        updatedContract.partnerFullName || 'Unknown Partner',
+        contractType,
+        paymentAmount
+      );
     } else {
       console.error(`Contract ${contractId} not found for payment update`);
     }
