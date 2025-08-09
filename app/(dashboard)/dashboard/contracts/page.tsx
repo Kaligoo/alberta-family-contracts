@@ -57,6 +57,31 @@ export default function ContractsPage() {
     }
   };
 
+  const handlePreviewContract = async (contractId: number) => {
+    try {
+      console.log('Setting current contract for preview:', contractId);
+      
+      const response = await fetch(`/api/contracts/${contractId}/set-current`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        console.log('Successfully set current contract, navigating to preview');
+        window.location.href = `/dashboard/contracts/${contractId}/preview`;
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('API Error Response:', errorData);
+        alert(`Failed to set current contract. Error: ${errorData.error || 'Please try again.'}`);
+      }
+    } catch (error) {
+      console.error('Network/JS Error setting current contract for preview:', error);
+      alert(`Failed to set current contract. Network error: ${error instanceof Error ? error.message : 'Please try again.'}`);
+    }
+  };
+
   const handleDeleteContract = async (contractId: number) => {
     if (!confirm('Are you sure you want to delete this contract? This action cannot be undone.')) {
       return;
@@ -217,12 +242,16 @@ export default function ContractsPage() {
                         <ArrowRight className="mr-2 h-3 w-3" />
                         Edit
                       </Button>
-                      <Link href={`/dashboard/contracts/${contract.id}/preview`} className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full">
-                          <Eye className="mr-2 h-3 w-3" />
-                          Preview
-                        </Button>
-                      </Link>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => handlePreviewContract(contract.id)}
+                        title="Preview this contract"
+                      >
+                        <Eye className="mr-2 h-3 w-3" />
+                        Preview
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"
