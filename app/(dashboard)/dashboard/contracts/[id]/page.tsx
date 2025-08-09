@@ -471,7 +471,7 @@ export default function ContractDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="cohabDate">Date Started Living Together</Label>
+                <Label htmlFor="cohabDate">Date Started Living Together or Date you Intend to Move in Together</Label>
                 <Input
                   id="cohabDate"
                   type="date"

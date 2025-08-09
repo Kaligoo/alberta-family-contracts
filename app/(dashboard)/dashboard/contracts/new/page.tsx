@@ -351,7 +351,7 @@ export default function NewContractPage() {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="cohabDate">
-                  {formData.contractType === 'cohabitation' && 'Date Started Living Together'}
+                  {formData.contractType === 'cohabitation' && 'Date Started Living Together or Date you Intend to Move in Together'}
                   {formData.contractType === 'prenuptial' && 'Proposed Marriage Date'}
                   {formData.contractType === 'postnuptial' && 'Marriage Date'}
                 </Label>
