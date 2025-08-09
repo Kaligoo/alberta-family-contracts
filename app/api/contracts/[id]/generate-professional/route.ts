@@ -169,6 +169,10 @@ function prepareTemplateData(contract: any, user: any) {
       day: 'numeric' 
     }) : currentDate,
     
+    // Contract type information
+    contractType: contract.contractType || 'cohabitation',
+    contractTypeUpper: (contract.contractType || 'cohabitation').toUpperCase(),
+    
     // Ages - using correct field names
     userAge: contract.user_age || contract.userAge || '[Your Age]',
     partnerAge: contract.partner_age || contract.partnerAge || '[Partner Age]', 

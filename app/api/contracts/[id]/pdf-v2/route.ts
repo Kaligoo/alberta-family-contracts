@@ -298,6 +298,7 @@ function prepareTemplateData(contract: any, user: any) {
     partner_hers: contract.partnerPronouns === 'she/her/hers' ? 'hers' : null,
     partner_theirs: contract.partnerPronouns === 'they/them/theirs' ? 'theirs' : null,
     contractType: contract.contractType || 'cohabitation',
+    contractTypeUpper: (contract.contractType || 'cohabitation').toUpperCase(),
     
     // Ages - using correct field names
     userAge: contract.user_age || contract.userAge || '[Your Age]',
