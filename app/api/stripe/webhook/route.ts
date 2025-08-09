@@ -9,8 +9,12 @@ import { sendAdminSaleNotification } from '@/lib/utils/admin-notifications';
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(request: NextRequest) {
+  console.log('🔄 Webhook received');
+  
   if (!stripe || !webhookSecret) {
-    console.error('Stripe not configured, cannot process webhook');
+    console.error('❌ Stripe not configured, cannot process webhook');
+    console.error('Stripe configured:', !!stripe);
+    console.error('Webhook secret configured:', !!webhookSecret);
     return NextResponse.json(
       { error: 'Stripe not configured' },
       { status: 500 }
@@ -62,7 +66,22 @@ async function handlePaymentComplete(session: Stripe.Checkout.Session) {
     
     console.log(`Found contract ID: ${contractId}`);
 
+    // First, check if contract exists
+    const existingContract = await db
+      .select()
+      .from(familyContracts)
+      .where(eq(familyContracts.id, parseInt(contractId)))
+      .limit(1);
+
+    if (existingContract.length === 0) {
+      console.error(`❌ Contract ${contractId} not found in database`);
+      return;
+    }
+
+    console.log(`✅ Contract ${contractId} found, current status: ${existingContract[0].status}, isPaid: ${existingContract[0].isPaid}`);
+
     // Update contract as paid
+    console.log(`🔄 Updating contract ${contractId} to paid status...`);
     const [updatedContract] = await db
       .update(familyContracts)
       .set({
@@ -84,8 +103,10 @@ async function handlePaymentComplete(session: Stripe.Checkout.Session) {
         : 'Alberta Family Agreement';
 
       const paymentAmount = session.amount_total 
-        ? `$${(session.amount_total / 100).toFixed(2)} ${session.currency?.toUpperCase() || 'CAD'}`
+        ? `$${(session.amount_total / 100).toFixed(2)} ${(session.currency || 'cad').toUpperCase()}`
         : undefined;
+      
+      console.log(`Payment amount for admin notification: ${paymentAmount}`);
 
       await sendAdminSaleNotification(
         contractId,
