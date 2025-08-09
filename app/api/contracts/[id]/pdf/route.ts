@@ -286,7 +286,7 @@ async function generateBasicPDF(contract: any, user: any): Promise<Uint8Array> {
       
       <div class="footer">
         <p><strong>IMPORTANT NOTICE</strong></p>
-        <p>This document is a draft cohabitation agreement generated for informational purposes only. It should be reviewed by qualified legal counsel before signing. Alberta Family Contracts does not provide legal advice.</p>
+        <p>This document is a draft cohabitation agreement generated for informational purposes only. It should be reviewed by qualified legal counsel before signing. agreeable.ca does not provide legal advice.</p>
         <br>
         <p>Generated on: ${templateData.currentDate}</p>
         <p>Contract ID: #${contract.id}</p>

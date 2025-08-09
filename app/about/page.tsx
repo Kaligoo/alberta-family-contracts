@@ -12,7 +12,7 @@ export default function AboutPage() {
             <div className="lg:grid lg:grid-cols-12 lg:gap-8">
               <div className="lg:col-span-8">
                 <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl">
-                  About Alberta Family Contracts
+                  About agreeable.ca
                 </h1>
                 <p className="mt-4 text-xl text-gray-600">
                   Our goal is to provide budget-friendly agreement drafts customized to your specific needs 

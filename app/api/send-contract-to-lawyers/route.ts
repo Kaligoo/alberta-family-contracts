@@ -165,7 +165,7 @@ function createLawyerEmailTemplate(
               </a>
             </div>
             <p style="color: #1e40af; font-size: 14px; margin: 15px 0 0 0;">
-              Technical questions? Contact <a href="mailto:ghorvath@agreeable.ca" style="color: #2563eb; text-decoration: none;"><strong>ghorvath@agreeable.ca</strong></a>
+              Technical questions? Contact <a href="mailto:info@agreeable.com" style="color: #2563eb; text-decoration: none;"><strong>info@agreeable.com</strong></a>
             </p>
           </div>
           

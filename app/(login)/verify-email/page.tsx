@@ -84,7 +84,7 @@ function VerifyEmailContent() {
           {status === 'success' && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <p className="text-sm text-green-800">
-                Your account is now active! You can sign in and start using Alberta Family Contracts.
+                Your account is now active! You can sign in and start using agreeable.ca.
               </p>
             </div>
           )}

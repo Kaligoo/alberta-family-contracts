@@ -124,7 +124,7 @@ export default function ContactPage() {
                       <Mail className="h-6 w-6 text-orange-500 mt-1 mr-3" />
                       <div>
                         <h3 className="font-medium text-gray-900">Email</h3>
-                        <p className="text-gray-600">info@albertafamilycontracts.com</p>
+                        <p className="text-gray-600">info@agreeable.com</p>
                         <p className="text-sm text-gray-500 mt-1">
                           We typically respond within 24 hours
                         </p>
@@ -135,7 +135,7 @@ export default function ContactPage() {
                       <Phone className="h-6 w-6 text-orange-500 mt-1 mr-3" />
                       <div>
                         <h3 className="font-medium text-gray-900">Phone</h3>
-                        <p className="text-gray-600">(403) 225-8810</p>
+                        <p className="text-gray-600">403-910-5387</p>
                         <p className="text-sm text-gray-500 mt-1">
                           Monday - Friday, 9:00 AM - 5:00 PM MST
                         </p>
