@@ -27,10 +27,10 @@ export function SpousalSupportSelector({ value, onChange }: SpousalSupportSelect
                 htmlFor="no_affect_child_support"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                I don't want this contract to affect child support
+                I don't want this contract to affect spousal/partner support
               </Label>
               <p className="text-xs text-muted-foreground">
-                This contract will not impact any child support obligations or entitlements.
+                This contract will not impact any spousal or partner support obligations or entitlements.
               </p>
             </div>
           </div>
