@@ -342,7 +342,7 @@ function SendToLawyerPageContent() {
         {/* Payment Success Message */}
         {paymentSuccess && (
           <Card className="mb-6 border-green-200 bg-green-50">
-            <CardContent className="pt-6">
+            <CardContent className="p-6 pt-4">
               <div className="flex items-center">
                 <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
                 <div>
