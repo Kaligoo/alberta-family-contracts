@@ -89,7 +89,14 @@ function PersonalInfoCard({ formData, updateFormData, isContractPaid }: {
               value={formData.userFirstName}
               onChange={(e) => updateFormData('userFirstName', e.target.value)}
               placeholder="Enter your first name"
+              readOnly={isContractPaid}
+              className={isContractPaid ? 'bg-gray-100' : ''}
             />
+            {isContractPaid && (
+              <p className="text-xs text-gray-500 mt-1">
+                Party names cannot be changed after payment
+              </p>
+            )}
           </div>
           <div>
             <Label htmlFor="partnerFirstName">Partner's First Name</Label>
@@ -98,7 +105,14 @@ function PersonalInfoCard({ formData, updateFormData, isContractPaid }: {
               value={formData.partnerFirstName}
               onChange={(e) => updateFormData('partnerFirstName', e.target.value)}
               placeholder="Enter partner's first name"
+              readOnly={isContractPaid}
+              className={isContractPaid ? 'bg-gray-100' : ''}
             />
+            {isContractPaid && (
+              <p className="text-xs text-gray-500 mt-1">
+                Party names cannot be changed after payment
+              </p>
+            )}
           </div>
         </div>
 
@@ -1918,7 +1932,7 @@ export default function DashboardPage() {
         {/* Privacy Notice */}
         <Card className="mb-6 border-blue-200 bg-blue-50">
           <CardContent className="p-0">
-            <div className="flex items-start space-x-2 p-4">
+            <div className="flex items-start space-x-2 px-4 py-2">
               <div className="flex-shrink-0">
                 <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
