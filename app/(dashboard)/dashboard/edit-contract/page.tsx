@@ -262,26 +262,6 @@ function PersonalInfoCard({ formData, updateFormData, isContractPaid }: {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="userLawyer">Your Lawyer</Label>
-            <Input
-              id="userLawyer"
-              value={formData.userLawyer}
-              onChange={(e) => updateFormData('userLawyer', e.target.value)}
-              placeholder="Enter your lawyer's information"
-            />
-          </div>
-          <div>
-            <Label htmlFor="partnerLawyer">Partner's Lawyer</Label>
-            <Input
-              id="partnerLawyer"
-              value={formData.partnerLawyer}
-              onChange={(e) => updateFormData('partnerLawyer', e.target.value)}
-              placeholder="Enter partner's lawyer's information"
-            />
-          </div>
-        </div>
       </CardContent>
     </Card>
   );
