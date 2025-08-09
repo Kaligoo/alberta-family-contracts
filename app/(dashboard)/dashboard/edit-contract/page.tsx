@@ -11,7 +11,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, FileText, Users, DollarSign, Home, Save, ChevronDown, ChevronUp, Calculator } from 'lucide-react';
+import { Loader2, FileText, Users, DollarSign, Home, Save, ChevronDown, ChevronUp, Calculator, TestTube } from 'lucide-react';
 import { SpousalSupportSelector } from '@/components/ui/spousal-support-selector';
 import { User } from '@/lib/db/schema';
 import useSWR from 'swr';
@@ -1771,6 +1771,60 @@ export default function DashboardPage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const populateTestData = () => {
+    // Basic information
+    updateFormData('userFullName', 'David Kim');
+    updateFormData('partnerFullName', 'Emma Rodriguez');
+    updateFormData('userFirstName', 'David');
+    updateFormData('partnerFirstName', 'Emma');
+    updateFormData('userPronouns', 'he/him');
+    updateFormData('partnerPronouns', 'she/her');
+    updateFormData('userAge', '32');
+    updateFormData('partnerAge', '29');
+    updateFormData('cohabDate', '2023-06-15');
+    updateFormData('proposedMarriageDate', '2024-08-20');
+    updateFormData('userJobTitle', 'Software Engineer');
+    updateFormData('partnerJobTitle', 'Marketing Manager');
+    updateFormData('userIncome', '95000');
+    updateFormData('partnerIncome', '72000');
+    updateFormData('userEmail', 'david.kim@email.com');
+    updateFormData('partnerEmail', 'emma.rodriguez@email.com');
+    updateFormData('userPhone', '403-555-0123');
+    updateFormData('partnerPhone', '403-555-0456');
+    updateFormData('userAddress', '123 Main St, Calgary, AB T2P 1A1');
+    updateFormData('partnerAddress', '456 Oak Ave, Calgary, AB T2P 2B2');
+    updateFormData('residenceAddress', '789 Pine St, Calgary, AB T2P 3C3');
+    updateFormData('residenceOwnership', 'joint');
+    updateFormData('expenseSplitType', 'proportional');
+    updateFormData('propertySeparationType', 'separate');
+    updateFormData('spousalSupportType', 'waive');
+
+    // Children
+    updateFormData('children', [
+      {
+        name: 'Sophie Kim',
+        birthdate: '2015-03-10',
+        relationship: 'biological',
+        parentage: 'user'
+      },
+      {
+        name: 'Max Rodriguez',
+        birthdate: '2017-11-22',
+        relationship: 'biological', 
+        parentage: 'partner'
+      }
+    ]);
+
+    // Schedule income
+    updateFormData('scheduleIncomeEmployment', '95000');
+    updateFormData('scheduleIncomeInvestment', '5000');
+    updateFormData('scheduleIncomeTotalTaxReturn', '100000');
+
+    // Additional clauses
+    updateFormData('additionalClauses', 'Both parties agree to review this agreement annually and make adjustments as necessary.');
+    updateFormData('notes', 'Test data populated for development and testing purposes.');
+  };
+
 
   // Show loading state while fetching contract data
   if ((!contractData && !contractError) || (!allContractsData && !contractData)) {
@@ -1805,10 +1859,22 @@ export default function DashboardPage() {
     <section className="flex-1 p-4 lg:p-8">
       <div className="max-w-4xl">
         <div className="mb-8">
-          <h1 className="text-2xl lg:text-3xl font-bold mb-2">Create Your {formatContractTypeName(formData.contractType)}</h1>
-          <p className="text-gray-600">
-            Let's gather some basic information to create your personalized family contract.
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold mb-2">Create Your {formatContractTypeName(formData.contractType)}</h1>
+              <p className="text-gray-600">
+                Let's gather some basic information to create your personalized family contract.
+              </p>
+            </div>
+            <Button
+              onClick={populateTestData}
+              variant="outline"
+              className="shrink-0 border-orange-200 text-orange-700 hover:bg-orange-50"
+            >
+              <TestTube className="h-4 w-4 mr-2" />
+              Fill Test Data
+            </Button>
+          </div>
           {isUsingTestData && (
             <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
               <p className="text-sm text-yellow-800 flex items-center">
