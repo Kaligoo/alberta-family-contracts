@@ -348,7 +348,7 @@ function SendToLawyerPageContent() {
                 <div>
                   <h3 className="font-semibold text-green-800">Purchase Successful!</h3>
                   <p className="text-green-700 text-sm">
-                    Your payment has been processed and you will receive an email with the PDF of your contract. 
+                    Your payment has been processed. You can download the PDF of your contract anytime from your dashboard. 
                     Now please select which lawyers you want to send the contract to. They will get in touch with you 
                     to book a meeting to provide independent legal advice and sign the agreement, in person or virtually.
                   </p>
