@@ -206,17 +206,16 @@ export default function ContractsPage() {
                     </div>
                     
                     <div className="flex space-x-2 pt-4">
-                      {/* Disable editing if contract is paid */}
+                      {/* Allow editing of paid contracts */}
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleSetCurrentContract(contract.id)}
-                        disabled={contract.isPaid === 'true'}
                         className="flex-1"
-                        title={contract.isPaid === 'true' ? 'Contract is locked after payment' : 'Edit this contract'}
+                        title="Edit this contract"
                       >
                         <ArrowRight className="mr-2 h-3 w-3" />
-                        {contract.isPaid === 'true' ? 'Locked' : 'Edit'}
+                        Edit
                       </Button>
                       <Link href={`/dashboard/contracts/${contract.id}/preview`} className="flex-1">
                         <Button variant="outline" size="sm" className="w-full">

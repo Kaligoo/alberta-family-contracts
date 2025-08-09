@@ -31,10 +31,10 @@ interface ChildInfo {
   parentage: 'user' | 'partner' | 'both';
 }
 
-function PersonalInfoCard({ formData, updateFormData, isReadOnly }: { 
+function PersonalInfoCard({ formData, updateFormData, isContractPaid }: { 
   formData: any; 
   updateFormData: (field: string, value: any) => void;
-  isReadOnly?: boolean; 
+  isContractPaid?: boolean; 
 }) {
 
   return (
@@ -54,9 +54,14 @@ function PersonalInfoCard({ formData, updateFormData, isReadOnly }: {
               value={formData.userFullName}
               onChange={(e) => updateFormData('userFullName', e.target.value)}
               placeholder="Enter your full name"
-              readOnly={isReadOnly}
-              className={isReadOnly ? 'bg-gray-100' : ''}
+              readOnly={isContractPaid}
+              className={isContractPaid ? 'bg-gray-100' : ''}
             />
+            {isContractPaid && (
+              <p className="text-xs text-gray-500 mt-1">
+                Party names cannot be changed after payment
+              </p>
+            )}
           </div>
           <div>
             <Label htmlFor="partnerFullName">Partner's Full Name</Label>
@@ -65,7 +70,14 @@ function PersonalInfoCard({ formData, updateFormData, isReadOnly }: {
               value={formData.partnerFullName}
               onChange={(e) => updateFormData('partnerFullName', e.target.value)}
               placeholder="Enter partner's full name"
+              readOnly={isContractPaid}
+              className={isContractPaid ? 'bg-gray-100' : ''}
             />
+            {isContractPaid && (
+              <p className="text-xs text-gray-500 mt-1">
+                Party names cannot be changed after payment
+              </p>
+            )}
           </div>
         </div>
         
@@ -1658,11 +1670,7 @@ export default function DashboardPage() {
   }, [contractData, firstContract]);
 
   const handleSave = async () => {
-    // Prevent saving if contract is paid
-    if (isContractPaid) {
-      setSaveState({ error: 'Cannot edit contract after payment. Contract is locked.' });
-      return;
-    }
+    // Allow saving of paid contracts (only party names are restricted via form fields)
 
     setIsSaving(true);
     setSaveState({});
@@ -1931,9 +1939,9 @@ export default function DashboardPage() {
         </Card>
 
         <div className="max-w-4xl mx-auto space-y-6">
-          <PersonalInfoCard formData={formData} updateFormData={updateFormData} isReadOnly={isContractPaid} />
+          <PersonalInfoCard formData={formData} updateFormData={updateFormData} isContractPaid={isContractPaid} />
           
-          <PropertyOptionsCard formData={formData} updateFormData={updateFormData} isReadOnly={isContractPaid} />
+          <PropertyOptionsCard formData={formData} updateFormData={updateFormData} isReadOnly={false} />
           
           <SpousalSupportSelector 
             value={formData.spousalSupportType} 
