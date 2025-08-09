@@ -26,7 +26,9 @@
       "Bash(del C:afcfix_users_table.sql)",
       "Bash(npm install:*)",
       "Bash(node:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "WebFetch(domain:docs.stripe.com)",
+      "Bash(stripe:*)"
     ],
     "deny": []
   }
